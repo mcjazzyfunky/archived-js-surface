@@ -1,0 +1,12 @@
+/*.log
+/.project
+/.idea
+/.c9
+/.codio
+/.settings
+/.grunt
+/nbproject
+/node_modules
+/build/*
+/dist/*
+
