@@ -71,21 +71,47 @@ const domBuilder = {};
 
 class ReactComponent extends React.Component {
     constructor(component) {
-        this._component = component;
-        this.__props$ = new Rx.Subject();
-        this.__subscription = null;
+        const eventMgr = {
+           on: () => new Rx.Observable(),
+           bind: () => new Rx.Subscriber()
+        };
+        
+        this.__component = component;
+        this.__propsSbj = new Rx.Subject();
+        this.__subscriptionUITree = null;
+        this.__subscriptionUIEvents = null;
+        
+        const ui = this._component.getUI(
+            domBuilder,
+            eventMgr,
+            this.__propsSubject);
+        
+        this.__uiTreeObs = ui.uiTree;
+        this.__uiEventsObs = ui.uiEvents;
+
     }
     
-    componentWillMount(nextProps) {
-        this.__subscription = this.__props$.subscribe(props => this.setState(null));
+    componentWillMount() {
+        this.__subscriptionUITree = this.__ui.subscribe(props => {
+            this.props = props;
+            props => this.setState(null)
+        });
+    }
+    
+    componentWillUnmount() {
+        this.__subscription.unsubscribe();
     }
     
     componentWillReceiveProps(nextProps) {
+        this.props = nextProps();
         this.__props$.next(nextProps);
     }
     
+    componentShouldUpdate() {
+        return false;
+    }
+    
     render() {
-        const ui = this._component.getUI(domBuilder, {on: () => new Rx.Observable(), bind: () => new Rx.Subscriber()}, Rx.Observable.of({}));
         console.log(ui);
         return ui.uiTree.first();
     }
