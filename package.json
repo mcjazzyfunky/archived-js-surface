@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "homepage": "https://github.com/mcjazzyfunky/js-bling",
   "devDependencies": {
+    "@cycle/core": "^6.0.2",
     "babel-runtime": "^5.2.17",
+    "commonjs": "0.0.1",
     "esdoc": "^0.3.0",
     "grunt": "^0.4.5",
     "grunt-asciidoctor": "^0.2.1",
@@ -17,6 +19,7 @@
     "grunt-esdoc": "0.0.1",
     "immutable": "^3.7.4",
     "react": "^0.14.7",
+    "rx": "^4.0.7",
     "shrinkwrap": "^0.4.0",
     "systemjs": "^0.19.20"
   },
