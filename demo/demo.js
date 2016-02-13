@@ -1,57 +1,148 @@
 'use strict';
 
+alert(1)
 const
-    Rx = window.Rx,
+    {Observable, Subject} = window.Rx,
     React = window.React,
     ReactDOM = window.ReactDOM;
 
 
 class Component {
-    getTypeName() {
-        return null;
+    constructor(config) {
+        throw new Error('[Component.constructor] Component cannot be instantiated by using the constructor - '
+                + "please use the factory method 'Component.create' instead");
     }
     
-    getView(domBuilder, eventManager, propsPublisher) {
-        throw Error('[Component:getView] Method has not been implemented/overridden');
+    getConfig() {
+        return this.__config;
+    }
+    
+    static create(config) {
+        const typeNameRegex = /[a-zA-Z][a-zA-Z0-9.]*/; 
+        
+        if (config === null || typeof config !== 'object') {
+            throw new TypeError('[Component.create] Component configuration has to of type {typeName : String, view: Function}');
+        } else if (config.typeName === undefined  || config.typeName === null) {
+            throw new TypeError("[Component.create] Component configuration value 'typeName' is missing");
+        } else if (typeof config.typeName !== 'string' || !config.typeName.match(typeNameRegex)) {
+            throw new TypeError(`[Component.create] Illegal configuration value 'typeName' (must match regex ${typeNameRegex})`);
+        } else if (config.view === undefined || config.view === null) {
+            throw new TypeError("[Component.create] Component configuration value 'view' is missing");
+        } else if (typeof config.view === 'function') {
+            throw new TypeError("[Component.create] Component configuration value 'view' has to be a function");
+        }
+
+        const ret = function () {
+            this.__config = Object.freeze({
+                typeName: config.typeName || null,
+                view: config.view
+            });
+        };
+        
+        ret.prototype = Object.create(Component.prototype);
+        return ret;
     }
 }
+
+
+// [-] 42 [+]
+export default Component.create({
+    typeId: 'counter',
+    
+    defaultProps: {
+        caption: ''  
+    },
+    
+    view: (dom, {on, bind}, propsObs) => {
+        const
+            plusObs = on('plusButtonClicked')
+                    .map(_ => 1),
+
+            minusObs = on('minusButtonClicked')
+                    .map(_ => -1),
+
+            counterObs = Observable.merge(plusObs, minusObs)
+                    .startWith(0)
+                    .scan((prev, curr) => prev + curr);
+
+        return {
+            display: propsObs.merge(counterObs, (props, counter) =>
+                    dom.div(
+                        {className: 'ui-counter'},
+                        dom.label(
+                            {className: 'ui-counter-label'},
+                            props.get('caption')
+                        ),
+                        dom.button({
+                                className: 'ui-counter-decrement',
+                                onClick: bind('minusButtonClicked')
+                            },
+                            '+'
+                        ),
+                        dom.span(
+                            {className: 'ui-counter-value'},
+                             counter
+                        ),
+                        dom.button({
+                                className: 'ui-counter-increment',
+                                onClick: bind('plusButtonClicked')
+                            },
+                            '-'
+                        ))),
+    
+            events: {
+                update: counterObs.map(state => {counter: state})
+            }
+        };
+    }
+});
+
+
 
 class Counter extends Component {
-    getTypeName() {
-        return 'Counter';    
-    } 
-  
-    getUI(dom, eventMgr, propsP) {
-        const
-            on = eventMgr.on,
-            bind = eventMgr.bind,
-            plusP = on('plusButtonClicked')
-                 .map(_ => 1),
-
-            minusP = on('minusButtonClicked')
-                .map(_ => -1),
-
-            counterP = Rx.Observable.merge(plusP, minusP)
-                .startWith(0)
-                .scan((prev, curr) => prev + curr), 
-
-            uiTreeP = counterP.merge(propsP, (counter, props) =>
-                    dom.div(
-                        null,
-                        dom.button({ onClick: bind('minusButtonClicked') }, '+'),
-                        dom.label(null, counter),
-                        dom.button({ onClick: bind('minusButtonClicked') }, '-'))),
-    
-            uiEvents = {
-                update: counterP.map(counter => {counter})
-            };
+    constructor() {
+        super({
+            typeName: 'Counter',
             
-        return {
-            uiTree: uiTreeP,
-            uiEvents
-        };
-   };
+            view: (dom, interaction, propsObs, dependenciesObs) => {
+                const
+                    {on, bind}  = interaction,
+        
+                    plusObs = on('plusButtonClicked')
+                            .map(_ => 1),
+        
+                    minusObs = on('minusButtonClicked')
+                            .map(_ => -1),
+        
+                    stateObs = Observable.merge(plusObs, minusObs)
+                            .startWith(0)
+                            .scan((prev, curr) => prev + curr), 
+        
+                    uiTreeObs = propsObs.merge(propsObs, (props, state) =>
+                            dom.div(
+                                null,
+                                dom.button({ onClick: bind('minusButtonClicked') }, '+'),
+                                dom.label(null, state),
+                                dom.button({ onClick: bind('minusButtonClicked') }, '-'))),
+            
+                    uiEvents = {
+                        update: stateObs.map(state => {counter: state})
+                    };
+                    
+                return {
+                    uiTree: uiTreeObs,
+                    uiEvents
+                };
+            }
+        });
+    } 
 }
+
+
+
+
+
+
 
 class ComponentAdapter {
     convertComponent(component) {
@@ -71,30 +162,31 @@ const domBuilder = {};
 
 class ReactComponent extends React.Component {
     constructor(component) {
-        const eventMgr = {
-           on: () => new Rx.Observable(),
-           bind: () => new Rx.Subscriber()
+        const interaction = {
+           on: () => new Observable(),
+           bind: () => new Subject()
         };
         
         this.__component = component;
-        this.__propsSbj = new Rx.Subject();
-        this.__subscriptionUITree = null;
-        this.__subscriptionUIEvents = null;
+        this.__propsSbj = new Subject();
+        this.__subscriptionViewDisplay = null;
+        this.__subscriptionViewEvents = null;
         
-        const ui = this._component.getUI(
+        const view = this._component.getView(
             domBuilder,
-            eventMgr,
-            this.__propsSubject);
+            interaction,
+            this.__propsSbj);
         
-        this.__uiTreeObs = ui.uiTree;
-        this.__uiEventsObs = ui.uiEvents;
+        this.__viewDisplayObs = view;
+        this.__viewEvents = view.events;
 
     }
     
     componentWillMount() {
-        this.__subscriptionUITree = this.__ui.subscribe(props => {
-            this.props = props;
-            props => this.setState(null)
+        this.__viewDisplayObs.subscribe(domTree => {
+            this.__domTree = domTree;
+            this.forceUpate();
+            this.__domTree = null;
         });
     }
     
@@ -104,7 +196,8 @@ class ReactComponent extends React.Component {
     
     componentWillReceiveProps(nextProps) {
         this.props = nextProps();
-        this.__props$.next(nextProps);
+        this.__propsSbj.next(nextProps);
+        this.forceUpdate();
     }
     
     componentShouldUpdate() {
@@ -112,8 +205,7 @@ class ReactComponent extends React.Component {
     }
     
     render() {
-        console.log(ui);
-        return ui.uiTree.first();
+        return this._domTree;
     }
 }
 

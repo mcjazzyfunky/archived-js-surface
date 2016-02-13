@@ -1,14 +1,13 @@
 <html>
     <head>
         <script type="text/javascript" src="../node_modules/systemjs/dist/system.js"></script> 
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.4.4/babel.js"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react.js"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/react/0.14.7/react-dom.js"></script>
-        <script type="text/javascript" src="//npmcdn.com/@reactivex/rxjs@5.0.0-beta.2/dist/global/Rx.umd.js"></script>
         <script type="text/javascript">
             System.config({
                 baseURL: '.',
-                transpiler: 'babel'
+                transpiler: 'babel',
+                map: {
+                    babel: '../node_modules/babel-standalone/babel.js'
+                }
             });
             
             System.import('demo.js');
