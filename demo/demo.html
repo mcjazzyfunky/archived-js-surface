@@ -3,14 +3,22 @@
         <script type="text/javascript" src="../node_modules/systemjs/dist/system.js"></script> 
         <script type="text/javascript">
             System.config({
-                baseURL: '.',
-                transpiler: 'babel',
+                baseURL: '..',
+                transpiler: 'plugin-babel',
+                paths: {
+               //     '*': '*.js'
+                },
                 map: {
-                    babel: '../node_modules/babel-standalone/babel.js'
+                    'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
+                    'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
+                    //'rx': 'node_modules/rxjs/bundles/Rx.umd.js',
+                    'rx': 'node_modules/rx/dist/rx.js',
+                    'react': 'node_modules/react/dist/react.js',
+                    'react-dom': 'node_modules/react-dom/dist/react-dom.js'
                 }
             });
             
-            System.import('demo.js');
+            System.import('demo/demo.js');
         </script>
     </head>
     <body>

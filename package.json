@@ -24,9 +24,9 @@
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "rx": "^4.0.7",
-    "rxjs": "^5.0.0-beta.2",
     "shrinkwrap": "^0.4.0",
-    "systemjs": "^0.19.20"
+    "systemjs": "^0.19.20",
+    "systemjs-plugin-babel": "0.0.2"
   },
   "dependencies": {
     "dev": "^0.1.3",
