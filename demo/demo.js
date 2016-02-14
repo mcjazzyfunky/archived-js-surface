@@ -4,48 +4,74 @@ import {Observable, Subject} from 'rx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+const dummyObject = {};
+
 export const Component = {
     createFactory(config) {
-        const configError = checkComponentClassConfig(config);
+        const configError = checkComponentFactoryConfig(config);
         
         if (configError) {
-            throw new TypeError('[Component.create] ' + configError.getMessage());
+            throw new TypeError(
+                    '[Component.createFactory] '
+                    + configError.getMessage());
         } 
         
-        const ret = (initialProps, children) => ({
-            isBlingComponent: true,
-            classId: config.classId,
-            initialProps,
-            children
-        });
-        
-        ret.getConfig = () => {
-            return config;
-        }
-        
+        const ret = (initialProps, children) => (initialProps === dummyObject)
+                ? dummyObject
+                : {
+                    isBlingComponent: true,
+                    factoryId: config.id,
+                    initialProps,
+                    children
+                };
+    
+        ret.getConfig = () => config;
         return ret;
+    },
+
+    isFactory(componentFactory) {
+        return typeof componentFactory === 'function'
+                && typeof componentFactory.getConfig === 'function'
+                && componentFactory(dummyObject) === dummyObject;
     }
 }
 
 export class ComponentAdapter {
-    convertComponentClass(componentClass) {
+    constructor(id) {
+        const idRegex = /^[A-Z][a-zA-Z0-9]*$/;
+        
+        if (typeof id !== 'string' && !id.matches(idRegex)) {
+            throw new TypeError(
+                '[ComponentAdapter.constructor] '
+                + 'First argument must be a proper adapter id matching the regex '
+                + idRegex);
+        }
+        
+        this.__id = id;
+    }
+    
+    getId() {
+        return this.__id;
+    }
+
+    convertComponentFactory(componentFactory, componentMgr) {
         throw new Error(
-            '[ComponentAdapter:convertComponentClass] '
+            '[ComponentAdapter:convertComponentFactory] '
             + 'Method not implemented/overridden');        
     }
 }
 
-function checkComponentClassConfig(config) {
+function checkComponentFactoryConfig(config) {
     var ret;
     
-    const classIdRegex = /^[A-Z][a-z0-9]*$/;
+    const factoryIdRegex = /^[A-Z][a-z0-9]*$/;
     
     if (config === null || typeof config !== 'object') {
-        ret = new TypeError('Component configuration has to of type {classId : String, view: Function}');
-    } else if (config.classId === undefined  || config.classId === null) {
-        ret = new TypeError("Component configuration value 'classId' is missing");
-    } else if (typeof config.classId !== 'string' || !config.classId.match(classIdRegex)) {
-        ret = new TypeError(`Illegal value for 'typeID' (must match regex ${classIdRegex})`);
+        ret = new TypeError('Component configuration has to of type {factoryId : String, view: Function}');
+    } else if (config.id === undefined  || config.id === null) {
+        ret = new TypeError("Component configuration value 'factoryId' is missing");
+    } else if (typeof config.id !== 'string' || !config.id.match(factoryIdRegex)) {
+        ret = new TypeError(`Illegal value for 'typeID' (must match regex ${factoryIdRegex})`);
     } else if (config.view === undefined || config.view === null) {
         ret = new TypeError("Component configuration value 'view' is missing");
     } else if (typeof config.view !== 'function') {
@@ -60,93 +86,89 @@ function checkComponentClassConfig(config) {
 
 class ComponentMgr {
     constructor() {
-        this.__componentClassRegistry = new Map();
+        this.__factoryRegistry = new Map();
         this.__adapterRegistry = new Map();
         this.__convertRegistry = new Map();
     }
 
-    registerComponentClass(componentClass) {
-        if (componentClass === null || typeof componentClass !== 'function' || typeof componentClass.getConfig !== 'function'
-                || checkComponentClassConfig(componentClass.getConfig())) {
+    registerComponentFactory(componentFactory) {
+        if (!Component.isFactory(componentFactory)) { 
             throw new TypeError(
-                    '[ComponentMgr.registerComponent] '
-                    + "First argument must be a proper component class created by 'Component.createClass'");
+                    '[ComponentMgr.registerComponentFactory] '
+                    + "First argument must be a proper component factory created by 'Component.createFactory'");
         }
        
-        const config = componentClass.getConfig();
+        const config = componentFactory.getConfig();
         
-        if (this.__componentClassRegistry.has(config.classId)) {
+        if (this.__factoryRegistry.has(config.id)) {
             throw new Error(
-                "[CompnentMgr:registerComponent] Component with class id '"
-                + config.classId
+                "[CompnentMgr:registerComponentFactory] Component factory with id '"
+                + config.id
                 + "' has already been registered");
         }
 
-        this.__componentClassRegistry.set(config.classId, config);
+        this.__factoryRegistry.set(config.id, componentFactory);
     }
     
-    registerAdapter(adapterId, adapter) {
-        const adapterIdRegex = /^[A-Z][a-zA-Z0-9]*$/;
-        
-        if (typeof  adapterId !== 'string' || adapterId.match(adapterIdRegex)) {
-            throw new TypeError('[ComponentMgr:registerAdapter] '
-                + 'First argument must be a proper adapter ID '
-                + 'that matches regex '
-                + adapterIdRegex);
-        } else if (this.__adapterRegistry.has(adapterId)) {
+    registerAdapter(adapter) {
+        if (!(adapter instanceof ComponentAdapter)) {
+            throw new TypeError(
+                    '[ComponentMgr::registerAdapter] '
+                    + 'First argument must be a component adapter');
+        } else if (this.__adapterRegistry.has(adapter.getId())) {
             throw new Error(
-                "[CompnentMgr:registerAdapter] Adapter with  "
-                + adapterId
+                "[CompnentMgr:registerAdapter] Adapter with id '"
+                + adapter.getId()
                 + "' has already been registered");
         }
         
-        this.__adapterRegistry.set(adapterId, adapter);
+        this.__adapterRegistry.set(adapter.getId(), adapter);
     }
     
-    getComponentClass(classId) {
-        const componentClass = this.__componentClassRegistry.get(classId);
+    getComponentFactory(factoryId) {
+        const componentFactory = this.__factoryRegistry.get(factoryId);
         
-        if (!componentClass) {
+        if (!componentFactory) {
             throw new Error(
-                "[ComponentMgr:getComponentConfig] Component with class id '"
-                + classId
+                "[ComponentMgr:getComponentConfig] Component factory with id '"
+                + factoryId
                 + "' has not been registered");
         }
         
-        return componentClass;
+        return componentFactory;
     }
     
-    convertComponentClass(classId, adapterId) {
-        const convertId = `${classId}/${adapterId}`;
+    convertComponentFactory(factoryId, adapterId) {
+        const convertId = `${factoryId}/${adapterId}`;
         
         let ret = this.__convertRegistry.get(convertId);
 
         if (!ret) {
             const
-                componentClass = this.__componentClassRegistry.get(classId),
+                componentFactory = this.__factoryRegistry.get(factoryId),
                 adapter = this.__adapterRegistry.get(adapterId);
 
-            if (!componentClass) {
+            if (!componentFactory) {
                 throw new Error(
-                    "[ComponentMgr:convertComponent] Component with class id '"
-                    + classId
+                    "[ComponentMgr:convertComponentFactory] Component factory with id '"
+                    + factoryId
                     + "' has not been registered");
             } else if (!adapter) {
                 throw new Error(
-                    "[ComponentMgr:convertComponent] Adapter with id '"
+                    "[ComponentMgr:convertComponentFactory] Adapter with id '"
                     + adapterId
                     + "' has not been registered");
             }
             
-            ret = adapter.convertComponentClass(componentClass);
+            ret = adapter.convertComponentFactory(componentFactory, this);
             this.__convertRegistry.set(convertId, ret);
         }
         
         return ret; 
     }
     
-    isComponentClassRegistered(classId) {
-        return this.__componentClassRegistry.has(classId);
+    isComponentFactoryRegistered(factoryId) {
+        return this.__factoryRegistry.has(factoryId);
     }
     
     static getGlobal() {
@@ -172,18 +194,18 @@ class EventMgr {
                 subjectsByName.set(eventName, ret);
             }
             
-            return ret.asObserver();
+            return ret.asObservable();
         }    
         
         this.bind = (eventName) => {
-            let ret = subjectsByName.get(eventName);
+            let subject = subjectsByName.get(eventName);
 
-            if (!ret) {
-                ret = new Subject(); 
-                subjectsByName.set(eventName, ret);
+            if (!subject) {
+                subject = new Subject(); 
+                subjectsByName.set(eventName, subject);
             }
             
-            return ret.asObservable();
+            return event => subject.onNext(event);
         }
     }
     
@@ -196,8 +218,8 @@ class EventMgr {
     }
 }
 
-export const button = Component.createClass({
-    classId: 'Button',
+export const button = Component.createFactory({
+    id: 'Button',
 
     defaultProps: {
         caption: ''
@@ -205,18 +227,18 @@ export const button = Component.createClass({
     
     view(dom, propsObs) {
         return {
-            display: propsObs.map(props => {
-                dom.button(
-                    {class: 'component'},
-                    props.get('caption'));
+            display: propsObs.map(props => {console.log(111,props)
+                return dom.button(
+                    {className: 'ui-button'},
+                    props.get('text'));
             })
         };
     }
 });
 
 // [-] 42 [+]
-export const counter = Component.createClass({
-    classId: 'Counter',
+export const counter = Component.createFactory({
+    id: 'Counter',
     
     defaultProps: {
         caption: ''  
@@ -245,12 +267,7 @@ export const counter = Component.createClass({
                             {className: 'ui-counter-label'},
                             props.get('caption')
                         ),
-                        dom.button({
-                                className: 'ui-counter-decrement',
-                                onClick: bind('minusButtonClicked')
-                            },
-                            '+'
-                        ),
+                        button({text: 'xxx'}),
                         dom.span(
                             {className: 'ui-counter-value'},
                              "counter"
@@ -270,94 +287,115 @@ export const counter = Component.createClass({
 });
 
 class ReactAdapter extends ComponentAdapter {
-    convertComponentClass(componentClass) {
-        if (typeof componentClass !== 'function'
-                || typeof componentClass.getConfig !== 'function'
-                || checkComponentClassConfig(componentClass.getConfig())) {
+    constructor() {
+        super('ReactAdapter');
+    }
 
+    convertComponentFactory(componentFactory, componentMgr) {
+        if (!Component.isFactory(componentFactory)) {
             throw new TypeError(
-                    '[ReactAdapter.convertComponentClass] '
-                    + 'First argument must be a proper component class created by '
-                    + "'Component.createClass'");
+                '[ReactAdapter:convertComponentFactory] '
+                + 'First argument must be a proper component factory created by '
+                + "'Component.createFactory'");
+        } else if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                '[ReactAdapter:convertComponentFactory] '
+                + 'Second argument must be a component manager');
         }
         
         const constructor = function () {};
-        constructor.prototype = new ReactComponent(componentClass);
+        constructor.prototype = new ReactComponent(componentFactory, componentMgr);
         return React.createFactory(constructor);
     }
 }
 
 class Reader {
     constructor(obj) {
-        this.__obj = obj;
+        this.__obj = obj || {};
     }
     
     get(key) {
-        return this._obj[key];
+        return this.__obj[key];
     }
 }
 
 const domBuilder = {};
 
 class ReactComponent extends React.Component {
-    constructor(component) {
+    constructor(componentFactory, componentMgr) {
+       if (!Component.isFactory(componentFactory)) {
+            throw new TypeError(
+                '[ReactAdapter.constructor] '
+                + 'First argument must be a proper component factory created by '
+                + "'Component.createFactory'");
+        } else if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                '[ReactComponent.constructor] '
+                + 'Second argument must be a component manager');
+        }        
+        
         super();
         
-        const interaction = {
-           on: () => new Observable(),
-           bind: () => new Subject()
-        };
-        
-        this.__component = component;
+        this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionViewDisplay = null;
         this.__subscriptionViewEvents = null;
-        console.log(this.__component);
-        const view = this.__component.getConfig().view(
+        
+        const view = componentFactory.getConfig().view(
             domBuilder,
-            interaction,
             this.__propsSbj);
 
         this.__viewDisplayObs = view.display;
         this.__viewEvents = view.events;
 
-    }
-    
-    componentWillMount() {
-        this.__viewDisplayObs.subscribe(domTree => {
+        this.__viewDisplayObs.subscribe(domTree => {console.log('Juhu', domTree)
             this.__domTree = domTree;
-            this.forceUpdate();
+            this.__needsToBeRendered = true;
 //            this.__domTree = null;
         });
+        
+        this.__hasInitialized = false;
     }
     
+
     componentWillUnmount() {
         this.__subscription.unsubscribe();
     }
     
     componentWillReceiveProps(nextProps) {
-        this.props = nextProps();
+        this.props = nextProps;
         this.__propsSbj.onNext(nextProps);
-        this.forceUpdate();
     }
     
     shouldComponentUpdate() {
-        return false;
+        return this.__needsToBeRendered;
     }
     
-    render() {
+    render() {console.log(React.isValidElement(this.__domTree), this.__domTree);
+        if (!this.__hasIniialized) {
+            this.__hasIniialized = true;
+            console.log('Initial props: ', this.props)
+            this.__propsSbj.onNext(new Reader(this.props));
+        }
+        console.log('rendering')
         return this.__domTree;
     }
 }
 
 
-const
-    adapter = new ReactAdapter(),
-    reactCounter = adapter.convertComponent(counter);
+const mgr = ComponentMgr.getGlobal();
+    
+mgr.registerComponentFactory(button);
+mgr.registerComponentFactory(counter);
+mgr.registerAdapter(new ReactAdapter())
 
+
+const Counter = mgr.convertComponentFactory('Counter', 'ReactAdapter');
+const Button = mgr.convertComponentFactory('Button', 'ReactAdapter');
+console.log(Button({caption: 'xxx'}));
 
 setTimeout(() => {
-    ReactDOM.render(React.createElement('div', null, reactCounter(null, 'My counter:')), document.getElementById('content'));
+    ReactDOM.render(React.createElement('div', null, Counter()), document.getElementById('content'));
 }, 0);
 
 
@@ -503,6 +541,25 @@ const tagNames = [
 
 for (let tagName of tagNames) {
     domBuilder[tagName] = function (props, ...children) {
-        return React.createElement(tagName, props, ...children);
+        const mappedChildren = children.map(child => {
+            return (child === null || typeof child !== 'object' || child.isBlingComponent !== true)
+                    ? child
+                    : mapBlingComponent(child);
+        });
+        
+        return React.createElement(tagName, props, mappedChildren);
     };
 }
+
+
+function mapBlingComponent(child) {
+    const
+        factory = mgr.getComponentFactory(child.factoryId),
+        config = factory.getConfig(),
+        factoryId = config.id;
+    
+    const reactFactory = mgr.convertComponentFactory(factoryId, 'ReactAdapter');
+    
+    return reactFactory(config.initialProps, config.children);
+}
+
