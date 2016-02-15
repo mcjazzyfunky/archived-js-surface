@@ -4,6 +4,7 @@
   "homepage": "https://github.com/mcjazzyfunky/js-bling",
   "devDependencies": {
     "@cycle/core": "^6.0.2",
+    "@reactivex/rxjs": "^5.0.0-beta.2",
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",
     "babel-runtime": "^5.2.17",
@@ -23,7 +24,6 @@
     "immutable": "^3.7.6",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
-    "rx": "^4.0.7",
     "shrinkwrap": "^0.4.0",
     "systemjs": "^0.19.20",
     "systemjs-plugin-babel": "0.0.2"
