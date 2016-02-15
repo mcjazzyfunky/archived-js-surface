@@ -9,7 +9,6 @@ export default class ComponentMgr {
         this.__factoryRegistry = new Map();
         this.__adapterRegistry = new Map();
         this.__convertRegistry = new Map();
-        this.__uiBuilderRegistry = new Map();
     }
 
     registerComponentFactory(componentFactory) {
@@ -104,49 +103,6 @@ export default class ComponentMgr {
     
     isComponentFactoryRegistered(typeId) {
         return this.__factoryRegistry.has(typeId);
-    }
-    
-    getUIBuilder(componentMgr, adapterId) {
-        let ret = this.__uiBuilderRegistry.get(adapterId);
-        
-        if (!ret) {
-            const adapter = this.__adapterRegistry.get(adapterId);
-        
-            if (!adapter) {
-                throw new Error(
-                        "[ComponentMgr.getUIBuilder] No adapter with id '"
-                        + adapterId
-                        + "' registered"); 
-            }
-            
-            ret = {};
-
-            for (let tagName of ComponentHelper.getSupportedTagNames()) {
-                ret[tagName] = (props, ...children) => {
-                    const mappedChildren = children.map(child => {
-                        var ret;
-                        
-                        if (child === null || typeof child !== 'object' || child.isBlingComponent !== true) {
-                            ret = child;
-                        } else {
-                            const
-                                factory = componentMgr.getComponentFactory(child.typeId),
-                                config = factory.getConfig(),
-                                typeId = config.typeId;
-                            
-                            const convert = componentMgr.convertComponentFactory(typeId, adapterId);
-                            ret = convert(child.initialProps, child.children);
-                        }
-                        
-                        return ret;
-                    });
-                    
-                    return adapter.createElement(tagName, props, mappedChildren);
-                };
-            }
-            
-            return ret;
-        } 
     }
     
     static getGlobal() {

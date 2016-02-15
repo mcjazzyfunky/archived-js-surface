@@ -3,66 +3,116 @@
 import Component from '../core/Component.js';
 import ComponentMgr from '../core/ComponentMgr.js';
 import ComponentAdapter from '../core/ComponentAdapter.js';
-import Reader from 'js-prelude';
+import {Reader} from 'js-prelude';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {Observable, Subject} from 'rxjs';
+import {Seq} from 'js-prelude';
 
 export default class ReactAdapter extends ComponentAdapter {
     constructor() {
         super('React');
     }
     
-    createElement(tagName, props, children) {
-        return React.createElement(tagName, props, ...children); // TODO '...'
+    convertComponentFactory(factoryId, componentMgr) {
+        if (typeof factoryId !== 'string') {
+            throw new TypeError(
+                '[ReactAdapter:convertComponentFactory] '
+                + 'First argument must be a string');
+        } else if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                '[ReactAdapter:convertComponentFactory] '
+                + 'Second argument must be a component manager');
+        }
+
+        const
+            factory = componentMgr.getComponentFactory(factoryId),
+            config = factory.getConfig(),
+            reactAdapter = this,
+            constructor = function () {
+                ReactComponent.call(this, factory, reactAdapter, componentMgr);
+            };
+            
+        constructor.displayName = config.typeId;
+        constructor.prototype = ReactComponent.prototype;
+        return React.createFactory(constructor);
     }
     
-    convertComponent(component, componentMgr = ComponentMgr.getGlobal()) {
+    convertElement(element, componentMgr) {
         var ret;
-        
-        if (React.isValidElement(component)) {
-            ret = component;
-        } else if (component && component.isBlingComponent) {
-            ret = this.createElement('span', null, component); // TODO - UGLY!!
-        } else {
-            if (!Component.isFactory(component)) {console.log(component)
+       
+        if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                '[ReactAdapter:convertElement] '
+                + 'Second argument must be a component manager');
+        } else if (element === undefined || element === null) {
+            throw new TypeError(
+                '[ReactAdapter:convertElement] '
+                + 'First argument must not be empty');
+        } else if (typeof element === 'object' && element.type) {
+            ret = element;
+        } else if (element instanceof Array) {
+            if (element.length === 0) {
                 throw new TypeError(
-                    '[ReactAdapter:convertComponent] '
-                    + 'First argument must be a proper component factory created by '
-                    + "'Component.createFactory'");
-            } else if (!(componentMgr instanceof ComponentMgr)) {
+                    '[ReactAdapter:convertElement] '
+                    + 'First argument must not be an empty array')
+            } else if (typeof element[0] !== 'string') {
                 throw new TypeError(
-                    '[ReactAdapter:convertComponentFactory] '
-                    + 'Second argument must be a component manager');
+                    '[ReactAdapter:convertElement] '
+                    + 'First item the first argument array must be a string');
+            } else if (!element[0].startsWith('component:')) {
+                ret = new React.createElement(...element);
+            } else {
+                const
+                    typeId = element[0].substring(10),
+                    mappedFactory =this.convertComponentFactory(typeId, componentMgr),
+                    props = element[1] || null,
+                    mappedChildren = Seq.from(element)
+                            .skip(2)
+                            .filter(element => element !== undefined && element !== null && element !== false)
+                            .map(element => element instanceof Array
+                                    ? this.convertElement(element, componentMgr)
+                                    : element);
+                            
+                ret = mappedFactory(props, mappedChildren);
             }
-        
-            const
-                config = component.getConfig(),
-                constructor = function () {ReactComponent.call(this, component,componentMgr)};
-                
-            constructor.displayName = config.typeId;
-            constructor.prototype = ReactComponent.prototype;// new ReactComponent(componentFactory, componentMgr);
-            ret = React.createFactory(constructor);
+        } else {
+            throw new TypeError('[ReactAdapter:convertElement] '
+                    + 'First argument must either be an array or a React element');
         }
         
         return ret;
     }
 
-    mount(mainComponent, targetNode, adapterId, componentMgr = ComponentMgr.getGlobal()) { 
+    mount(content, targetNode, componentMgr) {
+        if (!content || !(content instanceof Array || content.type)) {
+            throw new TypeError(
+                '[ReactAdapter:mount] '
+                + ' First argument must be a mountable element'); 
+        } else if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                '[ReactAdapter:mount] '
+                + 'Second argument must be a component manager');
+        }
+        
         ReactDOM.render(
-                this.convertComponent(mainComponent, componentMgr),
+                this.convertElement(content, componentMgr),
                 targetNode);
     }
 }
 
 
 class ReactComponent extends React.Component {
-    constructor(componentFactory, componentMgr) {
+    constructor(componentFactory, reactAdapter, componentMgr) {
        if (!Component.isFactory(componentFactory)) {
             throw new TypeError(
                 '[ReactAdapter.constructor] '
                 + 'First argument must be a proper component factory created by '
                 + "'Component.createFactory'");
+        } else if (!(reactAdapter instanceof ReactAdapter)) {
+            throw new TypeError(
+                '[ReactComponent.constructor] '
+                + 'Second argument must be a React adapter');
         } else if (!(componentMgr instanceof ComponentMgr)) {
             throw new TypeError(
                 '[ReactComponent.constructor] '
@@ -77,15 +127,13 @@ class ReactComponent extends React.Component {
         this.__subscriptionViewDisplay = null;
         this.__subscriptionViewEvents = null;
         
-        const view = config.view(
-            componentMgr.getUIBuilder('ReactAdapter'), // TODO
-            this.__propsSbj);
+        const view = config.view(this.__propsSbj);
 
         this.__viewDisplayObs = view.display;
         this.__viewEvents = view.events;
 
-        this.__viewDisplayObs.subscribe(domTree => {
-            this.__domTree = domTree;
+        this.__viewDisplayObs.subscribe(display => {
+            this.__domTree = reactAdapter.convertElement(display, componentMgr);
             this.__needsToBeRendered = true;
             
             setTimeout(() => {

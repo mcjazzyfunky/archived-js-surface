@@ -1,16 +1,10 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component, EventMgr} from 'js-bling';
+import {Component, EventBinder} from 'js-bling';
 import {Objects, Strings, Arrays, Seq, Reader} from 'js-prelude';
 import jsbling from 'js-bling';
 import jsprelude from 'js-prelude';
-console.log(jsprelude);
-
-console.log(jsbling)
-
-console.log(Component);
-console.log(EventMgr);
 
 
 export default Component.createFactory({
@@ -27,15 +21,15 @@ export default Component.createFactory({
         key: null
     },
 
-    view: (dom, propsObs) => {
+    view: propsObs => {
         const
-            {on, bind} = new EventMgr(),
+            {on, bind} = new EventBinder(),
             
             clicksObs = on('buttonClicked')
                     .map(event => {todo: true}),
             
             displayObs =  propsObs.map(props => {
-                return dom.button({ onClick: bind('buttonClick') }, 'Juhu');
+                return ['button', { onClick: bind('buttonClick') }, 'Juhu'];
             });
         
         return {

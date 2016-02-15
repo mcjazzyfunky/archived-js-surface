@@ -15,14 +15,9 @@ export default {
                     + configError.message);
         } 
         
-        const ret = (initialProps, children) => (initialProps === dummyObject)
+        const ret = (initialProps, ...children) => (initialProps === dummyObject)
                 ? dummyObject
-                : {
-                    isBlingComponent: true,
-                    typeId: config.typeId,
-                    initialProps,
-                    children: children || null
-                };
+                : [`component:${config.typeId}`, initialProps, ... children]
     
         ret.getConfig = () => config;
         return ret;
@@ -34,10 +29,14 @@ export default {
                 && componentFactory(dummyObject) === dummyObject;
     },
     
-    mount(mainComponent, targetNode, adapterId, componentMgr = ComponentMgr.getGlobal()) {
+    mount(content, targetNode, adapterId, componentMgr = ComponentMgr.getGlobal()) {
         let mountNode = null;
         
-        if (typeof targetNode === 'string') {
+        if (!(componentMgr instanceof ComponentMgr)) {
+            throw new TypeError(
+                    '[Component:mount] '
+                    + ' Fourth argument must be a componentMgr'); 
+        } else if (typeof targetNode === 'string') {
             mountNode = document.getElementById(targetNode);
         } else if (targetNode
                 && targetNode.firstChild !== undefined
@@ -52,9 +51,10 @@ export default {
        
         if (mountNode) {
             const componentAdapter  = componentMgr.getAdapter(adapterId);
-            
-            // TODO - UGLY!!!
-            componentAdapter.mount(componentAdapter.convertComponent(mainComponent), mountNode);
+            componentAdapter.mount(
+                    componentAdapter.convertElement(content, componentMgr),
+                    mountNode,
+                    componentMgr);
         }       
     }
 };

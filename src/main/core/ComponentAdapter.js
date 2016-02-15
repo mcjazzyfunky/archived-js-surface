@@ -21,19 +21,19 @@ export default class ComponentAdapter {
         return this.__id;
     }
 
-    createElement(tagName, props, children) {
+    convertComponentFactory(typeId, componentMgr) {
         throw new Error(
-            '[ComponentAdapter:createElement] '
+            '[ComponentAdapter:convertComponentFactory] '
             + 'Method not implemented/overridden');
     }
 
-    convertComponent(component, componentMgr = ComponentMgr.getGlobal()) {
+    convertElement(element, componentMgr) {
         throw new Error(
-            '[ComponentAdapter:convertComponent] '
+            '[ComponentAdapter:convertElement] '
             + 'Method not implemented/overridden');        
     }
     
-    mount(mainComponent, targetNode, componentMgr = ComponentMgr.getGlobal()) {
+    mount(content, targetNode, componentMgr) {
         throw new Error(
             '[ComponentAdapter:mount] '
             + 'Method not implemented/overridden');        
