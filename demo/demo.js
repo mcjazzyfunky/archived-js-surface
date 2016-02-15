@@ -22,7 +22,7 @@ export const Component = {
                     isBlingComponent: true,
                     factoryId: config.id,
                     initialProps,
-                    children
+                    children: children || null
                 };
     
         ret.getConfig = () => config;
@@ -227,7 +227,7 @@ export const button = Component.createFactory({
     
     view(dom, propsObs) {
         return {
-            display: propsObs.map(props => {console.log(111,props)
+            display: propsObs.map(props => {
                 return dom.button(
                     {className: 'ui-button'},
                     props.get('text'));
@@ -290,7 +290,7 @@ class ReactAdapter extends ComponentAdapter {
     constructor() {
         super('ReactAdapter');
     }
-
+    
     convertComponentFactory(componentFactory, componentMgr) {
         if (!Component.isFactory(componentFactory)) {
             throw new TypeError(
@@ -303,7 +303,11 @@ class ReactAdapter extends ComponentAdapter {
                 + 'Second argument must be a component manager');
         }
         
-        const constructor = function () {};
+        const
+            config = componentFactory.getConfig(),
+            constructor = function () {};
+            
+        constructor.displayName = config.id;
         constructor.prototype = new ReactComponent(componentFactory, componentMgr);
         return React.createFactory(constructor);
     }
@@ -336,19 +340,21 @@ class ReactComponent extends React.Component {
         
         super();
         
+        const config = componentFactory.getConfig();
+        
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionViewDisplay = null;
         this.__subscriptionViewEvents = null;
         
-        const view = componentFactory.getConfig().view(
+        const view = config.view(
             domBuilder,
             this.__propsSbj);
 
         this.__viewDisplayObs = view.display;
         this.__viewEvents = view.events;
 
-        this.__viewDisplayObs.subscribe(domTree => {console.log('Juhu', domTree)
+        this.__viewDisplayObs.subscribe(domTree => {
             this.__domTree = domTree;
             this.__needsToBeRendered = true;
 //            this.__domTree = null;
@@ -356,8 +362,7 @@ class ReactComponent extends React.Component {
         
         this.__hasInitialized = false;
     }
-    
-
+   
     componentWillUnmount() {
         this.__subscription.unsubscribe();
     }
@@ -371,13 +376,12 @@ class ReactComponent extends React.Component {
         return this.__needsToBeRendered;
     }
     
-    render() {console.log(React.isValidElement(this.__domTree), this.__domTree);
+    render() {
         if (!this.__hasIniialized) {
             this.__hasIniialized = true;
-            console.log('Initial props: ', this.props)
             this.__propsSbj.onNext(new Reader(this.props));
         }
-        console.log('rendering')
+        
         return this.__domTree;
     }
 }
@@ -392,7 +396,6 @@ mgr.registerAdapter(new ReactAdapter())
 
 const Counter = mgr.convertComponentFactory('Counter', 'ReactAdapter');
 const Button = mgr.convertComponentFactory('Button', 'ReactAdapter');
-console.log(Button({caption: 'xxx'}));
 
 setTimeout(() => {
     ReactDOM.render(React.createElement('div', null, Counter()), document.getElementById('content'));
@@ -559,7 +562,6 @@ function mapBlingComponent(child) {
         factoryId = config.id;
     
     const reactFactory = mgr.convertComponentFactory(factoryId, 'ReactAdapter');
-    
-    return reactFactory(config.initialProps, config.children);
+    return reactFactory(child.initialProps, child.children);
 }
 
