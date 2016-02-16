@@ -10,13 +10,6 @@ import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
 import {Component, ComponentMgr} from 'js-bling';
 import {Seq} from 'js-prelude';
 
-ComponentMgr.getGlobal().registerComponentFactories(
-        Button,
-        ButtonGroup,
-        Pagination,
-        PaginationInfo,
-        Pager);
-
 const
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
     sizes = ['large', 'default', 'small', 'extra-small'],
@@ -187,14 +180,6 @@ export const DemoOfPagination = Component.createFactory({
                     ])]) 
     })
 });
-
-
-ComponentMgr
-    .getGlobal()
-    .registerComponentFactories(
-        DemoOfButtons,
-        DemoOfButtonGroups,
-        DemoOfPagination);
 
 Component.mount(
     DemoOfPagination({

@@ -15,11 +15,11 @@ export default class ReactAdapter extends ComponentAdapter {
         super('React');
     }
     
-    convertComponentFactory(factoryId, componentMgr) {
-        if (typeof factoryId !== 'string') {
+    convertComponentFactory(factory, componentMgr) {
+        if (!Component.isFactory(factory)) {
             throw new TypeError(
                 '[ReactAdapter:convertComponentFactory] '
-                + 'First argument must be a string');
+                + 'First argument must be a component factory');
         } else if (!(componentMgr instanceof ComponentMgr)) {
             throw new TypeError(
                 '[ReactAdapter:convertComponentFactory] '
@@ -27,7 +27,6 @@ export default class ReactAdapter extends ComponentAdapter {
         }
 
         const
-            factory = componentMgr.getComponentFactory(factoryId),
             config = factory.getConfig(),
             reactAdapter = this,
             constructor = function () {
@@ -78,10 +77,18 @@ export default class ReactAdapter extends ComponentAdapter {
                 ret = React.createElement(tagName, props, ...mappedChildren);
             } else {
                 const
-                    typeId = element[0].substring(10),
-
-                    mappedFactory =this.convertComponentFactory(
-                                            typeId, componentMgr),
+                    factory = element.__componentFactory,
+                    config = !factory || typeof factory.getConfig !== 'function'
+                            ? null
+                            : factory.getConfig();
+                
+                if (!config || config.typeId !== element[0].substring(10)) {
+                    throw new TypeError('[ReactAdapter:convertElement] Invalid component node in virtual tree'); 
+                }
+                
+                const
+                    mappedFactory = this.convertComponentFactory(
+                                            factory, componentMgr),
 
                     props = element[1] || null,
 

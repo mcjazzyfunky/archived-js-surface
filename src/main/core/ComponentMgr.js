@@ -6,36 +6,38 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 
 export default class ComponentMgr {
     constructor() {
-        this.__factoryRegistry = new Map();
         this.__adapterRegistry = new Map();
         this.__convertRegistry = new Map();
     }
 
-    registerComponentFactory(componentFactory) {
+    convertComponentFactory(componentFactory, adapterId) {
         if (!Component.isFactory(componentFactory)) { 
             throw new TypeError(
-                    '[ComponentMgr.registerComponentFactory] '
+                    '[ComponentMgr.covertComponentFactory] '
                     + "First argument must be a proper component factory created by 'Component.createFactory'");
+        } else if (typeof adapterId !== 'string' && adapterId.length > 0) {
+            throw new TypeError(
+                    '[ComponentMgr.covertComponentFactory] '
+                    + "Second argument must be a non-empty string");
         }
        
-        const config = componentFactory.getConfig();
-        
-        if (this.__factoryRegistry.has(config.typeId)) {
-            throw new Error(
-                "[CompnentMgr:registerComponentFactory] Component factory with id '"
-                + config.typeId
-                + "' has already been registered");
+        const
+            config = componentFactory.getConfig(),
+            typeId = config.typeId,
+            convertId = `${typeId}/${adapterId}`,
+            ret = this.__convertRegistry.get(convertId);
+            
+        if (!ret) {
+            const
+                adapter = this.getAdapter(adapterId),
+                convertedFactory = adapter.convertFactory(factory);
+                
+            this.__convertRegistry.set(convertId, convertedFactory);
         }
 
-        this.__factoryRegistry.set(config.typeId, componentFactory);
+        return ret;
     }
 
-    registerComponentFactories(...componentFactories) {
-        for (let factory of componentFactories) {
-            this.registerComponentFactory(factory);
-        }
-    }
-    
     registerAdapter(adapter) {
         if (!(adapter instanceof ComponentAdapter)) {
             throw new TypeError(
@@ -51,19 +53,6 @@ export default class ComponentMgr {
         this.__adapterRegistry.set(adapter.getId(), adapter);
     }
     
-    getComponentFactory(typeId) {
-        const componentFactory = this.__factoryRegistry.get(typeId);
-        
-        if (!componentFactory) {
-            throw new Error(
-                "[ComponentMgr:getComponentConfig] Component factory with id '"
-                + typeId
-                + "' has not been registered");
-        }
-        
-        return componentFactory;
-    }
-    
     getAdapter(adapterId) {
         const adapter = this.__adapterRegistry.get(adapterId);
         
@@ -75,40 +64,6 @@ export default class ComponentMgr {
         }
         
         return adapter;
-    }
-    
-    
-    convertComponentFactory(typeId, adapterId) {
-        const convertId = `${typeId}/${adapterId}`;
-
-        let ret = this.__convertRegistry.get(convertId);
-
-        if (!ret) {
-            const
-                componentFactory = this.__factoryRegistry.get(typeId),
-                adapter = this.__adapterRegistry.get(adapterId);
-
-            if (!componentFactory) {
-                throw new Error(
-                    "[ComponentMgr:convertComponentFactory] Component factory with id '"
-                    + typeId
-                    + "' has not been registered");
-            } else if (!adapter) {
-                throw new Error(
-                    "[ComponentMgr:convertComponentFactory] Adapter with id '"
-                    + adapterId
-                    + "' has not been registered");
-            }
-            
-            ret = adapter.convertComponentFactory(componentFactory, this);
-            this.__convertRegistry.set(convertId, ret);
-        }
-        
-        return ret; 
-    }
-    
-    isComponentFactoryRegistered(typeId) {
-        return this.__factoryRegistry.has(typeId);
     }
     
     static getGlobal() {

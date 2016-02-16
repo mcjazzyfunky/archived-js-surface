@@ -3,8 +3,6 @@
 import ComponentMgr from './ComponentMgr.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 
-const dummyObject = {};
-
 export default {
     createFactory(config) {
         const configError = ComponentHelper.checkComponentFactoryConfig(config);
@@ -15,18 +13,24 @@ export default {
                     + configError.message);
         } 
         
-        const ret = (initialProps, ...children) => (initialProps === dummyObject)
-                ? dummyObject
-                : [`component:${config.typeId}`, initialProps, ... children]
-    
+        const ret = (initialProps, ...children) => {
+            const virtualNode = [
+                `component:${config.typeId}`,
+                initialProps,
+                ... children
+            ];
+            
+            virtualNode.__componentFactory = ret;
+            return virtualNode;
+        };
+
         ret.getConfig = () => config;
         return ret;
     },
 
     isFactory(componentFactory) {
         return typeof componentFactory === 'function'
-                && typeof componentFactory.getConfig === 'function'
-                && componentFactory(dummyObject) === dummyObject;
+                && typeof componentFactory.getConfig === 'function';
     },
     
     mount(content, targetNode, adapterId, componentMgr = ComponentMgr.getGlobal()) {
