@@ -29,6 +29,12 @@ export default class ComponentMgr {
 
         this.__factoryRegistry.set(config.typeId, componentFactory);
     }
+
+    registerComponentFactories(...componentFactories) {
+        for (let factory of componentFactories) {
+            this.registerComponentFactory(factory);
+        }
+    }
     
     registerAdapter(adapter) {
         if (!(adapter instanceof ComponentAdapter)) {

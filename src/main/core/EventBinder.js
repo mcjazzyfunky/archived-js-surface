@@ -17,7 +17,13 @@ export default class EventBinder {
             return ret.asObservable();
         }    
         
-        this.bind = (eventName) => {
+        this.bind = (eventName, mapper = null) => {
+            if (typeof eventName !== 'string') {
+                throw new TypeError('[EventBinder:bind] First argument must be a string');
+            } else if (mapper !== undefined && mapper !== null && typeof mapper !== 'function') {
+                throw new TypeError('[EventBinder:bind] Second argument must either be a function or empty');
+            }
+            
             let subject = subjectsByName.get(eventName);
 
             if (!subject) {
@@ -25,11 +31,13 @@ export default class EventBinder {
                 subjectsByName.set(eventName, subject);
             }
             
-            return event => subject.next(event);
+            const mappedEvent = mapper ? mapper(event) : event;
+            
+            return event => subject.next(mappedEvent);
         }
     }
     
-    on(eventName) {
+    on(eventName, mapper) {
         throw Error('[EventBinder:on] Method not implemented');
     }
     

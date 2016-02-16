@@ -42,4 +42,26 @@ export default class ComponentHelper {
 
         return ret;
     }
+    
+    static createIconElement(icon, className) {
+        let ret = null;
+
+        icon = Strings.trimToNull(icon);
+        className = ComponentHelper.buildCssClass(className);
+
+        if (icon !== null) {
+            if (icon.indexOf('.') >= 0) {
+                ret = ['img', {href: icon, alt: '', className: className}];
+            } else {
+                let match = icon.match(/(?:^|\s)(fa|glyphicon)-./),
+                    fullClassName = (match ? match[1] : '') + ' ' + icon + ' ' + className;
+
+                if (match) {
+                    ret = ['span', {className: fullClassName}];
+                }
+            }
+        }
+
+        return ret;
+    }
 }

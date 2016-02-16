@@ -3,6 +3,7 @@
 import Component from '../core/Component.js';
 import ComponentMgr from '../core/ComponentMgr.js';
 import ComponentAdapter from '../core/ComponentAdapter.js';
+import EventBinder from '../core/EventBinder.js';
 import {Reader} from 'js-prelude';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -30,7 +31,8 @@ export default class ReactAdapter extends ComponentAdapter {
             config = factory.getConfig(),
             reactAdapter = this,
             constructor = function () {
-                ReactComponent.call(this, factory, reactAdapter, componentMgr);
+                ReactComponent.call(
+                    this, factory, reactAdapter, componentMgr);
             };
             
         constructor.displayName = config.typeId;
@@ -49,8 +51,6 @@ export default class ReactAdapter extends ComponentAdapter {
             throw new TypeError(
                 '[ReactAdapter:convertElement] '
                 + 'First argument must not be empty');
-        } else if (typeof element === 'object' && element.type) {
-            ret = element;
         } else if (element instanceof Array) {
             if (element.length === 0) {
                 throw new TypeError(
@@ -61,24 +61,49 @@ export default class ReactAdapter extends ComponentAdapter {
                     '[ReactAdapter:convertElement] '
                     + 'First item the first argument array must be a string');
             } else if (!element[0].startsWith('component:')) {
-                ret = new React.createElement(...element);
-            } else {
                 const
-                    typeId = element[0].substring(10),
-                    mappedFactory =this.convertComponentFactory(typeId, componentMgr),
-                    props = element[1] || null,
+                    tagName = element[0],
+                    props = element[1],
                     mappedChildren = Seq.from(element)
-                            .skip(2)
-                            .filter(element => element !== undefined && element !== null && element !== false)
+                            .skip(2) 
+
+                            .filter(element => element !== undefined
+                                        && element !== null
+                                        && element !== false)
+                            
                             .map(element => element instanceof Array
                                     ? this.convertElement(element, componentMgr)
                                     : element);
+
+                ret = React.createElement(tagName, props, ...mappedChildren);
+            } else {
+                const
+                    typeId = element[0].substring(10),
+
+                    mappedFactory =this.convertComponentFactory(
+                                            typeId, componentMgr),
+
+                    props = element[1] || null,
+
+                    mappedChildren = Seq.from(element)
+                            .skip(2)
                             
-                ret = mappedFactory(props, mappedChildren);
+                            .filter(
+                                element => element !== undefined
+                                && element !== null
+                                && element !== false)
+                            
+                            .map(element => element instanceof Array
+                                    ? this.convertElement(element, componentMgr)
+                                    : element);
+
+                ret = mappedFactory(props, ...mappedChildren);
             }
+        } else if (typeof element === 'object' && element.type || typeof element !== 'object') {
+            ret = element;
         } else {
             throw new TypeError('[ReactAdapter:convertElement] '
-                    + 'First argument must either be an array or a React element');
+                    + 'First argument must either be an array, a scalar value or a React element');
         }
         
         return ret;
@@ -121,13 +146,16 @@ class ReactComponent extends React.Component {
         
         super();
         
-        const config = componentFactory.getConfig();
+        const
+            config = componentFactory.getConfig(),
+            eventBinder = new EventBinder();
+            
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionViewDisplay = null;
         this.__subscriptionViewEvents = null;
         
-        const view = config.view(this.__propsSbj);
+        const view = config.view(eventBinder, this.__propsSbj);
 
         this.__viewDisplayObs = view.display;
         this.__viewEvents = view.events;
@@ -139,7 +167,6 @@ class ReactComponent extends React.Component {
             setTimeout(() => {
                 if (this.__needsToBeRendered) {
                     this.forceUpdate();
-                    //this.setState({});
                 }
             }, 0);
         });
@@ -154,7 +181,6 @@ class ReactComponent extends React.Component {
                             const
                                 attr = 'on' + key[0].toUpperCase() + key.substr(1),
                                 callback = this.props.get(attr);
-                            
                             
                             if (typeof callback === 'function') {
                                 callback(event);
