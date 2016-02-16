@@ -4,16 +4,18 @@
 import '../../src/main/preparers/prepare-for-react.js';
 import Button from '../src/main/js/components/Button.js';
 import ButtonGroup from '../src/main/js/components/ButtonGroup.js';
-// import Pager from '../src/main/js/components/Pager.js';
-// import Pagination from '../src/main/js/components/Pagination.js';
-// import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
+import Pager from '../src/main/js/components/Pager.js';
+import Pagination from '../src/main/js/components/Pagination.js';
+import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
 import {Component, ComponentMgr} from 'js-bling';
 import {Seq} from 'js-prelude';
 
 ComponentMgr.getGlobal().registerComponentFactories(
         Button,
-        ButtonGroup);
-
+        ButtonGroup,
+        Pagination,
+        PaginationInfo,
+        Pager);
 
 const
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
@@ -81,8 +83,7 @@ const demoOfButtonsDisplay = (props, bind) => (
                         text: iconPosition,
                         icon: 'fa-cab',
                         iconPosition: iconPosition,
-                        type: 'link'
-                    })])],
+                        type: 'link'})])],
         ['div',
             {className: 'row'},
             ['div',
@@ -162,28 +163,29 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: (_, propsObs) => propsObs.map(props => (
-        ['div',
-            {className: 'container-fluid'},
-            ...Seq.range(1, 100).map(_ =>
-                ['div',
-                    {className: 'row'},
-                    Pagination({
-                        className: 'col-md-3',
-                        pageIndex: state.get('pageIndex'),
-                        pageSize: state.get('pageSize'),
-                        totalItemCount: state.get('totalItemCount'),
-                        onChange: evt => state.moveToPage(evt.pageIndex)
-                    }),
-                    Pager({
-                        className: 'col-md-3',
-                        pageIndex: state.get('pageIndex'),
-                        pageSize: state.get('pageSize'),
-                        totalItemCount: state.get('totalItemCount'),
-                        onChange: evt => state.moveToPage(evt.pageIndex)
-                    })
-                ])] 
-    ))
+    view: (_, propsObs) => ({
+        display: propsObs.map(props =>
+            ['div',
+                {className: 'container-fluid'},
+                ...Seq.range(1, 100).map(_ =>
+                    ['div',
+                        {className: 'row'},
+                        Pagination({
+                            className: 'col-md-3',
+                            pageIndex: props.get('pageIndex'),
+                            pageSize: props.get('pageSize'),
+                            totalItemCount: props.get('totalItemCount'),
+                            onChange: evt => console.log(evt) 
+                        }),
+                        Pager({
+                            className: 'col-md-3',
+                            pageIndex: props.get('pageIndex'),
+                            pageSize: props.get('pageSize'),
+                            totalItemCount: props.get('totalItemCount'),
+                            onChange: evt => alert('juhu') 
+                        })
+                    ])]) 
+    })
 });
 
 
@@ -194,4 +196,11 @@ ComponentMgr
         DemoOfButtonGroups,
         DemoOfPagination);
 
-Component.mount(DemoOfButtonGroups(), 'main-content', 'React');
+Component.mount(
+    DemoOfPagination({
+        pageIndex: 10,
+        pageSize: 25,
+        totalItemCount: 1000        
+    }),
+    'main-content',
+    'React');

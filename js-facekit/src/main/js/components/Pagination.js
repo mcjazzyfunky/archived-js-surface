@@ -1,7 +1,7 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import PaginationHelper from '../helpers/PaginationHelpers.js';
+import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
@@ -19,7 +19,6 @@ export default Component.createFactory({
     view: ({on, bind}, propsObs) => ({
         display: propsObs.map(props => {
             const
-                
                 pageIndex = props.get('pageIndex'),
                 
                 metrics = PaginationHelper.calcPaginationMetrics(
@@ -40,33 +39,47 @@ export default Component.createFactory({
                 
                 firstPageLink = metrics.pageCount > 0
                                     ? buildLinkListItem(
-                                            1, pageIndex === 0, props, 0)
+                                            1,
+                                            pageIndex === 0,
+                                            props,
+                                            bind,
+                                            0)
                                     : null,
                 
                 precedingEllipsis = paginationInfo.firstButtonIndex > 1
-                                        ? buildLinkListItem('...', false, props)
+                                        ? buildLinkListItem(
+                                                '...',
+                                                false,
+                                                props,
+                                                bind)
                                         : null,
                 
                 succeedingEllipsis = paginationInfo.lastButtonIndex < metrics.pageCount - 2
-                                            ? buildLinkListItem('...', false, props)
+                                            ? buildLinkListItem(
+                                                    '...',
+                                                    false,
+                                                    props,
+                                                    bind)
                                             : null,
                 
                 lastPageLink =  metrics.pageCount > 0
                                     ? buildLinkListItem(
                                         metrics.pageCount,
                                         pageIndex === metrics.pageCount - 1,
-                                        props, metrics.pageCount - 1)
+                                        props,
+                                        bind,
+                                        metrics.pageCount - 1)
                                     : null,
 
                 buttons = Seq.range(
                                 paginationInfo.firstButtonIndex ,
                                 paginationInfo.lastButtonIndex + 1)
                             .map(index => buildLinkListItem(
-                                index + 1,
-                                index === pageIndex,
-                                props,
-                                index,
-                                bind));        
+                                                index + 1,
+                                                index === pageIndex,
+                                                props,
+                                                bind,
+                                                index));        
             return (
                 ['div',
                     {className: classNameOuter},
@@ -74,27 +87,25 @@ export default Component.createFactory({
                         {className: classNameInner},
                         firstPageLink,
                         precedingEllipsis,
-                        buttons,
+                        ...buttons,
                         succeedingEllipsis,
                         lastPageLink]]
             );
         }),
     
         events: {
-            change: on('change')
+            change: on('change').map(x => {console.log(x); return x})
                         .map(page => {targetPage: page})
         }
     })
 });
-    
             
-            
-function buildLinkListItem(text, isActive, props, pageIndexToMove, bind) {
+function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) {
     const
         onChangeProp = props.get('onChange'),
         
-        onChange = typeof onChangeProp === 'function'
-            ? bind('change', _ => pageIndexToMove)
+        onChange = true || isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
+            ? bind('change', _ => alert(pageIndexToMove))
             : null;
         
     return (

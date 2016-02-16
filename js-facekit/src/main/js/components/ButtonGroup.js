@@ -13,7 +13,7 @@ export default Component.createFactory({
     view: (_, propsObs) => ({
         display: propsObs.map(props => {
             const
-                children = props.__data.children, // TODO !!!
+                children = props.__data.children || [], // TODO !!!
                 hasChildren = children instanceof Array && children.length > 0,
                 className = ComponentHelper.buildCssClass(
                         'fk-button-group',

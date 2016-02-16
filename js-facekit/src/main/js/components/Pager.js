@@ -1,5 +1,9 @@
 'use strict';
 
+import Button from '../components/Button.js';
+import ButtonGroup from '../components/ButtonGroup.js';
+import PaginationInfo from '../components/PaginationInfo.js';
+import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-bling';
 
@@ -37,9 +41,10 @@ export default Component.createFactory({
                 showButtonTexts = !!props.get('showButtonTexts');
 
         return (
-            html.div(
+            ['div',
                 {className: 'fk-pager ' + props.get('className')},
-                ButtonGroup(null,
+                ButtonGroup(
+                    null,
                     showFirstButton && Button({
                         text: (showButtonTexts ? 'First' : ''),
                         icon: 'fa-angle-double-left',
@@ -48,6 +53,7 @@ export default Component.createFactory({
                         disabled: disabled || metrics.isFirstPage,
                         onClick: evt => props.get('onChange')({pageIndex: 0})
                     }),
+                    
                     showPreviousButton && Button({
                         text: (showButtonTexts ? 'Previous' : ''),
                         icon: 'fa-angle-left',
@@ -56,15 +62,16 @@ export default Component.createFactory({
                         disabled: disabled || metrics.isFirstPage,
                         onClick: evt => props.get('onChange')({pageIndex: metrics.pageIndex - 1})
                     })),
-                 (type !== 'randomAccess'
-                                ? paginationInfo(
-                                    {pageIndex: metrics.pageIndex,
-                                     pageSize: metrics.pageSize,
-                                     totalItemCount: metrics.totalItemCount})
-                                : 'xxx')
-                                ,
+                (type !== 'randomAccess'
+                                ? PaginationInfo({
+                                    pageIndex: metrics.pageIndex,
+                                    pageSize: metrics.pageSize,
+                                    totalItemCount: metrics.totalItemCount
+                                })
+                                : 'xxx'),
     
-                ButtonGroup({},
+                ButtonGroup(
+                    null,
                     showNextButton && Button({
                         text: (showButtonTexts ? 'Next' : ''),
                         icon: 'fa-angle-right',
@@ -80,9 +87,12 @@ export default Component.createFactory({
                         tooltip: (showButtonTexts ? '' : 'Last'),
                         disabled: disabled || metrics.isLastPage,
                         onClick: evt => props.get('onChange')({pageIndex: metrics.pageCount - 1})
-                    }))
-            )
-        );
+                    })
+                )
+            ]);
+        }
+    )
+})});
                 
                 
             

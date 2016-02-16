@@ -31,9 +31,11 @@ export default class EventBinder {
                 subjectsByName.set(eventName, subject);
             }
             
-            const mappedEvent = mapper ? mapper(event) : event;
+            const mapEvent = mapper
+                    ? event => mapper(event)
+                    : event => event;
             
-            return event => subject.next(mappedEvent);
+            return event => subject.next(mapEvent(event));
         }
     }
     

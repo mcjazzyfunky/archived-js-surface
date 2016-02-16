@@ -31,12 +31,12 @@ export default class ReactAdapter extends ComponentAdapter {
             config = factory.getConfig(),
             reactAdapter = this,
             constructor = function () {
-                ReactComponent.call(
+                ReactAdapterComponent.call(
                     this, factory, reactAdapter, componentMgr);
             };
             
         constructor.displayName = config.typeId;
-        constructor.prototype = ReactComponent.prototype;
+        constructor.prototype = ReactAdapterComponent.prototype;
         return React.createFactory(constructor);
     }
     
@@ -127,20 +127,20 @@ export default class ReactAdapter extends ComponentAdapter {
 }
 
 
-class ReactComponent extends React.Component {
+class ReactAdapterComponent extends React.Component {
     constructor(componentFactory, reactAdapter, componentMgr) {
        if (!Component.isFactory(componentFactory)) {
             throw new TypeError(
-                '[ReactAdapter.constructor] '
+                '[ReactAdapterComponent.constructor] '
                 + 'First argument must be a proper component factory created by '
                 + "'Component.createFactory'");
         } else if (!(reactAdapter instanceof ReactAdapter)) {
             throw new TypeError(
-                '[ReactComponent.constructor] '
+                '[ReactAdapterComponent.constructor] '
                 + 'Second argument must be a React adapter');
         } else if (!(componentMgr instanceof ComponentMgr)) {
             throw new TypeError(
-                '[ReactComponent.constructor] '
+                '[ReactAdapterComponent.constructor] '
                 + 'Second argument must be a component manager');
         }        
         
@@ -154,8 +154,18 @@ class ReactComponent extends React.Component {
         this.__propsSbj = new Subject();
         this.__subscriptionViewDisplay = null;
         this.__subscriptionViewEvents = null;
-        
+
         const view = config.view(eventBinder, this.__propsSbj);
+        
+        if (!(view  && view.display instanceof Observable)) {
+            console.error('[ReactAdapterComponent.constructor] '
+                    + `Illegal view configuration of ${config.typeId}:`, view);
+            
+            throw new TypeError(
+                    '[ReactAdapterComponent.constructor] '
+                    + config.typeId
+                    + ' view function did not return a proper value');
+        }
 
         this.__viewDisplayObs = view.display;
         this.__viewEvents = view.events;
