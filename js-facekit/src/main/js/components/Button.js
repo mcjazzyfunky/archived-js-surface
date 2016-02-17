@@ -4,7 +4,6 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component, EventBinder} from 'js-bling';
 import {Objects, Strings, Arrays, Seq, Reader} from 'js-prelude';
 
-
 function buttonDisplay(props, bind) {
     const
         key = props.get('key'),
@@ -12,7 +11,7 @@ function buttonDisplay(props, bind) {
         onClickProp = props.get('onClick'),
         
         onClick = typeof onClickProp === 'function'
-                        ? bind('onClick')
+                        ? bind('click')
                         : null,
         
         icon = Strings.trimToNull(props.get('icon')),
@@ -72,7 +71,7 @@ function buttonDisplay(props, bind) {
                 className: className,
                 title: tooltip,
                 disabled: disabled,
-                onClick: bind('onClick'),
+                onClick: onClick,
                 key: key
             },
             ...(iconPosition === 'left' || iconPosition === 'top'
@@ -132,15 +131,16 @@ export default Component.createFactory({
         key: null
     },
 
-    view: ({changes, events: {on, bind}}) => {
+    view: ({changes, events: {on, bind}}) => {alert(on)
         const
-            onClickObs = on('onClick')
+            clicks = on('click').map(() => alert(1))
                     .map(event => {todo: true});
 
         return {
             display: changes.map(props => buttonDisplay(props, bind)),
+            
             notifications: {
-                click: onClickObs
+                click: clicks
             }
         };
     }

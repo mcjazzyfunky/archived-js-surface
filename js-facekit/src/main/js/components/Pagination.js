@@ -94,8 +94,8 @@ export default Component.createFactory({
         }),
     
         notifications: {
-            change: on('change').map(x => {console.log(x); return x})
-                        .map(page => {targetPage: page})
+            change: on('change')
+                        .map(page => ({targetPage: page}))
         }
     })
 });
@@ -104,15 +104,15 @@ function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) 
     const
         onChangeProp = props.get('onChange'),
         
-        onChange = true || isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
-            ? bind('change', _ => alert(pageIndexToMove))
+        onClick = true || isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
+            ? bind('change', _ => pageIndexToMove)
             : null;
         
     return (
         ['li',
             {className: isActive ? 'active' : ''},
             ['a',
-                {onClick: onChange},
+                {onClick: onClick},
                 text]]
     );
 }

@@ -10,7 +10,7 @@ export default Component.createFactory({
         disabled: false,
     },
 
-    view: ({changes, events: {on, bind}})  => changes.map(props => {
+    view: ({changes})  => changes.map(props => {
         const
             children = props.__data.children || [], // TODO !!!
             hasChildren = children instanceof Array && children.length > 0,

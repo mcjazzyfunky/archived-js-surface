@@ -193,15 +193,15 @@ class ReactAdapterComponent extends React.Component{
         if (this.__notifications !== null && typeof this.__notifications === 'object') {
             Object.keys(this.__notifications).forEach(key => {
                 const obs = this.__notifications[key];
-                
+
                 if (key.length > 0 && obs instanceof Observable) {
-                    obs.subscribe(event => {
+                    obs.subscribe(event => {console.log(event)
                         if (this.props) {
                             const
                                 attr = 'on' + key[0].toUpperCase() + key.substr(1),
                                 callback = this.props.get(attr);
-                            
-                            if (typeof callback === 'function') {
+                            console.log(3333, attr, callback)
+                            if (typeof callback === 'function') {console.log(attr, event);
                                 callback(event);
                             }
                         }

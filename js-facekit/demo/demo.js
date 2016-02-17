@@ -120,7 +120,7 @@ export const DemoOfButtons = Component.createFactory({
 export const DemoOfButtonGroups = Component.createFactory({
     typeId: 'DemoOfButtonGroups',
     
-    view: ({changes, events: {on, bind}}) => ({
+    view: ({changes}) => ({
         display: changes.map(props =>
             ['div',
                 {className: 'container-fluid'},
@@ -156,29 +156,30 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: ({changes, events:{on, bind}}) => ({
-        display: changes.map(props =>
-            ['div',
-                {className: 'container-fluid'},
-                ...Seq.range(1, 100).map(_ =>
-                    ['div',
-                        {className: 'row'},
-                        Pagination({
-                            className: 'col-md-3',
-                            pageIndex: props.get('pageIndex'),
-                            pageSize: props.get('pageSize'),
-                            totalItemCount: props.get('totalItemCount'),
-                            onChange: evt => console.log(evt) 
-                        }),
-                        Pager({
-                            className: 'col-md-3',
-                            pageIndex: props.get('pageIndex'),
-                            pageSize: props.get('pageSize'),
-                            totalItemCount: props.get('totalItemCount'),
-                            onChange: evt => alert('juhu') 
-                        })
-                    ])]) 
-    })
+    view: ({changes, events:{on, bind}}) =>
+        on('goToPage')
+            .merge(changes.map(props => props.get('pageIndex')))
+            .combineLatest(changes, (currPageIdx, props) =>
+                ['div',
+                    {className: 'container-fluid'},
+                    ...Seq.range(1, 100).map(_ =>
+                        ['div',
+                            {className: 'row'},
+                            Pagination({
+                                className: 'col-md-3',
+                                pageIndex: currPageIdx,
+                                pageSize: props.get('pageSize'),
+                                totalItemCount: props.get('totalItemCount'),
+                                onChange: bind('goToPage', ({targetPage}) => targetPage)
+                            }),
+                            Pager({
+                                className: 'col-md-3',
+                                pageIndex: currPageIdx,
+                                pageSize: props.get('pageSize'),
+                                totalItemCount: props.get('totalItemCount'),
+                                onChange: evt => alert('juhu') 
+                            })
+                        ])])
 });
 
 Component.mount(

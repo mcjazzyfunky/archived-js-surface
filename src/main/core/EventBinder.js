@@ -1,11 +1,12 @@
 'use strict';
 
 import {Subject} from 'rxjs';
+import {Verifier} from 'js-bling';
 
 export default class EventBinder {
     constructor() {
         const subjectsByName = new Map();
-    
+
         this.on = (eventName) => {
             let ret = subjectsByName.get(eventName);
             
@@ -18,12 +19,13 @@ export default class EventBinder {
         }    
         
         this.bind = (eventName, mapper = null) => {
-            if (typeof eventName !== 'string') {
-                throw new TypeError('[EventBinder:bind] First argument must be a string');
-            } else if (mapper !== undefined && mapper !== null && typeof mapper !== 'function') {
-                throw new TypeError('[EventBinder:bind] Second argument must either be a function or empty');
-            }
-            
+            new Verifier('EventBinder.bind')
+                    .verifyParam('eventName', 'must be a string',
+                            $ => typeof $ === 'string')
+                    .verifyParam('mapper', 'must either be a number or nothing',
+                            $ => $ === undefined || $ == null || typeof $ === 'function')
+                    .assertOrFail({eventName, mapper});
+                    
             let subject = subjectsByName.get(eventName);
 
             if (!subject) {
