@@ -16,8 +16,8 @@ export default Component.createFactory({
         onChange: null
     },
 
-    view: ({on, bind}, propsObs) => ({
-        display: propsObs.map(props => {
+    view: ({changes, events: {on, bind}}) => ({
+        display: changes.map(props => {
             const
                 pageIndex = props.get('pageIndex'),
                 
@@ -93,7 +93,7 @@ export default Component.createFactory({
             );
         }),
     
-        events: {
+        notifications: {
             change: on('change').map(x => {console.log(x); return x})
                         .map(page => {targetPage: page})
         }

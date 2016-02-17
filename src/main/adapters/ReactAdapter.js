@@ -5,10 +5,11 @@ import ComponentMgr from '../core/ComponentMgr.js';
 import ComponentAdapter from '../core/ComponentAdapter.js';
 import EventBinder from '../core/EventBinder.js';
 import {Reader} from 'js-prelude';
+import {Seq} from 'js-prelude';
+import {Observable, Subject} from 'rxjs';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Observable, Subject} from 'rxjs';
-import {Seq} from 'js-prelude';
 
 export default class ReactAdapter extends ComponentAdapter {
     constructor() {
@@ -134,7 +135,7 @@ export default class ReactAdapter extends ComponentAdapter {
 }
 
 
-class ReactAdapterComponent extends React.Component {
+class ReactAdapterComponent extends React.Component{
     constructor(componentFactory, reactAdapter, componentMgr) {
        if (!Component.isFactory(componentFactory)) {
             throw new TypeError(
@@ -159,10 +160,11 @@ class ReactAdapterComponent extends React.Component {
             
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
-        this.__subscriptionViewDisplay = null;
-        this.__subscriptionViewEvents = null;
+        this.__subscriptionDisplay = null;
 
-        const view = config.view(eventBinder, this.__propsSbj);
+        const
+            result = config.view({events: eventBinder, changes: this.__propsSbj}),
+            view = result instanceof Observable ? {display: result} : result;
         
         if (!(view  && view.display instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
@@ -174,10 +176,10 @@ class ReactAdapterComponent extends React.Component {
                     + ' view function did not return a proper value');
         }
 
-        this.__viewDisplayObs = view.display;
-        this.__viewEvents = view.events;
+        this.__displayObs = view.display;
+        this.__notifications = view.notifications;
 
-        this.__viewDisplayObs.subscribe(display => {
+        this.__displayObs.subscribe(display => {
             this.__domTree = reactAdapter.convertElement(display, componentMgr);
             this.__needsToBeRendered = true;
             
@@ -188,9 +190,9 @@ class ReactAdapterComponent extends React.Component {
             }, 0);
         });
         
-        if (this.__viewEvents !== null && typeof this.__viewEvents === 'object') {
-            Object.keys(this.__viewEvents).forEach(key => {
-                const obs = this.__viewEvents[key];
+        if (this.__notifications !== null && typeof this.__notifications === 'object') {
+            Object.keys(this.__notifications).forEach(key => {
+                const obs = this.__notifications[key];
                 
                 if (key.length > 0 && obs instanceof Observable) {
                     obs.subscribe(event => {

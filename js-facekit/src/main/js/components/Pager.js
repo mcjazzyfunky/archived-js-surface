@@ -18,8 +18,8 @@ export default Component.createFactory({
         onChange: evt => {}
     },
 
-    view: (_, propsObs) => ({
-        display: propsObs.map(props => {
+    view: ({changes, events: {on, bind}}) => ({
+        display: changes.map(props => {
             const
                 metrics = PaginationHelper.calcPaginationMetrics(
                                 props.get('pageIndex'),

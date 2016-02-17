@@ -111,8 +111,8 @@ const demoOfButtonsDisplay = (props, bind) => (
 export const DemoOfButtons = Component.createFactory({
     typeId: 'DemoOfButtons',
 
-    view: (_, propsObs) => ({
-        display: propsObs.map(props => demoOfButtonsDisplay(props))
+    view: ({changes, events: {on, bind}}) => ({
+        display: changes.map(props => demoOfButtonsDisplay(props))
     })
 });
 
@@ -120,8 +120,8 @@ export const DemoOfButtons = Component.createFactory({
 export const DemoOfButtonGroups = Component.createFactory({
     typeId: 'DemoOfButtonGroups',
     
-    view: (_, propObs) => ({
-        display: propObs.map(props =>
+    view: ({changes, events: {on, bind}}) => ({
+        display: changes.map(props =>
             ['div',
                 {className: 'container-fluid'},
                 ['div',
@@ -156,8 +156,8 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: (_, propsObs) => ({
-        display: propsObs.map(props =>
+    view: ({changes, events:{on, bind}}) => ({
+        display: changes.map(props =>
             ['div',
                 {className: 'container-fluid'},
                 ...Seq.range(1, 100).map(_ =>

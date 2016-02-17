@@ -14,22 +14,20 @@ export default Component.createFactory({
         totalItemCount: -1
     },
 
-    view: (_, propsObs) => ({
-        display: propsObs.map(props => {
-            const
-                metrics = PaginationHelper.calcPaginationMetrics(
-                                props.get('pageIndex'),
-                                props.get('pageSize'),
-                                props.get('totalItemCount'));
-    
-            return (
-                ['div',
-                    {className: 'fk-pagination-info'},
-                    props.get('type') !== 'infoAboutItems'
-                           ? getPageInfo(metrics)
-                           : getItemsInfo(metrics)]
-            );
-        })
+    view: ({changes, events: {on, bind}}) => changes.map(props => {
+        const
+            metrics = PaginationHelper.calcPaginationMetrics(
+                            props.get('pageIndex'),
+                            props.get('pageSize'),
+                            props.get('totalItemCount'));
+
+        return (
+            ['div',
+                {className: 'fk-pagination-info'},
+                props.get('type') !== 'infoAboutItems'
+                       ? getPageInfo(metrics)
+                       : getItemsInfo(metrics)]
+        );
     })
 });
 

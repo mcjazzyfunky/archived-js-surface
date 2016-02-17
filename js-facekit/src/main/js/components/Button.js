@@ -132,14 +132,14 @@ export default Component.createFactory({
         key: null
     },
 
-    view: ({on, bind}, propsObs) => {
+    view: ({changes, events: {on, bind}}) => {
         const
             onClickObs = on('onClick')
                     .map(event => {todo: true});
 
         return {
-            display: propsObs.map(props => buttonDisplay(props, bind)),
-            events: {
+            display: changes.map(props => buttonDisplay(props, bind)),
+            notifications: {
                 click: onClickObs
             }
         };
