@@ -104,13 +104,13 @@ function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) 
     const
         onChangeProp = props.get('onChange'),
         
-        onClick = true || isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
+        onClick = !isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
             ? bind('change', _ => pageIndexToMove)
             : null;
         
     return (
         ['li',
-            {className: isActive ? 'active' : ''},
+            {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
             ['a',
                 {onClick: onClick},
                 text]]

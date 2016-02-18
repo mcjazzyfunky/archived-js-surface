@@ -158,7 +158,7 @@ export const DemoOfPagination = Component.createFactory({
     
     view: ({changes, events:{on, bind}}) =>
         on('goToPage')
-            .merge(changes.map(props => props.get('pageIndex')))
+            .merge(changes.map(props => props.get('pageIndex'))).map(x => {console.log(33333, x); return x})
             .combineLatest(changes, (currPageIdx, props) =>
                 ['div',
                     {className: 'container-fluid'},
@@ -170,7 +170,7 @@ export const DemoOfPagination = Component.createFactory({
                                 pageIndex: currPageIdx,
                                 pageSize: props.get('pageSize'),
                                 totalItemCount: props.get('totalItemCount'),
-                                onChange: bind('goToPage', ({targetPage}) => targetPage)
+                                onChange: bind('goToPage', ({targetPage}) => {console.log(666);return targetPage})
                             }),
                             Pager({
                                 className: 'col-md-3',
