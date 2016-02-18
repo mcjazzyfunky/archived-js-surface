@@ -10,6 +10,12 @@ import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
 import {Component, ComponentMgr} from 'js-bling';
 import {Seq} from 'js-prelude';
 
+import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
+import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+
 const
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
     sizes = ['large', 'default', 'small', 'extra-small'],
