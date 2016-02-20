@@ -1,7 +1,7 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component, EventBinder} from 'js-bling';
+import {Component} from 'js-bling';
 import {Objects, Strings, Arrays, Seq, Reader} from 'js-prelude';
 
 function buttonDisplay(props, bind) {
@@ -51,7 +51,7 @@ function buttonDisplay(props, bind) {
         isSplitButton = hasMenu && onClick,
         
         caret = hasMenu
-                    ? ['span', {className: 'caret'}]
+                    ? <span className='caret'/>
                     : null,
 
         sizeClass = Objects.get(
@@ -65,53 +65,52 @@ function buttonDisplay(props, bind) {
                         (iconElement === null ? null : 'fk-has-icon'),
                         (!isDropdown ? null : 'dropdown-toggle'));
 
-    const button = (
-        ['button', {
-                type: 'button',
-                className: className,
-                title: tooltip,
-                disabled: disabled,
-                onClick: onClick,
-                key: key
-            },
-            ...(iconPosition === 'left' || iconPosition === 'top'
+    const btn = (
+        <button 
+            type="button"
+            className={className}
+            title={tooltip}
+            disabled={disabled}
+            onClick={onClick}
+            key={key}
+        >
+            {(iconPosition === 'left' || iconPosition === 'top'
                     ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
-                    : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
-            (isDropdown ? caret : null)]
+                    : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement])}
+            (isDropdown ? caret : null)
+        </button>
     );
     
     var ret;
 
     if (isDropdown) {
         ret =
-            ['div', {className: 'fk-button btn-group ' + props.get('className')},
-                button,
-                ['ul',
-                    {className: 'dropdown-menu'},
-                    ['li',
-                        null,
-                        ['a',
-                            null,
-                            'Juhu']]]];
-                        
+            <div className={'fk-button btn-group ' + props.get('className')}>
+                {btn}
+                <ul className="dropdown-menu">,
+                    <li>
+                        <a>'Juhu'</a>
+                    </li>
+                </ul>
+            </div>;
     } else if (isSplitButton) {
-        ret = (
-            ['div', {className: 'fk-button btn-group ' + props.get('className')},
-                button,
-                ['button',
-                    {className: 'btn dropdown-toggle btn-' + type },
-                    caret],
-                ['ul',
-                    {className: 'dropdown-menu'},
-                    ['li',  null,
-                        ['a', null,
-                            'Juhu']]]]
-        );
+        ret = 
+            <div className={'fk-button btn-group ' + props.get('className')}>
+                {btn}
+                <button className={'btn dropdown-toggle btn-' + type}>
+                    {caret}
+                </button>
+                <ul className='dropdown-menu'>
+                    <li>
+                        <a>'Juhu</a>
+                    </li>
+                </ul>
+            </div>;
     } else {
-        ret = (
-            ['div', {className: 'fk-button btn-group ' + props.get('className')},
-                button]
-        );
+        ret =
+            <div className={'fk-button btn-group ' + props.get('className')}>
+                {btn}
+            </div>;
     }
 
     return ret;
@@ -131,15 +130,15 @@ export default Component.createFactory({
         key: null
     },
 
-    view: ({changes, events: {on, bind}}) => {alert(on)
+    view: (states, {on, bind}) => {
         const
-            clicks = on('click').map(() => alert(1))
+            clicks = on('click')
                     .map(event => {todo: true});
 
         return {
-            display: changes.map(props => buttonDisplay(props, bind)),
+            display: states.map(props => buttonDisplay(props, bind)),
             
-            notifications: {
+            events: {
                 click: clicks
             }
         };

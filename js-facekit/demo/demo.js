@@ -7,7 +7,7 @@ import ButtonGroup from '../src/main/js/components/ButtonGroup.js';
 import Pager from '../src/main/js/components/Pager.js';
 import Pagination from '../src/main/js/components/Pagination.js';
 import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
-import {Component, ComponentMgr} from 'js-bling';
+import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
 import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';

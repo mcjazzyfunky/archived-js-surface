@@ -1,9 +1,7 @@
 'use strict';
 
 
-import '../../src/main/preparers/prepare-for-react.js';
-import Pager from '../src/main/js/components/Pager.js';
-import {Component, ComponentMgr} from 'js-bling';
+import {Component}  from 'js-bling';
 import {Seq} from 'js-prelude';
 
 import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
@@ -14,7 +12,11 @@ import ReactDOM from 'react-dom';
 
 'use strict';
 
-const Pagination = Component.createFactory({
+const
+    dom = Component.createElement,
+    number = 10;
+    
+export const Pagination = Component.createFactory({
     typeId: 'FKPagination',
     
     defaultProps: {
@@ -25,8 +27,8 @@ const Pagination = Component.createFactory({
         onChange: null
     },
 
-    view: ({changes, events: {on, bind}}) => ({
-        display: changes.map(props => {
+    view: (states, {on, bind}) => ({
+        display: states.map(props => {
             const
                 pageIndex = props.get('pageIndex'),
                 
@@ -88,26 +90,28 @@ const Pagination = Component.createFactory({
                                                 index === pageIndex,
                                                 props,
                                                 bind,
-                                                index));        
+                                                index));   
+                                                
             return (
-                ['div',
+                dom('div',
                     {className: classNameOuter},
-                    ['ul',
+                    dom('ul',
                         {className: classNameInner},
                         firstPageLink,
                         precedingEllipsis,
                         ...buttons,
                         succeedingEllipsis,
-                        lastPageLink]]
+                        lastPageLink))
             );
         }),
     
-        notifications: {
+        events: {
             change: on('change')
                         .map(page => ({targetPage: page}))
         }
     })
 });
+
             
 function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) {
     const
@@ -118,15 +122,13 @@ function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) 
             : null;
         
     return (
-        ['li',
+        dom('li',
             {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
-            ['a',
+            dom('a',
                 {onClick: onClick},
-                text]]
+                text))
     );
 }
-
-
 
 export const DemoOfPagination = Component.createFactory({
     typeId: 'DemoOfPagination',
@@ -137,14 +139,14 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: ({changes, events:{on, bind}}) =>
+    view: (states, {on, bind}) =>
         on('goToPage')
-            .merge(changes.map(props => props.get('pageIndex')))
-            .combineLatest(changes, (currPageIdx, props) =>
-                ['div',
+            .merge(states.map(props => props.get('pageIndex')))
+            .combineLatest(states, (currPageIdx, props) =>
+                dom('div',
                     {className: 'container-fluid'},
-                    ...Seq.range(1, 100).map(_ =>
-                        ['div',
+                    ...Seq.range(1, number).map(_ =>
+                        dom('div',
                             {className: 'row'},
                             Pagination({
                                 className: 'col-md-3',
@@ -152,15 +154,8 @@ export const DemoOfPagination = Component.createFactory({
                                 pageSize: props.get('pageSize'),
                                 totalItemCount: props.get('totalItemCount'),
                                 onChange: bind('goToPage', ({targetPage}) => targetPage)
-                            }),
-                            Pager({
-                                className: 'col-md-3',
-                                pageIndex: currPageIdx,
-                                pageSize: props.get('pageSize'),
-                                totalItemCount: props.get('totalItemCount'),
-                                onChange: evt => alert('juhu') 
-                            })
-                        ])])
+                           })
+                        ))))
 });
 
 // -----------------
@@ -268,7 +263,7 @@ class RDemoOfPaginationClass extends React.Component {
         return (
             React.createElement('div',
                     {className: 'container-fluid'},
-                    ...Seq.range(1, 100).map(_ =>
+                    ...Seq.range(1, number).map(_ =>
                         React.createElement('div',
                             {className: 'row'},
                             RPagination({
@@ -288,12 +283,12 @@ const
     RDemoOfPagination = React.createFactory(RDemoOfPaginationClass);
 
 
-if (0) {
+if (1) {
     Component.mount(
         DemoOfPagination({
             pageIndex: 10,
             pageSize: 25,
-            totalItemCount: 1000        
+            totalItemCount: 1000       
         }),
         'main-content',
         'React');
@@ -306,3 +301,4 @@ if (0) {
         }),
         document.getElementById('main-content'));
 }
+
