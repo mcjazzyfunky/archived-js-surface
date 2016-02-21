@@ -1,5 +1,6 @@
 'use strict';
 
+/** @jsx dom */
 
 import {Component}  from 'js-bling';
 import {Seq} from 'js-prelude';
@@ -9,8 +10,6 @@ import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-'use strict';
 
 const
     dom = Component.createElement,
@@ -30,84 +29,95 @@ export const Pagination = Component.createFactory({
     view: (states, {on, bind}) => ({
         display: states.map(props => {
             const
-                pageIndex = props.get('pageIndex'),
+                pageIndex = props.pageIndex,
                 
-                metrics = PaginationHelper.calcPaginationMetrics(
-                                props.get('pageIndex'),
-                                props.get('pageSize'),
-                                props.get('totalItemCount')),
+                metrics =
+                    PaginationHelper.calcPaginationMetrics(
+                        props.pageIndex,
+                        props.pageSize,
+                        props.totalItemCount),
+    
+                paginationInfo =
+                    PaginationHelper.determineVisiblePaginationButtons(
+                        props.pageIndex,
+                        metrics.pageCount,
+                        6),
                 
-                paginationInfo = PaginationHelper.determineVisiblePaginationButtons(
-                                        props.get('pageIndex'),
-                                        metrics.pageCount,
-                                        6),
-                
-                classNameOuter = ComponentHelper.buildCssClass(
-                                        'fk-pagination',
-                                        props.get('className')),
-                
+                classNameOuter =
+                    ComponentHelper.buildCssClass(
+                        'fk-pagination',
+                        props.className),
+    
                 classNameInner = 'pagination',
                 
-                firstPageLink = metrics.pageCount > 0
-                                    ? buildLinkListItem(
-                                            1,
-                                            pageIndex === 0,
-                                            props,
-                                            bind,
-                                            0)
-                                    : null,
-                
-                precedingEllipsis = paginationInfo.firstButtonIndex > 1
-                                        ? buildLinkListItem(
-                                                '...',
-                                                false,
-                                                props,
-                                                bind)
-                                        : null,
-                
-                succeedingEllipsis = paginationInfo.lastButtonIndex < metrics.pageCount - 2
-                                            ? buildLinkListItem(
-                                                    '...',
-                                                    false,
-                                                    props,
-                                                    bind)
-                                            : null,
-                
-                lastPageLink =  metrics.pageCount > 0
-                                    ? buildLinkListItem(
-                                        metrics.pageCount,
-                                        pageIndex === metrics.pageCount - 1,
-                                        props,
-                                        bind,
-                                        metrics.pageCount - 1)
-                                    : null,
+                firstPageLink =
+                    metrics.pageCount > 0
+                    ? buildLinkListItem(
+                        1,
+                        pageIndex === 0,
+                        props,
+                        bind,
+                        0)
+                    : null,
+    
+                precedingEllipsis =
+                    paginationInfo.firstButtonIndex > 1
+                    ? buildLinkListItem(
+                        '...',
+                        false,
+                        props,
+                        bind)
+                    : null,
 
-                buttons = Seq.range(
-                                paginationInfo.firstButtonIndex ,
-                                paginationInfo.lastButtonIndex + 1)
-                            .map(index => buildLinkListItem(
-                                                index + 1,
-                                                index === pageIndex,
-                                                props,
-                                                bind,
-                                                index));   
+                succeedingEllipsis =
+                    paginationInfo.lastButtonIndex < metrics.pageCount - 2
+                    ? buildLinkListItem(
+                        '...',
+                        false,
+                        props,
+                        bind)
+                    : null,
+                
+                lastPageLink =
+                    metrics.pageCount > 0
+                    ? buildLinkListItem(
+                        metrics.pageCount,
+                        pageIndex === metrics.pageCount - 1,
+                        props,
+                        bind,
+                        metrics.pageCount - 1)
+                    : null,
+
+                buttons =
+                    Seq.range(
+                        paginationInfo.firstButtonIndex ,
+                        paginationInfo.lastButtonIndex + 1)
+                    .map(index => buildLinkListItem(
+                        index + 1,
+                        index === pageIndex,
+                        props,
+                        bind,
+                        index));   
                                                 
+            console.log(3333, metrics) 
+            console.log('Buttons', buttons.toArray())
+            
             return (
-                dom('div',
-                    {className: classNameOuter},
-                    dom('ul',
-                        {className: classNameInner},
-                        firstPageLink,
-                        precedingEllipsis,
-                        ...buttons,
-                        succeedingEllipsis,
-                        lastPageLink))
+                <div className={classNameOuter}>
+                    <ul className={classNameInner}>
+                        {firstPageLink}
+                        {precedingEllipsis}
+                        {buttons}
+                        {succeedingEllipsis}
+                        {lastPageLink}
+                    </ul>
+                </div>
             );
         }),
     
         events: {
             change: on('change')
-                        .map(page => ({targetPage: page}))
+                .map(page => ({targetPage: page}))
         }
     })
 });
@@ -115,7 +125,7 @@ export const Pagination = Component.createFactory({
             
 function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) {
     const
-        onChangeProp = props.get('onChange'),
+        onChangeProp = props.onChange,
         
         onClick = !isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
             ? bind('change', _ => pageIndexToMove)
@@ -141,21 +151,23 @@ export const DemoOfPagination = Component.createFactory({
     
     view: (states, {on, bind}) =>
         on('goToPage')
-            .merge(states.map(props => props.get('pageIndex')))
+            .merge(states.map(props => props.pageIndex))
             .combineLatest(states, (currPageIdx, props) =>
-                dom('div',
-                    {className: 'container-fluid'},
-                    ...Seq.range(1, number).map(_ =>
-                        dom('div',
-                            {className: 'row'},
-                            Pagination({
-                                className: 'col-md-3',
-                                pageIndex: currPageIdx,
-                                pageSize: props.get('pageSize'),
-                                totalItemCount: props.get('totalItemCount'),
-                                onChange: bind('goToPage', ({targetPage}) => targetPage)
-                           })
-                        ))))
+                <div className="container-fluid">
+                    {
+                        Seq.range(1, number).map(_ =>
+                            <div className="row">
+                                <Pagination
+                                    className="col-md-3"
+                                    pageIndex={currPageIdx}
+                                    pageSize={props.pageSize}
+                                    totalItemCount={props.totalItemCount}
+                                    onChange={bind('goToPage', ({targetPage}) => targetPage)}
+                                />
+                            </div>)
+                    }
+                </div>
+            )
 });
 
 // -----------------
@@ -219,7 +231,6 @@ class RPaginationClass extends React.Component {
                                             index === pageIndex,
                                             this.props,
                                             index));        
-                                            
                                             
         return (
             React.createElement('div',

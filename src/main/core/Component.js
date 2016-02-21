@@ -24,9 +24,9 @@ const Component = {
             throw new TypeError("[Component.createElement] First argument 'tag' must not be empty");    
         }
 
-        
-
-        return ComponentAdapter.createElement(tag, props, children);    
+        return (Component.isFactory(tag))
+                ? tag.meta.convertedFactory(props, children)
+                : ComponentAdapter.createElement(tag, props, children);    
     },
     
     createFactory(config) {
@@ -43,7 +43,7 @@ const Component = {
         var convertedFactory;
         
         const ret = (initialProps, ...children) => {
-            return ComponentAdapter.createElement(convertedFactory, initialProps, children);
+            return convertedFactory(initialProps, children);
         };
    
         ret.meta = {
@@ -86,9 +86,11 @@ const Component = {
             
             bind(eventName, mapper = null) {
                 if (typeof eventName !== 'string') {
-                    throw new Error('[ReactAdapter.js|createEventBinder] First argument must be a string');
+                    console.error("[<event-binder>.bind] Invalid first argument 'eventName':, eventName");
+                    throw new Error('[<event-binder>.bind] First argument must be a string');
                 } else if (mapper !== null && typeof mapper !== 'function') {
-                    throw new Error('[ReactAdapter.js|createEventBinder] Second argument must be a function or null');
+                    console.error("[<event-binder>.bind] Invalid second argument 'mapper':", mapper);
+                    throw new Error('[<event-binder>.bind] Second argument must be a function or null');
                 }
                         
                 let subject = subjectsByName.get(eventName);
@@ -120,18 +122,24 @@ const Component = {
                 && targetNode.firstChild !== undefined
                 && typeof targetNode.appendChild === 'function'
                 && typeof targetNode.removeChild === 'function') {
-            while (targetNode.firstChild) {
-                targetNode.removeChild(targetNode.firstChild);
-            }
             
             mountNode = targetNode; 
         }
-       
-        if (mountNode) {
-            ComponentAdapter.mount(
-                    content,
-                    mountNode);
-        }       
+        
+        if (!mountNode) {
+            console.error('[Component.mount] Invalid target node for mounting:', targetNode);
+
+            throw new Error('[Component.mount] Invalid target node'
+                  + (targetNode !== 'string' ? '' : ` '${targetNode}'`));
+        }
+        
+        while (mountNode.firstChild) {
+            mountNode.removeChild(mountNode.firstChild);
+        }
+
+        ComponentAdapter.mount(
+                content,
+                mountNode);
     }
 };
 

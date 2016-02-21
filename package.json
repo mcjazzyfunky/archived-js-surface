@@ -7,6 +7,7 @@
     "@reactivex/rxjs": "^5.0.0-beta.2",
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",
+    "babel-plugin-jsx": "^1.2.0",
     "babel-runtime": "^5.2.17",
     "babel-standalone": "^6.4.4",
     "commonjs": "0.0.1",

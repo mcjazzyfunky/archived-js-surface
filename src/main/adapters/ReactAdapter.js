@@ -1,6 +1,5 @@
 'use strict';
 
-import {Reader} from 'js-prelude';
 import {Observable, Subject } from 'rxjs';
 
 import React from 'react';
@@ -39,26 +38,27 @@ const ReactAdapter = {
             throw new TypeError('[ReactAdapter:convertComponentFactory] Illegal type id of component factory');
         }
         
-        const constructor = function () {
-            ReactAdapterComponent.call(this, factory);
+        const constructor = function (...args) {console.log(...args)
+            ReactAdapterComponent.call(this, factory, args);
         };
 
         constructor.displayName = config.typeId;
+        constructor.defaultProps = config.defaultProps;
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
     }
 };
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentFactory) {
+    constructor(componentFactory, superArgs) {
        if (!isComponentFactory(componentFactory)) {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
                 + 'First argument must be a proper component factory created by '
                 + "'Component.createFactory'");
         }        
-        
-        super();
+       console.log(superArgs) 
+        super(...superArgs);
         
         const
             config = componentFactory.meta.config,
@@ -116,6 +116,7 @@ class ReactAdapterComponent extends React.Component {
             });
         }
         
+        this.componentWillReceiveProps(superArgs[0])
         this.__hasInitialized = false;
     }
    
@@ -123,8 +124,8 @@ class ReactAdapterComponent extends React.Component {
         //this.__subscription.unsubscribe();
     }
     
-    componentWillReceiveProps(nextProps) {
-        this.props = new Reader(nextProps);
+    componentWillReceiveProps(nextProps) {console.log(1111, nextProps)
+        this.props = nextProps
         this.__propsSbj.next(this.props);
     }
     
@@ -133,14 +134,11 @@ class ReactAdapterComponent extends React.Component {
     }
     
     render() {
-        if (!(this.props instanceof Reader)) {
-            this.props = new Reader(this.props);
-        }
         if (!this.__hasIniialized) {
             this.__hasIniialized = true;
             this.__propsSbj.next(this.props);
         }
-
+console.log(2222, this.props)
         const ret = this.__domTree;
         this.__needsToBeRenderd = false;
         
