@@ -17,29 +17,19 @@
             System.config({
                 baseURL: '../..',
                 transpiler: 'plugin-babel',
-                paths: {
-                    'node_modules/babel-plugin-jsx/*': '*.js'
-                },
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-                    'babel-plugin-jsx': 'node_modules/babel-plugin-jsx/index',
                     'js-prelude': 'node_modules/js-prelude/index.js',
                     'rxjs': 'node_modules/rxjs/bundles/Rx.umd.js',
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
                     'js-bling': 'index.js',
                     'js-bling-adapter': '../../../src/main/adapters/ReactAdapter.js'
-                },
-                babelOptions: {
-                    plugins: [
-                       'babel-plugin-jsx'
-                    ]
-                  }
+                }
             });
             
-            //System.import('js-facekit/demo/demo-performance.jsx');
-            System.import('js-facekit/demo/test.jsx');
+            System.import('js-facekit/demo/demo-performance.js');
         </script>
     </head>
     <body>

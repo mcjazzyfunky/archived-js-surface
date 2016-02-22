@@ -12,8 +12,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    dom = Component.createElement,
-    number = 10;
+    htm = Component.createElement,
+    number = 100;
     
 export const Pagination = Component.createFactory({
     typeId: 'FKPagination',
@@ -26,8 +26,8 @@ export const Pagination = Component.createFactory({
         onChange: null
     },
 
-    view: (states, {on, bind}) => ({
-        display: states.map(props => {
+    view: (behavior, {on, bind}) => ({
+        display: behavior.map(props => {
             const
                 pageIndex = props.pageIndex,
                 
@@ -99,19 +99,16 @@ export const Pagination = Component.createFactory({
                         bind,
                         index));   
                                                 
-            console.log(3333, metrics) 
-            console.log('Buttons', buttons.toArray())
-            
             return (
-                <div className={classNameOuter}>
-                    <ul className={classNameInner}>
-                        {firstPageLink}
-                        {precedingEllipsis}
-                        {buttons}
-                        {succeedingEllipsis}
-                        {lastPageLink}
-                    </ul>
-                </div>
+                htm('div',
+                    {className: classNameOuter},
+                    htm('u',
+                        {className: classNameInner},
+                        firstPageLink,
+                        precedingEllipsis,
+                        buttons.toArray(),
+                        succeedingEllipsis,
+                        lastPageLink))
             );
         }),
     
@@ -132,9 +129,9 @@ function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) 
             : null;
         
     return (
-        dom('li',
+        htm('li',
             {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
-            dom('a',
+            htm('a',
                 {onClick: onClick},
                 text))
     );
@@ -149,25 +146,21 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: (states, {on, bind}) =>
+    view: (behavior, {on, bind}) =>
         on('goToPage')
-            .merge(states.map(props => props.pageIndex))
-            .combineLatest(states, (currPageIdx, props) =>
-                <div className="container-fluid">
-                    {
-                        Seq.range(1, number).map(_ =>
-                            <div className="row">
-                                <Pagination
-                                    className="col-md-3"
-                                    pageIndex={currPageIdx}
-                                    pageSize={props.pageSize}
-                                    totalItemCount={props.totalItemCount}
-                                    onChange={bind('goToPage', ({targetPage}) => targetPage)}
-                                />
-                            </div>)
-                    }
-                </div>
-            )
+            .merge(behavior.map(props => props.pageIndex))
+            .combineLatest(behavior, (currPageIdx, props) =>
+                htm('div',
+                    {className: 'container-fluid'},
+                    Seq.range(1, number).map(_ =>
+                        htm('div',
+                            {className: 'row'},
+                            Pagination({
+                                className: "col-md-3",
+                                pageIndex: currPageIdx,
+                                pageSize: props.pageSize,
+                                totalItemCount: props.totalItemCount,
+                                onChange: bind('goToPage', ({targetPage}) => targetPage)})))))
 });
 
 // -----------------
@@ -239,7 +232,7 @@ class RPaginationClass extends React.Component {
                     {className: classNameInner},
                     firstPageLink,
                     precedingEllipsis,
-                    ...buttons,
+                    buttons,
                     succeedingEllipsis,
                     lastPageLink))
         );
