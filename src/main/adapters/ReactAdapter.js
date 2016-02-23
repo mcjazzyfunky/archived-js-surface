@@ -13,12 +13,16 @@ const ReactAdapter = {
 
         const ret = (isComponentFactory(tag))
                 ? tag.meta.convertedFactory(props, children)
-                : React.createElement(tag, props, children);
+                : React.createElement(tag, props, ...children);
 
         return ret;
     },
     
     mount(content, targetNode) {
+        if (!React.isValidElement(content)) {
+            throw new TypeError("[ReactAdapter.mount] First argument 'content' has to be a valid element");
+        }
+
         ReactDOM.render(content, targetNode);
     },
     
@@ -38,7 +42,7 @@ const ReactAdapter = {
             throw new TypeError('[ReactAdapter:convertComponentFactory] Illegal type id of component factory');
         }
         
-        const constructor = function (...args) {console.log(...args)
+        const constructor = function (...args) {
             ReactAdapterComponent.call(this, factory, args);
         };
 
@@ -57,13 +61,14 @@ class ReactAdapterComponent extends React.Component {
                 + 'First argument must be a proper component factory created by '
                 + "'Component.createFactory'");
         }        
-       console.log(superArgs) 
+        
         super(...superArgs);
         
         const
             config = componentFactory.meta.config,
             eventBinder = componentFactory.meta.Component.createEventBinder();
-            
+        
+        this.__config = componentFactory.meta.config;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionDisplay = null;
@@ -105,7 +110,7 @@ class ReactAdapterComponent extends React.Component {
                         if (this.props) {
                             const
                                 attr = 'on' + key[0].toUpperCase() + key.substr(1),
-                                callback = this.props.get(attr);
+                                callback = this.props[attr];
                             
                             if (typeof callback === 'function') {
                                 callback(event);
@@ -119,12 +124,19 @@ class ReactAdapterComponent extends React.Component {
         this.componentWillReceiveProps(superArgs[0])
         this.__hasInitialized = false;
     }
-   
-    componentWillUnmount() {
-        //this.__subscription.unsubscribe();
+    
+    componentDidMount() {
+        const callback = this.__config.onMount;
+
+        if (typeof callback === 'function') {
+            callback({
+                domElement: ReactDOM.findDOMNode(this),
+                config: this.__config
+            })   
+        }
     }
     
-    componentWillReceiveProps(nextProps) {console.log(1111, nextProps)
+    componentWillReceiveProps(nextProps) {
         this.props = nextProps
         this.__propsSbj.next(this.props);
     }
@@ -138,7 +150,7 @@ class ReactAdapterComponent extends React.Component {
             this.__hasIniialized = true;
             this.__propsSbj.next(this.props);
         }
-console.log(2222, this.props)
+        
         const ret = this.__domTree;
         this.__needsToBeRenderd = false;
         

@@ -5,6 +5,8 @@ import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
+const dom = Component.createElement;
+
 export default Component.createFactory({
     typeId: 'FKPagination',
     
@@ -16,24 +18,24 @@ export default Component.createFactory({
         onChange: null
     },
 
-    view: ({changes, events: {on, bind}}) => ({
-        display: changes.map(props => {
+    view: (behavior, {on, bind}) => ({
+        display: behavior.map(props => {
             const
-                pageIndex = props.get('pageIndex'),
+                pageIndex = props.pageIndex,
                 
                 metrics = PaginationHelper.calcPaginationMetrics(
-                                props.get('pageIndex'),
-                                props.get('pageSize'),
-                                props.get('totalItemCount')),
+                                props.pageIndex,
+                                props.pageSize,
+                                props.totalItemCount),
                 
                 paginationInfo = PaginationHelper.determineVisiblePaginationButtons(
-                                        props.get('pageIndex'),
+                                        props.pageIndex,
                                         metrics.pageCount,
                                         6),
                 
                 classNameOuter = ComponentHelper.buildCssClass(
                                         'fk-pagination',
-                                        props.get('className')),
+                                        props.className),
                 
                 classNameInner = 'pagination',
                 
@@ -81,15 +83,15 @@ export default Component.createFactory({
                                                 bind,
                                                 index));        
             return (
-                ['div',
+                dom('div',
                     {className: classNameOuter},
-                    ['ul',
+                    dom('ul',
                         {className: classNameInner},
                         firstPageLink,
                         precedingEllipsis,
                         ...buttons,
                         succeedingEllipsis,
-                        lastPageLink]]
+                        lastPageLink))
             );
         }),
     
@@ -102,17 +104,17 @@ export default Component.createFactory({
             
 function buildLinkListItem(text, isActive, props, bind, pageIndexToMove = null) {
     const
-        onChangeProp = props.get('onChange'),
+        onChangeProp = props.onChange,
         
         onClick = !isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
             ? bind('change', _ => pageIndexToMove)
             : null;
         
     return (
-        ['li',
+        dom('li',
             {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
-            ['a',
+            dom('a',
                 {onClick: onClick},
-                text]]
+                text))
     );
 }

@@ -1,6 +1,9 @@
 'use static';
 
 import {Strings, Seq} from 'js-prelude';
+import {Component} from 'js-bling';
+
+const dom = Component.createElement;
 
 export default class ComponentHelper {
     static buildCssClass(...tokens) {
@@ -51,13 +54,13 @@ export default class ComponentHelper {
 
         if (icon !== null) {
             if (icon.indexOf('.') >= 0) {
-                ret = ['img', {href: icon, alt: '', className: className}];
+                ret = dom('img', {href: icon, alt: '', className: className});
             } else {
                 let match = icon.match(/(?:^|\s)(fa|glyphicon)-./),
                     fullClassName = (match ? match[1] : '') + ' ' + icon + ' ' + className;
 
                 if (match) {
-                    ret = ['span', {className: fullClassName}];
+                    ret = dom('span', {className: fullClassName});
                 }
             }
         }

@@ -1,12 +1,14 @@
 'use strict';
 
-import Component from '../base/Component';
+import {Component} from 'js-bling';
 
-export const Tab = Component.createClass({
-    typeName: 'facekit/Tab',
-    view: ({changes}) => 
-        ['div', {className: 'fk-tab'}, ...changes.__value.children]
+const dom = Component.createElement;
+
+export default Component.createFactory({
+    typeId: 'FKTab',
+    
+    view: behavior => behavior.map(props =>
+        dom('div',
+            {className: 'fk-tab'},
+            props.children))
 });
-
-export default Tab;
-export const tab = Tab.createElement;

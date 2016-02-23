@@ -3,6 +3,8 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-bling';
 
+const dom = Component.createElement;
+
 export default Component.createFactory({
     typeId: 'FKButtonGroup',
     
@@ -10,18 +12,19 @@ export default Component.createFactory({
         disabled: false,
     },
 
-    view: ({changes})  => changes.map(props => {
+    view: behavior => behavior.map(props => {
         const
-            children = props.__data.children || [], // TODO !!!
+            children = props.children || [], // TODO !!!
             hasChildren = children instanceof Array && children.length > 0,
             className = ComponentHelper.buildCssClass(
                     'fk-button-group',
                     (hasChildren ? 'btn-group' : ''),
-                    props.get('className'));
+                    props.className);
 
         return (
-            ['div', {className: className, role: 'group'},
-                ...children]
+            dom('div',
+                {className: className, role: 'group'},
+                children)
         );
     })
 });

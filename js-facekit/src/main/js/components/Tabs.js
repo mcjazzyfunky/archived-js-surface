@@ -1,63 +1,86 @@
 'use strict';
 
-import Component from '../base/Component';
-import ComponentHelper from '../helpers/ComponentHelper';
+import {Component} from 'js-bling';
+import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Arrays, Seq} from 'js-prelude';
+import $ from 'jquery';
+
+const dom = Component.createElement;
 
 function renderTab(tab, html, activeTab, idx) {
     const
-        props = tab.getProps(),
-        active = activeTab === props.get('name') || idx === parseInt(activeTab, 10),
+        props = tab.props,
+        active = activeTab === props.name || idx === parseInt(activeTab, 10),
         className = ComponentHelper.buildCssClass(active ? 'active' : null);
 
     return (
-        ['li',
+        dom('li',
             {className: className},
-            ['a',
-                null
-                ['div',
+            dom('a',
+                null,
+                dom('div',
                     null,
-                    props.get('caption')]]]
+                    props.caption)))
     );
 }
 
-const tabsView = {
-    renderView: ({ => {
-        const
-           activeTab = props.get('activeTab'),
-           tabPosition = Arrays.selectValue(['top', 'bottom', 'left', 'right'], props.get('tabPosition'), 'top'),
-           tabStyle = Arrays.selectValue(['default', 'pills'], props.get('tabStyle'), 'default'),
-           tabOrientation = Arrays.selectValue(['horizontal', 'vertical'], props.get('tabOrientation'), 'horizontal'),
-           preventSize = !!props.get('preventSize');
+function display(props) {
+    const
+       activeTab = props.activeTab,
+       tabPosition = Arrays.selectValue(['top', 'bottom', 'left', 'right'], props.tabPosition, 'top'),
+       tabStyle = Arrays.selectValue(['default', 'pills'], props.tabStyle, 'default'),
+       tabOrientation = Arrays.selectValue(['horizontal', 'vertical'], props.tabOrientation, 'horizontal'),
+       preventSize = !!props.preventSize;
 
-        const header = html.div({className: 'fk-tabs-header'}, html.ul(
-                                       {className: 'nav nav-' + (tabStyle === 'pills' ? 'pills' : 'tabs')},
-                                       ...Seq.from(children).map((child, idx) => renderTab(child, html, activeTab, idx))));
+    const header =
+        dom('div',
+            {className: 'fk-tabs-header'},
+            dom('ul',
+                {className: 'nav nav-' + (tabStyle === 'pills' ? 'pills' : 'tabs')},
+                ...Seq.from(props.children).map((child, idx) => renderTab(child, dom, activeTab, idx))));
 
-        const body = html.div(
-                    {className: 'fk-tabs-body'},
-                     ...children.map((child, index) => html.div(
-                            {className: 'fk-tabs-page', style: {display: activeTab === index || activeTab === child.getProps().get('name') ? 'block' : 'none'}},
-                            child)));
+    const body =
+        dom('div',
+            {className: 'fk-tabs-body'},
+             ...props.children.map((child, index) =>
+                dom('div',
+                    {className: 'fk-tabs-page', style: {display: activeTab === index || activeTab === child.props.name ? 'block' : 'none'}},
+                    child)));
 
-        const parts = tabPosition === 'bottom'
-                ? [body, header]
-                : [header, body];
+    const parts = tabPosition === 'bottom'
+            ? [body, header]
+            : [header, body];
 
-        const ret = (
-            html.div(
-                {className: 'fk-tabs fk-tabs-' + tabPosition + ' fk-tabs-' + tabOrientation + (!preventSize ? '' : ' fk-tabs-prevent-size ')},
-                ...parts)
-        );
+    const ret = (
+        dom('div',
+            {className: 'fk-tabs fk-tabs-' + tabPosition + ' fk-tabs-' + tabOrientation + (!preventSize ? '' : ' fk-tabs-prevent-size ')},
+            ...parts)
+    );
 
-        return ret;
+    return ret;
+}
+
+export default Component.createFactory({
+    typeId: 'FKTabs',
+    
+    defaultProps: {
+        activeTab: 0,
+        tabPosition: 'top',
+        tabStyle: 'default',
+        tabOrientation: 'horizontal',
+        preventSize: true
     },
-    initView: domElem => {
+    
+    view:
+        (behavior, {on, bind}) =>
+            behavior.map(props => display(props)),
+            
+    onMount: ({domElement}) => {
         const
-            $ = jQuery,
-            $elem = $(domElem);
+            $elem = $(domElement);
 
-        $elem.find('.fk-tabs-header:first > ul > li')
+        $elem
+            .find('.fk-tabs-header:first > ul > li')
             .each((index, li) => {
                 $(li).on('click', evt => {
                     evt.preventDefault();
@@ -66,23 +89,8 @@ const tabsView = {
                 });
             })
             .on('click', evt => {
-                evt.preventDefault();
+                evt.preventDefault();console.log($.fn)
                 $(evt.target).tab('show')
             });
     }
-};
-
-export const Tabs = Component.createClass({
-    typeName: 'facekit/Tabs',
-    view: tabsView,
-    defaultProps: {
-        activeTab: 0,
-        tabPosition: 'top',
-        tabStyle: 'default',
-        tabOrientation: 'horizontal',
-        preventSize: true
-    }
 });
-
-export default Tabs;
-export const tabs = Tabs.createElement;

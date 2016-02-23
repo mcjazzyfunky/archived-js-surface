@@ -4,6 +4,8 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-bling';
 
+const dom = Component.createElement;
+
 export default Component.createFactory({
     typeId: 'FKPaginationInfo',
     
@@ -14,19 +16,19 @@ export default Component.createFactory({
         totalItemCount: -1
     },
 
-    view: ({changes, events: {on, bind}}) => changes.map(props => {
+    view: (behavior, {on, bind}) => behavior.map(props => {
         const
             metrics = PaginationHelper.calcPaginationMetrics(
-                            props.get('pageIndex'),
-                            props.get('pageSize'),
-                            props.get('totalItemCount'));
+                            props.pageIndex,
+                            props.pageSize,
+                            props.totalItemCount);
 
         return (
-            ['div',
+            dom('div',
                 {className: 'fk-pagination-info'},
-                props.get('type') !== 'infoAboutItems'
+                props.type !== 'infoAboutItems'
                        ? getPageInfo(metrics)
-                       : getItemsInfo(metrics)]
+                       : getItemsInfo(metrics))
         );
     })
 });

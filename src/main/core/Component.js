@@ -19,7 +19,7 @@ try {
 }
 
 const Component = {
-    createElement(tag, props, children) {
+    createElement(tag, props, ...children) {
         if (tag === undefined || tag === null) {
             throw new TypeError("[Component.createElement] First argument 'tag' must not be empty");    
         }
@@ -67,6 +67,22 @@ const Component = {
                 && componentFactory.meta.config
                 && componentFactory.meta.convertedFactory
                 && componentFactory.meta.Component === Component;
+    },
+    
+    createBinding() {
+        const
+            subject = new Subject(),
+            ret = mapper => event => {
+                if (!mapper) {
+                    subject.next(event);
+                } else {
+                    subject.next(mapper(event));
+                }
+            };
+            
+        ret.toObservable = () => subject.toObservable();
+        
+        return ret;
     },
     
     createEventBinder() {
@@ -138,8 +154,8 @@ const Component = {
         }
 
         ComponentAdapter.mount(
-                content,
-                mountNode);
+            content,
+            mountNode);
     }
 };
 

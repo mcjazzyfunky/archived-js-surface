@@ -7,6 +7,8 @@ import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-bling';
 
+const dom = Component.createElement;
+
 export default Component.createFactory({
     typeId: 'FKPager',
     
@@ -18,31 +20,31 @@ export default Component.createFactory({
         onChange: evt => {}
     },
 
-    view: ({changes, events: {on, bind}}) => ({
-        display: changes.map(props => {
+    view: (behavior, {on, bind}) => ({
+        display: behavior.map(props => {
             const
                 metrics = PaginationHelper.calcPaginationMetrics(
-                                props.get('pageIndex'),
-                                props.get('pageSize'),
-                                props.get('totalItemCount')),
+                                props.pageIndex,
+                                props.pageSize,
+                                props.totalItemCount),
                 
-                type = props.get('type'),
+                type = props.type,
                 
-                disabled = !!props.get('disabled'),
+                disabled = !!props.disabled,
                 
-                showFirstButton = !!props.get('showFirstButton'),
+                showFirstButton = !!props.showFirstButton,
                 
-                showNextButton = !!props.get('showNextButton'),
+                showNextButton = !!props.showNextButton,
                 
-                showPreviousButton = !!props.get('showPreviousButton'),
+                showPreviousButton = !!props.showPreviousButton,
                 
-                showLastButton =  !!props.get('showLastButton'),
+                showLastButton =  !!props.showLastButton,
                 
-                showButtonTexts = !!props.get('showButtonTexts');
+                showButtonTexts = !!props.showButtonTexts;
 
         return (
-            ['div',
-                {className: 'fk-pager ' + props.get('className')},
+            dom('div',
+                {className: 'fk-pager ' + props.className},
                 ButtonGroup(
                     null,
                     showFirstButton && Button({
@@ -51,7 +53,7 @@ export default Component.createFactory({
                         className: 'fk-pager-Button-first',
                         tooltip: (showButtonTexts ? '' : 'First'),
                         disabled: disabled || metrics.isFirstPage,
-                        onClick: evt => props.get('onChange')({pageIndex: 0})
+                        onClick: evt => props.onChange({pageIndex: 0})
                     }),
                     
                     showPreviousButton && Button({
@@ -60,7 +62,7 @@ export default Component.createFactory({
                         className: 'fk-pager-Button-previous',
                         tooltip: (showButtonTexts ? '' : 'Previous'),
                         disabled: disabled || metrics.isFirstPage,
-                        onClick: evt => props.get('onChange')({pageIndex: metrics.pageIndex - 1})
+                        onClick: evt => props.onChange({pageIndex: metrics.pageIndex - 1})
                     })),
                 (type !== 'randomAccess'
                                 ? PaginationInfo({
@@ -78,7 +80,7 @@ export default Component.createFactory({
                         className: 'fk-pager-Button-next',
                         tooltip: (showButtonTexts ? '' : 'Next'),
                         disabled: disabled || metrics.isLastPage,
-                        onClick: evt => props.get('onChange')({pageIndex: metrics.pageIndex + 1})
+                        onClick: evt => props.onChange({pageIndex: metrics.pageIndex + 1})
                     }),
                     showLastButton && Button({
                         text: (showButtonTexts ? 'Last' : ''),
@@ -86,10 +88,9 @@ export default Component.createFactory({
                         className: 'fk-pager-Button-last',
                         tooltip: (showButtonTexts ? '' : 'Last'),
                         disabled: disabled || metrics.isLastPage,
-                        onClick: evt => props.get('onChange')({pageIndex: metrics.pageCount - 1})
+                        onClick: evt => props.onChange({pageIndex: metrics.pageCount - 1})
                     })
-                )
-            ]);
+                )));
         }
     )
 })});
