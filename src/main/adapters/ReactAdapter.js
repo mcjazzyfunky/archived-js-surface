@@ -66,20 +66,26 @@ class ReactAdapterComponent extends React.Component {
         
         const
             config = componentFactory.meta.config,
-            eventBinder = componentFactory.meta.Component.createEventBinder();
+            dependencies = {}; // TODO
         
         this.__config = componentFactory.meta.config;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionDisplay = null;
         
+        
+        
         const 
-            result = config.view(this.__propsSbj, eventBinder),
-            view = result instanceof Observable ? {display: result} : result;
+            result =
+                config.ui
+                ? config.ui(this.__propsSbj, dependencies)
+                : null,
+                
+            ui = result instanceof Observable ? {display: result} : result;
 
-        if (!(view  && view.display instanceof Observable)) {
+        if (!(ui  && ui.display instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
-                    + `Illegal view configuration of ${config.typeId}:`, view);
+                    + `Illegal view configuration of ${config.typeId}:`, ui);
             
             throw new TypeError(
                     '[ReactAdapterComponent.constructor] '
@@ -87,8 +93,8 @@ class ReactAdapterComponent extends React.Component {
                     + ' view function did not return a proper value');
         }
 
-        this.__displayObs = view.display;
-        this.__events = view.events;
+        this.__displayObs = ui.display;
+        this.__events = ui.events;
 
         this.__displayObs.subscribe(display => {
             this.__domTree = display;

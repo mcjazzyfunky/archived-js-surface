@@ -7,24 +7,42 @@ import $ from 'jquery';
 
 const dom = Component.createElement;
 
-function renderTab(tab, html, activeTab, idx) {
-    const
-        props = tab.props,
-        active = activeTab === props.name || idx === parseInt(activeTab, 10),
-        className = ComponentHelper.buildCssClass(active ? 'active' : null);
+export default Component.createFactory({
+    typeId: 'FKTabs',
+    
+    defaultProps: {
+        activeTab: 0,
+        tabPosition: 'top',
+        tabStyle: 'default',
+        tabOrientation: 'horizontal',
+        preventSize: true
+    },
+    
+    view:
+        behavior => behavior.map(renderTabs),
+            
+    onMount: ({domElement}) => {
+        const
+            $elem = $(domElement);
 
-    return (
-        dom('li',
-            {className: className},
-            dom('a',
-                null,
-                dom('div',
-                    null,
-                    props.caption)))
-    );
-}
+        $elem
+            .find('.fk-tabs-header:first > ul > li')
+            .each((index, li) => {
+                $(li).on('click', evt => {
+                    evt.preventDefault();
+                    $elem.find('.fk-tabs-body:first > .fk-tabs-page').hide();
+                    $elem.find($('.fk-tabs-body:first > .fk-tabs-page').get(index)).show();
+                });
+            })
+            .on('click', evt => {
+                evt.preventDefault();console.log($.fn)
+                $(evt.target).tab('show')
+            });
+    }
+});
 
-function display(props) {
+
+function renderTabs(props) {
     const
        activeTab = props.activeTab,
        tabPosition = Arrays.selectValue(['top', 'bottom', 'left', 'right'], props.tabPosition, 'top'),
@@ -60,37 +78,20 @@ function display(props) {
     return ret;
 }
 
-export default Component.createFactory({
-    typeId: 'FKTabs',
-    
-    defaultProps: {
-        activeTab: 0,
-        tabPosition: 'top',
-        tabStyle: 'default',
-        tabOrientation: 'horizontal',
-        preventSize: true
-    },
-    
-    view:
-        (behavior, {on, bind}) =>
-            behavior.map(props => display(props)),
-            
-    onMount: ({domElement}) => {
-        const
-            $elem = $(domElement);
+function renderTab(tab, html, activeTab, idx) {
+    const
+        props = tab.props,
+        active = activeTab === props.name || idx === parseInt(activeTab, 10),
+        className = ComponentHelper.buildCssClass(active ? 'active' : null);
 
-        $elem
-            .find('.fk-tabs-header:first > ul > li')
-            .each((index, li) => {
-                $(li).on('click', evt => {
-                    evt.preventDefault();
-                    $elem.find('.fk-tabs-body:first > .fk-tabs-page').hide();
-                    $elem.find($('.fk-tabs-body:first > .fk-tabs-page').get(index)).show();
-                });
-            })
-            .on('click', evt => {
-                evt.preventDefault();console.log($.fn)
-                $(evt.target).tab('show')
-            });
-    }
-});
+    return (
+        dom('li',
+            {className: className},
+            dom('a',
+                null,
+                dom('div',
+                    null,
+                    props.caption)))
+    );
+}
+

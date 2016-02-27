@@ -1,20 +1,48 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component} from 'js-bling';
+import {Component, BindableSubject} from 'js-bling';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
 
 const dom = Component.createElement;
 
-function buttonDisplay(props, bind) {
+export default Component.createFactory({
+    typeId: 'FKButton',
+    
+    defaultProps: {
+        text: '',
+        icon: '',
+        type: 'default',
+        disabled: false,
+        size: 'default',
+        iconPosition: 'left',
+        menu: [],
+        key: null
+    },
+
+    view: behavior => {
+        const onClick = new BindableSubject();
+
+        return {
+            display:
+                behavior.map(props => renderButton(props, onClick)),
+            
+            events: {
+                click: onClick.toObservable()
+            }
+        };
+    }
+});
+    
+function renderButton(props, onClick) {
     const
         key = props.key,
         
         onClickProp = props.onClick,
         
-        onClick =
+        doOnClick =
             typeof onClickProp === 'function'
-            ? bind('click')
+            ? onClick.bind(evt => "todo")
             : null,
 
         icon = Strings.trimToNull(props.icon),
@@ -79,7 +107,7 @@ function buttonDisplay(props, bind) {
                 className: className,
                 title: tooltip,
                 disabled: disabled,
-                onClick: onClick,
+                onClick: doOnClick,
                 key: key
             },
             (iconPosition === 'left' || iconPosition === 'top'
@@ -88,7 +116,7 @@ function buttonDisplay(props, bind) {
             (isDropdown ? caret : null))
     );
     
-    var ret;
+    let ret;
 
     if (isDropdown) {
         ret =
@@ -127,33 +155,3 @@ function buttonDisplay(props, bind) {
     return ret;
 }
 
-export default Component.createFactory({
-    typeId: 'FKButton',
-    
-    defaultProps: {
-        text: '',
-        icon: '',
-        type: 'default',
-        disabled: false,
-        size: 'default',
-        iconPosition: 'left',
-        menu: [],
-        key: null
-    },
-
-    view: (behavior, {on, bind}) => {
-        const clicks =
-            on('click')
-                .map(event => {todo: true});
-
-        return {
-            display:
-                behavior
-                    .map(props => buttonDisplay(props, bind)),
-            
-            events: {
-                click: clicks
-            }
-        };
-    }
-});

@@ -219,8 +219,6 @@ const demo = VerticalNavi({
     }]
 });
 
-console.log(Button({text: 'Juhu'}))
-
 Component.mount(
-    demo,
+    demo1,
     'main-content');

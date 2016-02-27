@@ -2,6 +2,7 @@
 
 import ComponentAdapter from 'js-bling-adapter';
 import {Subject} from 'rxjs';
+import {Objects} from 'js-prelude';
 
 try {
     if (!ComponentAdapter || typeof ComponentAdapter !== 'object') {
@@ -69,9 +70,12 @@ const Component = {
                 && componentFactory.meta.Component === Component;
     },
     
-    createBinding() {
+    createEventBinder() {
         const
             subject = new Subject(),
+            
+            observable = subject.toObservable(),
+            
             ret = mapper => event => {
                 if (!mapper) {
                     subject.next(event);
@@ -80,12 +84,24 @@ const Component = {
                 }
             };
             
-        ret.toObservable = () => subject.toObservable();
+        ret.toObservable = () => observable;
         
         return ret;
     },
     
-    createEventBinder() {
+    
+    createEventBinders(...names) {
+        const ret = {};
+        
+        for (let name of names) {
+            if ()
+            ret[name] = Component.createEventBinder();
+        }
+        
+        return ret;
+    }
+    
+    createEventBinder2() {
         const subjectsByName = new Map();
     
         return {
@@ -164,18 +180,44 @@ export default Component;
 function checkComponentFactoryConfig(config) {
     var ret;
     
-    const typeIdRegex = /^[A-Z][a-zA-Z0-9]*$/;
-    
-    if (config === null || typeof config !== 'object') {
-        ret = new TypeError('Component configuration has to of type {typeId : String, view: Function}');
-    } else if (config.typeId === undefined  || config.typeId === null) {
+    const
+        typeIdRegex = /^[A-Z][a-zA-Z0-9]*$/,
+        hasConfig = typeof config === 'object' && config !== null,
+        hasTypeIdProp = hasConfig && Objects.isSomething(config.typeId),
+        hasUIProp = hasConfig && Objects.isSomething(config.ui),
+        hasViewProp = hasConfig && Objects.isSomething(config.view),
+        hasIntendProp = hasConfig && Objects.isSomething(config.intend),
+        hasModelProp = hasConfig && Objects.isSomething(config.model),
+        hasContextProp = hasConfig && Objects.isSomething(config.context),
+        hasEventsProp = hasConfig && Objects.isSomething(config.events),
+        hasBroadcastsProp = hasConfig && Objects.isSomething(config.broadcasts);
+
+    if (!hasConfig) {
+        ret = new TypeError('Component configuration must be an object');
+    } else if (!hasTypeIdProp) {
         ret = new TypeError("Component configuration value 'typeId' is missing");
     } else if (typeof config.typeId !== 'string' || !config.typeId.match(typeIdRegex)) {
-        ret = new TypeError(`Illegal value for 'typeID' (must match regex ${typeIdRegex})`);
-    } else if (config.view === undefined || config.view === null) {
-        ret = new TypeError("Component configuration value 'view' is missing");
-    } else if (typeof config.view !== 'function') {
+        ret = new TypeError(`Illegal value for 'typeId' (must match regex ${typeIdRegex})`);
+    } else if (!hasUIProp && !hasViewProp) {
+        ret = new TypeError("Component configuration must either provide a 'ui' method or a 'view' method");
+    } else if (hasUIProp && typeof config.ui !== 'function') {
+        ret = new TypeError("Component configuration value 'ui' has to be a function");
+    } else if (hasUIProp && (hasIntendProp || hasModelProp || hasEventsProp || hasBroadcastsProp)) {
+        ret = new TypeError("If component configuration value 'ui' is set, then "
+                + 'the following configuration properties are not allowed: '
+                + "'view', 'intend', 'model', 'events', 'broadcasts'");
+    } else if (hasViewProp && typeof config.view !== 'function') {
         ret = new TypeError("Component configuration value 'view' has to be a function");
+    } else if (hasIntendProp && typeof config.intend !== 'function') {
+        ret = new TypeError("Optional component configuration value 'intend' has to be a function");
+    } else if (hasModelProp && typeof config.model !== 'function') {
+        ret = new TypeError("Optional component configuration value 'model' has to be a function");
+    } else if (hasContextProp && typeof config.context !== 'function') {
+        ret = new TypeError("Optional component configuration value 'context' has to be a function");
+    } else if (hasEventsProp && typeof config.events !== 'function') {
+        ret = new TypeError("Optional component configuration value 'events' has to be a function");
+    } else if (hasBroadcastsProp && typeof config.broadcasts !== 'function') {
+        ret = new TypeError("Optional component configuration value 'broadcasts' has to be a function");
     } else {
         ret = null;
     }

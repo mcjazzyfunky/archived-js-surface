@@ -16,22 +16,24 @@ export default Component.createFactory({
         totalItemCount: -1
     },
 
-    view: (behavior, {on, bind}) => behavior.map(props => {
-        const
-            metrics = PaginationHelper.calcPaginationMetrics(
-                            props.pageIndex,
-                            props.pageSize,
-                            props.totalItemCount);
-
-        return (
-            dom('div',
-                {className: 'fk-pagination-info'},
-                props.type !== 'infoAboutItems'
-                       ? getPageInfo(metrics)
-                       : getItemsInfo(metrics))
-        );
-    })
+    view: behavior => behavior.map(renderPaginationInfo) 
 });
+
+function renderPaginationInfo(props) {
+    const
+        metrics = PaginationHelper.calcPaginationMetrics(
+                        props.pageIndex,
+                        props.pageSize,
+                        props.totalItemCount);
+
+    return (
+        dom('div',
+            {className: 'fk-pagination-info'},
+            props.type !== 'infoAboutItems'
+                   ? getPageInfo(metrics)
+                   : getItemsInfo(metrics))
+    );
+}
 
 function getPageInfo(metrics) {
    return 'Page '

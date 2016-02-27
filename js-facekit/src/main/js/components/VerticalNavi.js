@@ -7,6 +7,12 @@ import {Objects, Strings, Arrays, Seq} from 'js-prelude';
 const dom = Component.createElement;
 
 
+
+
+function renderHeader(metrics) {
+    
+}
+
 export default Component.createFactory({
     typeId: 'FKVerticalNavi',
     

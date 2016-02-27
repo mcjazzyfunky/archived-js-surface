@@ -27,6 +27,7 @@ export default class Verifier {
         ret.__rule = rule;
         ret.__predicate = predicate;
         ret.__nextVerifier = this;
+
         return ret;
     }
     
