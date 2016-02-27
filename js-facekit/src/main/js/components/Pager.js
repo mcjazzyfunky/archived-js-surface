@@ -5,7 +5,7 @@ import ButtonGroup from '../components/ButtonGroup.js';
 import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component, BindableSubject} from 'js-bling';
+import {Component} from 'js-bling';
 
 const dom = Component.createElement;
 
@@ -21,7 +21,7 @@ export default Component.createFactory({
     },
 
     view: behavior => {
-        const onChange = new BindableSubject();
+        const onChange = Component.createEventBinder();
 
         return {
             display:

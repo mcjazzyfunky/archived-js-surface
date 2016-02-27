@@ -76,11 +76,7 @@ class ReactAdapterComponent extends React.Component {
         
         
         const 
-            result =
-                config.ui
-                ? config.ui(this.__propsSbj, dependencies)
-                : null,
-                
+            result = componentFactory.meta.ui(this.__propsSbj, dependencies),
             ui = result instanceof Observable ? {display: result} : result;
 
         if (!(ui  && ui.display instanceof Observable)) {

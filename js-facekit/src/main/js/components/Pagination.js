@@ -2,7 +2,7 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
-import {Component, BindableSubject} from 'js-bling';
+import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
 const dom = Component.createElement;
@@ -20,7 +20,7 @@ export default Component.createFactory({
 
     view: behavior => {
         const
-            onChange = new BindableSubject();
+            onChange = Component.createEventBinder();
 
         return {
             display:

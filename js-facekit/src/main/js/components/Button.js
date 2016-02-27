@@ -1,7 +1,7 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component, BindableSubject} from 'js-bling';
+import {Component} from 'js-bling';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
 
 const dom = Component.createElement;
@@ -21,14 +21,14 @@ export default Component.createFactory({
     },
 
     view: behavior => {
-        const onClick = new BindableSubject();
+        const onClick = Component.createEventBinder();
 
         return {
             display:
                 behavior.map(props => renderButton(props, onClick)),
             
             events: {
-                click: onClick.toObservable()
+                click: onClick.asObservable()
             }
         };
     }
@@ -38,10 +38,8 @@ function renderButton(props, onClick) {
     const
         key = props.key,
         
-        onClickProp = props.onClick,
-        
         doOnClick =
-            typeof onClickProp === 'function'
+            typeof props.onClick === 'function'
             ? onClick.bind(evt => "todo")
             : null,
 

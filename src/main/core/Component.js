@@ -1,7 +1,7 @@
 'use strict';
 
 import ComponentAdapter from 'js-bling-adapter';
-import {Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 import {Objects} from 'js-prelude';
 
 try {
@@ -49,10 +49,11 @@ const Component = {
    
         ret.meta = {
             config: Object.freeze(Object.assign({}, config)),
+            ui: config.ui ? config.ui : buildUIFunction(config),
             convertedFactory: () => null, // will be updated below
             Component
         };
-    
+
         convertedFactory = ComponentAdapter.convertComponentFactory(ret);
         
         ret.meta.convertedFactory = ret;
@@ -71,80 +72,9 @@ const Component = {
     },
     
     createEventBinder() {
-        const
-            subject = new Subject(),
-            
-            observable = subject.toObservable(),
-            
-            ret = mapper => event => {
-                if (!mapper) {
-                    subject.next(event);
-                } else {
-                    subject.next(mapper(event));
-                }
-            };
-            
-        ret.toObservable = () => observable;
-        
-        return ret;
+        return new EventBinder();
     },
-    
-    
-    createEventBinders(...names) {
-        const ret = {};
-        
-        for (let name of names) {
-            if ()
-            ret[name] = Component.createEventBinder();
-        }
-        
-        return ret;
-    }
-    
-    createEventBinder2() {
-        const subjectsByName = new Map();
-    
-        return {
-            on(eventName) {
-                let ret = subjectsByName.get(eventName);
-                
-                if (!ret) {
-                    ret = new Subject(); 
-                    subjectsByName.set(eventName, ret);
-                }
-                
-                return ret.asObservable();
-            }, 
-            
-            bind(eventName, mapper = null) {
-                if (typeof eventName !== 'string') {
-                    console.error("[<event-binder>.bind] Invalid first argument 'eventName':, eventName");
-                    throw new Error('[<event-binder>.bind] First argument must be a string');
-                } else if (mapper !== null && typeof mapper !== 'function') {
-                    console.error("[<event-binder>.bind] Invalid second argument 'mapper':", mapper);
-                    throw new Error('[<event-binder>.bind] Second argument must be a function or null');
-                }
-                        
-                let subject = subjectsByName.get(eventName);
-        
-                if (!subject) {
-                    subject = new Subject(); 
-                    subjectsByName.set(eventName, subject);
-                }
-                
-                const mapEvent = mapper
-                        ? event => mapper(event)
-                        : event => event;
-                
-                return event => subject.next(mapEvent(event));
-            }
-        };
-    },
-    
-    isEventBinder(obj) {
-        return obj && typeof obj.on === 'function' && typeof obj.bind === 'function';
-    },
-    
+
     mount(content, targetNode) {
         let mountNode = null;
         
@@ -223,4 +153,125 @@ function checkComponentFactoryConfig(config) {
     }
     
     return ret;
+}
+
+class EventBinder {
+    constructor() {
+        this.__subject = new Subject();
+        this.__observable = this.__subject.asObservable();
+    }
+    
+    bind(mapper = e => e) {
+        if (typeof mapper !== 'function') {
+            throw new TypeError("[EventBinder:bind] First argument 'mapper' must be a function");
+        }
+        
+        return e => this.__subject.next(mapper(e));
+    }
+    
+    asObservable() {
+        return this.__observable;
+    }
+}
+
+
+function buildUIFunction(config) {
+    return (behavior, dependencies) => {
+        const
+            hasIntentCfg = !!config.intent,
+            hasModelCfg = !!config.model,
+            hasEventsCfg = !!config.events,
+            hasBroadcastsCfg = !!config.broadcasts,
+            
+            modelSbj = new Subject(),
+            context = config.context ? config.context(dependencies) : dependencies,
+            viewResult = config.view(behavior, modelSbj.asObservable(), context);
+        
+        let ret;
+        
+        if (viewResult instanceof Observable) {
+            ret = {display: viewResult, events: null, broadcasts: null};
+        } else if (viewResult === null) {
+            throw new TypeError("[Component] The result of the 'view' function must not be null");
+        } else if (typeof viewResult !== 'object') {
+            throw new TypeError("[Component] The result of the 'view' function must be an observable or and object");
+        } else if (!Objects.isSomething(viewResult.display)) {
+            throw new Error("[Component] The result of the 'view' function does not provide a 'display' observable");
+        } else if (!(viewResult.display instanceof Observable)) {
+            throw new TypeError("[Compoennt] The 'display' property of the result of the 'view' function must be an observable");
+        } else {
+            const
+                hasFeedbackProp = Objects.isSomething(viewResult.feedback),
+                hasActionsProp = Objects.isSomething(viewResult.actions),
+                hasEventsProp = Objects.isSomething(viewResult.hasEventsProp),
+                hasBroadcastsProp = Objects.isSomething(viewResult.hasBroadcastProp);
+                
+            if (hasFeedbackProp + hasActionsProp + hasEventsProp > 1) {
+                throw new Error('[Component] The result of the view function can only '
+                    + ' at a maximum have one of the following properties: '
+                    + "'feedback', 'actions', 'events'");
+            } else if (hasFeedbackProp && !hasIntentCfg) {
+                throw new Error('[Component] The result of the view function has '
+                    + "a property for 'feedback' but the component configuration "
+                    + "does not provide a corresponding 'intent' function");
+            } else if (hasEventsProp && hasModelCfg) {
+                throw new Error('[Component] The result of the view function has '
+                    + "a property for 'events' so in the component configuration "
+                    + "must not provide a 'model' function");
+            } else if (hasEventsProp && hasEventsCfg) {
+                throw new Error('[Component] The result of the view function has '
+                    + "a property for 'events' so the component configuration "
+                    + "must not provide a 'events' function");
+            } else if (hasEventsProp && hasBroadcastsCfg) {
+                throw new Error('[Component] The result of the view function has '
+                    + "a property for 'events' so the component configuration "
+                    + "must not provide a 'events' function");
+            } else if (hasBroadcastsProp && hasBroadcastsCfg) {
+                throw new Error('[Component] The result of the view function has '
+                    + "a property for 'broadcasts' sothe component configuration "
+                    + "must not provide a 'broadcasts' function");
+            }
+            
+            let actions;
+            
+            if (hasActionsProp) {
+                actions = viewResult.actions;
+            } else if (hasFeedbackProp) {
+                actions = config.intent(viewResult.feedback);
+            } else {
+                actions = Observable.empty();
+            }
+        
+            const model =
+                hasModelCfg
+                ? config.model(actions, context)
+                : Observable.empty();
+            
+            if (!(model instanceof Observable)) {
+                throw new TypeError("[Component] Config function 'model' must resturn an observable");
+            }
+            
+            model.subscribe(state => modelSbj.next(state));
+            
+            let events = null;
+            
+            if (hasEventsProp) {
+                events = viewResult.events;
+            } else if (hasEventsCfg) {
+                events = config.events(actions);
+            }
+            
+            let broadcasts = null;
+            
+            if (hasBroadcastsProp) {
+                broadcasts = viewResult.broadcasts;
+            } else if (hasBroadcastsCfg) {
+                broadcasts = config.broadcasts(actions);
+            }
+            
+            ret = {display: viewResult.display, events: events, broadcasts: broadcasts};
+        }
+
+        return ret;
+    };
 }
