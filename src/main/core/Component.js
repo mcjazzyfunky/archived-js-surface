@@ -26,32 +26,32 @@ const Component = {
         }
 
         return (Component.isFactory(tag))
-                ? tag.meta.convertedFactory(props, children)
-                : ComponentAdapter.createElement(tag, props, children);    
+            ? tag.meta.convertedFactory(props, children)
+            : ComponentAdapter.createElement(tag, props, children);    
     },
     
     createFactory(config) {
         const configError = checkComponentFactoryConfig(config);
         
         if (configError) {
-            console.error('[Component.createFactory] Invalid configuration:', config);
+            console.error('[Component.createFactory] Invalid component factory configuration:', config);
             
-            throw new TypeError(
+            throw new Error(
                     '[Component.createFactory] '
                     + configError.message);
         } 
         
-        var convertedFactory;
+        let convertedFactory;
         
         const ret = (initialProps, ...children) => {
             return convertedFactory(initialProps, children);
         };
-   
+        
         ret.meta = {
-            config: Object.freeze(Object.assign({}, config)),
-            ui: config.ui ? config.ui : buildUIFunction(config),
-            convertedFactory: () => null, // will be updated below
-            Component
+            config: config,
+            normalizedConfig: normalizeConfig(config),
+            Component: Component,
+            convertedFactory: () => null // will be set below
         };
 
         convertedFactory = ComponentAdapter.convertComponentFactory(ret);
@@ -67,12 +67,36 @@ const Component = {
         return typeof componentFactory === 'function'
                 && componentFactory.meta
                 && componentFactory.meta.config
+                && componentFactory.meta.normalizedConfig
                 && componentFactory.meta.convertedFactory
                 && componentFactory.meta.Component === Component;
     },
     
-    createEventBinder() {
-        return new EventBinder();
+    createEventBinder(target, mapper = event => event) {
+        if (target !== undefined && target !== null
+            && typeof target !== 'function'
+            && typeof target.next !== 'function') {
+                
+            throw new TypeError(
+                "[Component.createEventBinder] First argument 'target' must either be "
+                + 'a callback function or an observer or null or undefined');
+        } else if (typeof mapper === 'function') {
+            throw new TypeError(
+                "[Component.createEventBinder] Second argument 'mapper' must "
+                + 'be a function');
+        }
+        
+        let ret;
+        
+        if (!target) {
+            ret = () => null;
+        } else if (typeof target === 'function') { 
+            ret = (...args) => event => target(mapper(event, ...args));
+        } else {
+            ret = (...args) => event => target.next(mapper(event, ...args));
+        }
+    
+        return ret;
     },
 
     mount(content, targetNode) {
@@ -108,74 +132,174 @@ const Component = {
 export default Component;
 
 function checkComponentFactoryConfig(config) {
-    var ret;
+    let error = null;
     
     const
         typeIdRegex = /^[A-Z][a-zA-Z0-9]*$/,
+        propNameRegex = /^[a-z][a-zA-Z0-9]*$/,
         hasConfig = typeof config === 'object' && config !== null,
+        typeIdValid = hasConfig && typeof config.typeId === 'string' && config.typeId.match(typeIdRegex),
         hasTypeIdProp = hasConfig && Objects.isSomething(config.typeId),
+        hasPropertiesProp = hasConfig && Objects.isSomething(config.properties),
         hasUIProp = hasConfig && Objects.isSomething(config.ui),
         hasViewProp = hasConfig && Objects.isSomething(config.view),
-        hasIntendProp = hasConfig && Objects.isSomething(config.intend),
+        hasRenderProp = hasConfig && Objects.isSomething(config.render),
         hasModelProp = hasConfig && Objects.isSomething(config.model),
-        hasContextProp = hasConfig && Objects.isSomething(config.context),
         hasEventsProp = hasConfig && Objects.isSomething(config.events),
-        hasBroadcastsProp = hasConfig && Objects.isSomething(config.broadcasts);
+        hasInitialStateProp = hasConfig && Objects.isSomething(config.initialState),
+        hasUpdateStateProp = hasConfig && Objects.isSomething(config.updateState),
+        hasYieldEvent = hasConfig && Objects.isSomething(config.yieldEvent);
 
     if (!hasConfig) {
-        ret = new TypeError('Component configuration must be an object');
+        error = 'Component configuration must be an object';
     } else if (!hasTypeIdProp) {
-        ret = new TypeError("Component configuration value 'typeId' is missing");
-    } else if (typeof config.typeId !== 'string' || !config.typeId.match(typeIdRegex)) {
-        ret = new TypeError(`Illegal value for 'typeId' (must match regex ${typeIdRegex})`);
-    } else if (!hasUIProp && !hasViewProp) {
-        ret = new TypeError("Component configuration must either provide a 'ui' method or a 'view' method");
+        error = "Component configuration value 'typeId' is missing";
+    } else if (!typeIdValid) {
+        error = `Illegal value for 'typeId' (must match regex ${typeIdRegex})`;
+    } else if (hasPropertiesProp && typeof config.properties !== 'object') {
+        error = "Optional component configuration value 'properties' must be an object";
+    } else if (!hasUIProp && !hasViewProp && !hasRenderProp) {
+        error = "Component configuration must either provide a 'ui' function "
+            + "or a 'view' function or a 'render' function";
+    } else if (hasUIProp + hasViewProp + hasRenderProp > 1) {
+        error = "Component configuration can only provide one of the following functions: "
+            + "'ui', 'view', 'render'";
     } else if (hasUIProp && typeof config.ui !== 'function') {
-        ret = new TypeError("Component configuration value 'ui' has to be a function");
-    } else if (hasUIProp && (hasIntendProp || hasModelProp || hasEventsProp || hasBroadcastsProp)) {
-        ret = new TypeError("If component configuration value 'ui' is set, then "
-                + 'the following configuration properties are not allowed: '
-                + "'view', 'intend', 'model', 'events', 'broadcasts'");
+        error = "Component configuration value 'ui' has to be a function";
     } else if (hasViewProp && typeof config.view !== 'function') {
-        ret = new TypeError("Component configuration value 'view' has to be a function");
-    } else if (hasIntendProp && typeof config.intend !== 'function') {
-        ret = new TypeError("Optional component configuration value 'intend' has to be a function");
-    } else if (hasModelProp && typeof config.model !== 'function') {
-        ret = new TypeError("Optional component configuration value 'model' has to be a function");
-    } else if (hasContextProp && typeof config.context !== 'function') {
-        ret = new TypeError("Optional component configuration value 'context' has to be a function");
-    } else if (hasEventsProp && typeof config.events !== 'function') {
-        ret = new TypeError("Optional component configuration value 'events' has to be a function");
-    } else if (hasBroadcastsProp && typeof config.broadcasts !== 'function') {
-        ret = new TypeError("Optional component configuration value 'broadcasts' has to be a function");
-    } else {
-        ret = null;
+        error = "Component configuration value 'view' has to be a function";
+    } else if (hasRenderProp && typeof config.render !== 'function') {
+        error = "Component configuration value 'render' has to be a function";
+    } else if (hasViewProp && hasModelProp && typeof config.model !== 'function') {
+        error = "Optional component configuration value 'model' "
+            + "has to be a function if function 'view' is provided";
+    } else if (hasViewProp && hasEventsProp && typeof config.events !== 'function') {
+        error = "Optional component configuration value 'events' "
+            + "has to be a function if function 'view' is provided";
+    } else if (hasRenderProp && hasInitialStateProp && typeof config.initialState !== 'function') {
+        error = "Optional component configuration value 'initialState' "
+            + " has to be a function if function 'render' is provided";
+    } else if (hasRenderProp && hasUpdateStateProp && typeof config.updateState !== 'function') {
+        error = "Optional component configuration value 'updateState' "
+            + "has to be a function if function 'render' render is provided";
+    } else if (hasRenderProp && hasYieldEvent && typeof config.yieldEvent !== 'function') {
+        error = "Optional component configuration value 'yieldEvent' "
+            + "has to be a function if function 'render' is provided";
+    } else if (hasPropertiesProp) {
+        for (let property of Object.keys(config.properties)) {
+            if (!property.match(propNameRegex)) {
+                error = `Invalid name for property '${property} - must match regex ${propNameRegex}`;
+            } else {
+                const
+                    propertyConfig = config.properties[property],
+                    hasPropertyConfig = Objects.isSomething(propertyConfig),
+                    hasTypeProp = hasPropertyConfig && Objects.isSomething(propertyConfig.type),
+                    hasDefaultValueProp = hasPropertyConfig && propertyConfig.defaultValue !== undefined,
+                    hasConstraintProp = hasPropertyConfig && Objects.isSomething(propertyConfig.constaint),
+                    hasValidationProp = hasPropertyConfig && Objects.isSomething(propertyConfig.validation);
+                
+                if (!hasPropertyConfig) {
+                    error = `Configuration for property '${property}' is missing`;
+                } else if (typeof propertyConfig !== 'object') {
+                    error = `Configuration for property '${property}' has to be an object`;
+                } else if (!hasTypeProp) {
+                    error = `Configuration value 'type' is missing for property '${property}'`;
+                } else if (typeof property === 'symbol') {
+                    error = 'Property names must not be symbols';
+                } else if (property.match(/^on[A-Z]/) && propertyConfig.type !== 'function') {
+                    error = "Properties with names starting with 'on[A-Z]' must be of type 'function'";
+                } else if (!Array.isArray(propertyConfig.type)
+                    && typeof propertyConfig.type !== 'function'
+                    && (typeof propertyConfig.type !== 'string'
+                    || ['string', 'number', 'boolean', 'function'].indexOf(propertyConfig.type) === -1)) {
+
+                    error = `Configuration value 'type' for property '${property}' must either be a class/constructor `
+                        + "or 'string' or 'number' or 'boolean' or an array of those type declarations";
+                } else if (!hasDefaultValueProp) {
+                    error = `Configuration value 'defaultValue' is missing for property '${property}'`;
+                } else if (hasConstraintProp + hasValidationProp === 1) {
+                    error = "Configuration values 'constraint' and 'validation' must either be provided both together"
+                        + `or none of them for property '${property}'`;
+                } else if (hasConstraintProp && typeof propertyConfig.constraint !== 'string') {
+                    error = `Configuration value 'constraint' for property '${property}' has to be a string`;
+                } else if (hasConstraintProp && propertyConfig.constraint.trim() === '') {
+                    error = `Configuration value 'constraint' for property '${property}' must not be blank`;
+                } else if (hasValidationProp && typeof propertyConfig.validation !== 'function') {
+                    error = `Configuration value 'validation' for property '${property}' must be a function`;
+                } else {
+                    if (Array.isArray(propertyConfig.type)) {
+                        for (let type of propertyConfig.type) {
+                            if (type !== 'string' && type !== 'number'
+                                && type !== 'boolean' && typeof type !== 'function') {
+                                
+                                error = `Array of types given in 'type' configuration of property '${property}' must either be `
+                                    + "a class/constructor or 'string' or 'number' or 'boolean' or 'function'";
+                                
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (error) {
+                break;
+            }
+        }
     }
     
+    if (error && typeIdValid) {
+        error = `Configuration error for component factory of type '${config.typeId}': ${error}`;
+    }
+    
+    return error
+        ? new Error(error)
+        : null;
+}
+
+function normalizeConfig(config) {
+    // Config has already been checked - no need to check it again.
+    
+    const ret = {
+        properties: {}, // will be filled below
+        ui: null,       // will be set below
+    };
+    
+    if (config.properties) {
+        for (let property of Object.keys(config.properties)) {
+            const propertyConfig = config.properties[property];
+            
+            ret.properties[property] = {
+                type: propertyConfig.type,
+                defaultValue: propertyConfig.defaultValue
+            };
+            
+            if (propertyConfig.constraint) {
+                ret.properties[property].constraint = propertyConfig.constraint;
+                ret.properties[property].validation = propertyConfig.validation;
+            }
+            
+            Object.freeze(ret.properties[property]);
+        }
+    }
+    
+    if (config.ui) {
+        ret.ui = config.ui;
+    } else if (config.view) {
+        ret.ui = buildUIFunctionFromViewFunction(config);    
+    } else if (config.render) {
+        ret.ui = buildUIFunctionFromRenderFunction(config);
+    }
+    
+    Object.freeze(ret);
     return ret;
 }
 
-class EventBinder {
-    constructor() {
-        this.__subject = new Subject();
-        this.__observable = this.__subject.asObservable();
-    }
+function buildUIFunctionFromRenderFunction(config) {
     
-    bind(mapper = e => e) {
-        if (typeof mapper !== 'function') {
-            throw new TypeError("[EventBinder:bind] First argument 'mapper' must be a function");
-        }
-        
-        return e => this.__subject.next(mapper(e));
-    }
-    
-    asObservable() {
-        return this.__observable;
-    }
 }
 
-
-function buildUIFunction(config) {
+function buildUIFunctionFromViewFunction(config) {
     return (behavior, dependencies) => {
         const
             hasIntentCfg = !!config.intent,
@@ -245,14 +369,15 @@ function buildUIFunction(config) {
             const model =
                 hasModelCfg
                 ? config.model(actions, context)
-                : Observable.empty();
+                : Observable.of(null);
             
             if (!(model instanceof Observable)) {
-                throw new TypeError("[Component] Config function 'model' must resturn an observable");
+                throw new TypeError("[Component] Config function 'model' must return an observable");
             }
             
             model.subscribe(state => modelSbj.next(state));
-            
+            model.subscribe(state => console.log(state))
+            console.log(model, hasModelCfg)
             let events = null;
             
             if (hasEventsProp) {

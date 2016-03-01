@@ -9,17 +9,51 @@ const dom = Component.createElement;
 export default Component.createFactory({
     typeId: 'FKButton',
     
-    defaultProps: {
-        text: '',
-        icon: '',
-        type: 'default',
-        disabled: false,
-        size: 'default',
-        iconPosition: 'left',
-        menu: [],
-        key: null
+    properties: {
+        text: {
+            type: 'string',
+            defaultValue: ''
+        },
+        
+        icon: {
+            type: 'string',
+            defaultValue: ''
+        },
+        
+        type: {
+            type: 'string',
+            options: ['default'],
+            defaultValue: 'default'
+        },
+        
+        disabled: {
+            type: 'boolean',
+            defaultValue: false
+        },
+        
+        size: {
+            type: 'string',
+            options: ['default'],
+            defaultValue: 'default'
+        },
+        
+        iconPosition: {
+            type: 'string',
+            options: ['top', 'bottom', 'left', 'right'],
+            defaultValue: 'left'
+        },
+        
+        menu: {
+            type: Array,
+            defaultValue: []
+        },
+        
+        onClick: {
+            type: 'function',
+            defaultValue: null
+        }
     },
-
+    
     view: behavior => {
         const onClick = Component.createEventBinder();
 

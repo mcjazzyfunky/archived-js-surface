@@ -6,11 +6,13 @@ import {Component} from 'js-bling';
 const dom = Component.createElement;
 
 export default Component.createFactory({
-    typeId:
-        'FKButtonGroup',
+    typeId: 'FKButtonGroup',
     
-    defaultProps: {
-        disabled: false,
+    properties: {
+        disabled: {
+            type: 'boolean',
+            defaultValue: false
+        }
     },
 
     view:

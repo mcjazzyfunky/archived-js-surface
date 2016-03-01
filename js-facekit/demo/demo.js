@@ -13,6 +13,8 @@ import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
+import {Observable} from 'rxjs';
+
 import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
 
@@ -168,30 +170,45 @@ export const DemoOfPagination = Component.createFactory({
         totalItemCount: 744
     },
     
-    view: (behavior, {on, bind}) =>
-        on('goToPage')
-            .merge(behavior.map(props => props.pageIndex))
-            .combineLatest(behavior, (currPageIdx, props) =>
-                dom('div',
-                    {className: 'container-fluid'},
-                    ...Seq.range(1, 100).map(_ =>
-                        dom('div',
-                            {className: 'row'},
-                            Pagination({
-                                className: 'col-md-3',
-                                pageIndex: currPageIdx,
-                                pageSize: props.pageSize,
-                                totalItemCount: props.totalItemCount,
-                                onChange: () => bind('goToPage', ({targetPage}) =>  targetPage)
-                            }),
-                            Pager({
-                                className: 'col-md-3',
-                                pageIndex: currPageIdx,
-                                pageSize: props.pageSize,
-                                totalItemCount: props.totalItemCount,
-                                onChange: evt => alert('juhu') 
-                            })
-                        ))))
+    model: actions => {return Observable.of({pageIdx: 1});
+        return (
+            actions
+                .map(action => ({pageIdx: action}))
+                .startWith({pageIdx: 0})
+        );
+    },
+    
+    view: (behavior, model) => {
+        const
+            onChange = Component.createEventBinder(),
+        
+            display = 
+                behavior.combineLatest(model, (props, state) =>
+                    dom('div',
+                        {className: 'container-fluid'},
+                        ...Seq.range(1, 100).map(_ =>
+                            dom('div',
+                                {className: 'row'},
+                                Pagination({
+                                    className: 'col-md-3',
+                                    pageIndex: model.pageIdx,
+                                    pageSize: props.pageSize,
+                                    totalItemCount: props.totalItemCount,
+                                    onChange: onChange.bind(({targetPage}) => targetPage)
+                                }),
+                                Pager({
+                                    className: 'col-md-3',
+                                    pageIndex: model.pageIdx,
+                                    pageSize: props.pageSize,
+                                    totalItemCount: props.totalItemCount,
+                                    onChange: evt => alert('juhu') 
+                                })
+                            ))));
+        return {
+            display,
+            actions: onChange.asObservable()
+        };
+    }
 });
 
 
@@ -220,5 +237,5 @@ const demo = VerticalNavi({
 });
 
 Component.mount(
-    demo1,
+    demo3,
     'main-content');

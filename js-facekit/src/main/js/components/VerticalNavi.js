@@ -15,7 +15,14 @@ function renderHeader(metrics) {
 
 export default Component.createFactory({
     typeId: 'FKVerticalNavi',
-    
+   
+    properties: {
+        menu: {
+            type: Array,
+            defaultValue: []
+        }        
+    },
+
     view: (behavior, {on, bind}) => {
         const display = behavior.map(props => {
             return (

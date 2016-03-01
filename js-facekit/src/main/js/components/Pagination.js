@@ -10,12 +10,46 @@ const dom = Component.createElement;
 export default Component.createFactory({
     typeId: 'FKPagination',
     
-    defaultProps: {
-        showFirstButton: true,
-        showNextButton: true,
-        showPreviousButton: true,
-        showLastButton: true,
-        onChange: null
+    properties: {
+        pageIndex: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        pageSize: {
+            type: 'number',
+            defaultValue: null
+        },
+        
+        totalItemCount: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        showFirstButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showLastButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showPreviousButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showLastButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        onChange: {
+            type: 'function',
+            defaultValue: null
+        }
     },
 
     view: behavior => {
@@ -75,7 +109,7 @@ function renderPagination(props, onChange) {
                                             '...',
                                             false,
                                             props,
-                                            bindChange)
+                                            onChange)
                                     : null,
         
         lastPageLink =  metrics.pageCount > 0

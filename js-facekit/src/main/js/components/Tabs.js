@@ -9,13 +9,35 @@ const dom = Component.createElement;
 
 export default Component.createFactory({
     typeId: 'FKTabs',
-    
-    defaultProps: {
-        activeTab: 0,
-        tabPosition: 'top',
-        tabStyle: 'default',
-        tabOrientation: 'horizontal',
-        preventSize: true
+
+    properties: {
+        activeTab: {
+            type: 'number',
+            defaultValue: 0
+        },
+        
+        tabPosition: {
+            type: 'string',
+            options: ['top'],
+            defaultValue: 'top'
+        },
+        
+        tabStyle: {
+            type: 'string',
+            options: ['default'],
+            defaultValue: 'default'
+        },
+        
+        tabOrientation: {
+            type: 'string',
+            options: ['horizontal'],
+            defaultValue: 'horizontal'
+        },
+        
+        preventSize: {
+            type: 'boolean',
+            defaultValue: false
+        }
     },
     
     view:

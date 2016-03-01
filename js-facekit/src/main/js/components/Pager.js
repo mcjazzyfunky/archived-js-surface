@@ -12,12 +12,46 @@ const dom = Component.createElement;
 export default Component.createFactory({
     typeId: 'FKPager',
     
-    defaultProps: {
-        showFirstButton: true,
-        showNextButton: true,
-        showPreviousButton: true,
-        showLastButton: true,
-        onChange: evt => {}
+    properties: {
+        pageIndex: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        pageSize: {
+            type: 'number',
+            defaultValue: null
+        },
+        
+        totalItemCount: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        showFirstButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showLastButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showPreviousButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        showLastButton: {
+            type: 'boolean',
+            defaultValue: true
+        },
+        
+        onChange: {
+            type: 'function',
+            defaultValue: null
+        }
     },
 
     view: behavior => {
@@ -102,7 +136,7 @@ function renderPager(props, onChange) {
                     className: 'fk-pager-Button-last',
                     tooltip: (showButtonTexts ? '' : 'Last'),
                     disabled: disabled || metrics.isLastPage,
-                    onClick: on(_ =>{pageIndex: metrics.pageCount - 1})
+                    onClick: onChange.bind(_ =>{pageIndex: metrics.pageCount - 1})
                 })))
     );
 }

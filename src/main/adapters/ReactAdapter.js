@@ -28,6 +28,8 @@ const ReactAdapter = {
     
     convertComponentFactory(factory) {
         if (!isComponentFactory(factory)) {
+            console.error("[ReactAdapter.createElement] Illegal value for first argument 'factory':", factory);
+
             throw new TypeError(
                 '[ReactAdapter:convertComponentFactory] '
                 + "First argument 'factory' must be a component factory");
@@ -50,6 +52,10 @@ const ReactAdapter = {
         constructor.defaultProps = config.defaultProps;
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
+    },
+    
+    toString() {
+        return 'ReactComponentAdapter/singleton';
     }
 };
 
@@ -93,6 +99,11 @@ class ReactAdapterComponent extends React.Component {
         this.__events = ui.events;
 
         this.__displayObs.subscribe(display => {
+            if (!React.isValidElement(display)) {
+                console.error('[ReactComponentAdapter] Invalid content:', display);
+                throw new TypeError('[ReactComponentAdapter] Content is not a valid react element');
+            }
+            
             this.__domTree = display;
             this.__needsToBeRendered = true;
             
@@ -158,6 +169,10 @@ class ReactAdapterComponent extends React.Component {
         
         return ret;
     }
+    
+    toString() {
+        return 'ReactAdapterComponent/class';
+    }
 }
 
 export default ReactAdapter;
@@ -165,9 +180,9 @@ export default ReactAdapter;
 
 function isComponentFactory(value) {
     return typeof value === 'function'
-            && value.meta
-            && value.meta.config
-            && value.meta.Component
-            && typeof value.meta.Component.isFactory === 'function'
-            && value.meta.Component.isFactory(value);
+        && value.meta
+        && value.meta.config
+        && value.meta.Component
+        && typeof value.meta.Component.isFactory === 'function'
+        && value.meta.Component.isFactory(value);
 }

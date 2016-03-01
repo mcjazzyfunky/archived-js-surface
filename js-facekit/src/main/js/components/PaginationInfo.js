@@ -9,11 +9,27 @@ const dom = Component.createElement;
 export default Component.createFactory({
     typeId: 'FKPaginationInfo',
     
-    defaultProps: {
-        type: 'infoAboutPage',
-        pageIndex: -1,
-        pageSize: -1,
-        totalItemCount: -1
+    properties: {
+        type: {
+            type: 'string', 
+            defaultValue: 'infoAboutPage',
+            options: ['infoAboutPage']
+        },
+        
+        pageIndex: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        pageSize: {
+            type: 'number',
+            defaultValue: null
+        },
+        
+        totalItemCount: {
+            type: 'number',
+            defaultValue: null
+        },
     },
 
     view: behavior => behavior.map(renderPaginationInfo) 
