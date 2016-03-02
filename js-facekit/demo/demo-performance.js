@@ -187,6 +187,41 @@ export const DemoOfPagination = Component.createFactory({
     }
 });
 
+export const DemoOfPagination2 = Component.createFactory({
+    typeId: 'DemoOfPagination',
+    
+    initialState: {
+        pageIndex: 0
+    },
+    
+    updateState: action => {
+        return {pageIndex: action};
+    },
+    
+    render: (_, state) => {
+        const
+            actions = new Subject(),
+            bindOnChange = binder(actions, event => event.targetPage),
+        
+            display = 
+                dom('div',
+                    {className: 'container-fluid'},
+                    Seq.range(1, number).map(_ =>
+                        dom('div',
+                            {className: 'row'},
+                            Pagination({
+                                className: "col-md-3",
+                                pageIndex: state.pageIndex,
+                                pageSize: pageSize,
+                                totalItemCount: totalItemCount,
+                                onChange: bindOnChange()}))));
+        return {
+            display,
+            actions
+        }
+    }
+});
+
 // -----------------
 
 class RPaginationClass extends React.Component {
@@ -313,7 +348,7 @@ const
 
 if (1) {
     Component.mount(
-        DemoOfPagination,
+        DemoOfPagination2,
         'main-content',
         'React');
 } else {

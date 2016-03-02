@@ -176,9 +176,10 @@ function checkComponentFactoryConfig(config) {
     } else if (hasViewProp && hasEventsProp && typeof config.events !== 'function') {
         error = "Optional component configuration value 'events' "
             + "has to be a function if function 'view' is provided";
-    } else if (hasRenderProp && hasInitialStateProp && typeof config.initialState !== 'function') {
-        error = "Optional component configuration value 'initialState' "
-            + " has to be a function if function 'render' is provided";
+    } else if (hasRenderProp && (hasInitialStateProp + hasUpdateStateProp) === 1) {
+        error = 'Either both or none of the component configuration parameters '
+            + "'initialState' and 'updateState' "
+            + " have to be configured if function 'render' is provided";
     } else if (hasRenderProp && hasUpdateStateProp && typeof config.updateState !== 'function') {
         error = "Optional component configuration value 'updateState' "
             + "has to be a function if function 'render' render is provided";
@@ -296,7 +297,45 @@ function normalizeConfig(config) {
 }
 
 function buildUIFunctionFromRenderFunction(config) {
+    const mappedConfig = {};
     
+    if (config.updateState) {
+        mappedConfig.model = actions => {
+            const
+                initialState =
+                    typeof config.initialState === 'function'
+                    ? config.initialState() // TODO: config.initialState(initialParams);
+                    : config.initialState;
+                    
+            return (
+                actions
+                    .startWith(initialState)
+                    .scan((state, action) => config.updateState(action, state))
+            );
+        };
+ 
+        const
+            actions = new Subject(),
+            onAction = action => actions.next(action);
+        
+        mappedConfig.view = (behavior, model) => ({
+            display:
+                behavior
+                    .combineLatest(model, (props, state) =>
+                        config.render(props, state, onAction)),
+            
+            actions:
+                actions.asObservable()
+        });
+        
+        if (config.events) {
+            mappedConfig.events = config.events;
+        }
+    } else {
+        mappedConfig.view = behavior => behavior.map(props => mappedConfig.render(props, null));
+    }
+
+    return buildUIFunctionFromViewFunction(mappedConfig);
 }
 
 function buildUIFunctionFromViewFunction(config) {
@@ -311,17 +350,7 @@ function buildUIFunctionFromViewFunction(config) {
                 !hasModelCfg
                 ? Observable.of(null)
                 : Observable.create(observer => model.subscribe(observer)),
-            /*
-            stateObservable = Observable.create(observer => {
-                if (!modelSubject) {
-                    return modelSbj.subscribe(observer);
-                } else {
-                    observer.next(null);
-                    observer.complete();
-                    return () => {};
-                }
-            }),
-            */
+            
             context = config.context ? config.context(dependencies) : dependencies,
             
             viewResult = config.view(behavior, modelProxy, context);
@@ -332,8 +361,8 @@ function buildUIFunctionFromViewFunction(config) {
         if (viewResult instanceof Observable) {
             if (hasModelCfg || hasEventsCfg) {
                 throw new TypeError(
-                    "[Component] The result of the 'view' function must contain the "
-                    + "property 'action' as 'model' or/and 'events' are configured");
+                    "[Component] The result of the 'view' function must be an object containing "
+                    + " the property 'actions' as 'model' or/and 'events' are configured");
             }
             
             ret = {display: viewResult, events: null};
