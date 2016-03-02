@@ -124,7 +124,7 @@ const Component = {
         }
 
         ComponentAdapter.mount(
-            content,
+            Component.isFactory(content) ? content() : content,
             mountNode);
     }
 };
@@ -300,82 +300,77 @@ function buildUIFunctionFromRenderFunction(config) {
 }
 
 function buildUIFunctionFromViewFunction(config) {
+    let model = null;
+
     return (behavior, dependencies) => {
         const
-            hasIntentCfg = !!config.intent,
             hasModelCfg = !!config.model,
             hasEventsCfg = !!config.events,
-            hasBroadcastsCfg = !!config.broadcasts,
-            
-            modelSbj = new Subject(),
+
+            modelProxy =
+                !hasModelCfg
+                ? Observable.of(null)
+                : Observable.create(observer => model.subscribe(observer)),
+            /*
+            stateObservable = Observable.create(observer => {
+                if (!modelSubject) {
+                    return modelSbj.subscribe(observer);
+                } else {
+                    observer.next(null);
+                    observer.complete();
+                    return () => {};
+                }
+            }),
+            */
             context = config.context ? config.context(dependencies) : dependencies,
-            viewResult = config.view(behavior, modelSbj.asObservable(), context);
-        
+            
+            viewResult = config.view(behavior, modelProxy, context);
+            
+            
         let ret;
-        
+
         if (viewResult instanceof Observable) {
-            ret = {display: viewResult, events: null, broadcasts: null};
+            if (hasModelCfg || hasEventsCfg) {
+                throw new TypeError(
+                    "[Component] The result of the 'view' function must contain the "
+                    + "property 'action' as 'model' or/and 'events' are configured");
+            }
+            
+            ret = {display: viewResult, events: null};
         } else if (viewResult === null) {
             throw new TypeError("[Component] The result of the 'view' function must not be null");
         } else if (typeof viewResult !== 'object') {
             throw new TypeError("[Component] The result of the 'view' function must be an observable or and object");
         } else if (!Objects.isSomething(viewResult.display)) {
-            throw new Error("[Component] The result of the 'view' function does not provide a 'display' observable");
+            throw new TypeError("[Component] The result of the 'view' function does not provide a 'display' observable");
         } else if (!(viewResult.display instanceof Observable)) {
             throw new TypeError("[Compoennt] The 'display' property of the result of the 'view' function must be an observable");
         } else {
             const
-                hasFeedbackProp = Objects.isSomething(viewResult.feedback),
                 hasActionsProp = Objects.isSomething(viewResult.actions),
-                hasEventsProp = Objects.isSomething(viewResult.events),
-                hasBroadcastsProp = Objects.isSomething(viewResult.hasBroadcastProp);
+                hasEventsProp = Objects.isSomething(viewResult.events);
                 
-            if (hasFeedbackProp + hasActionsProp + hasEventsProp > 1) {
+            if (hasActionsProp + hasEventsProp > 1) {
                 throw new Error('[Component] The result of the view function can only '
-                    + ' at a maximum have one of the following properties: '
-                    + "'feedback', 'actions', 'events'");
-            } else if (hasFeedbackProp && !hasIntentCfg) {
-                throw new Error('[Component] The result of the view function has '
-                    + "a property for 'feedback' but the component configuration "
-                    + "does not provide a corresponding 'intent' function");
+                    + " contain either an 'action' property or an 'view' not both ")
             } else if (hasEventsProp && hasModelCfg) {
                 throw new Error('[Component] The result of the view function has '
-                    + "a property for 'events' so in the component configuration "
+                    + "a property for 'events' so the component configuration "
                     + "must not provide a 'model' function");
             } else if (hasEventsProp && hasEventsCfg) {
                 throw new Error('[Component] The result of the view function has '
                     + "a property for 'events' so the component configuration "
                     + "must not provide a 'events' function");
-            } else if (hasEventsProp && hasBroadcastsCfg) {
-                throw new Error('[Component] The result of the view function has '
-                    + "a property for 'events' so the component configuration "
-                    + "must not provide a 'events' function");
-            } else if (hasBroadcastsProp && hasBroadcastsCfg) {
-                throw new Error('[Component] The result of the view function has '
-                    + "a property for 'broadcasts' sothe component configuration "
-                    + "must not provide a 'broadcasts' function");
             }
             
             let actions;
             
             if (hasActionsProp) {
                 actions = viewResult.actions;
-            } else if (hasFeedbackProp) {
-                actions = config.intent(viewResult.feedback);
             } else {
                 actions = Observable.empty();
             }
         
-            const model =
-                hasModelCfg
-                ? config.model(actions, context)
-                : Observable.of(null);
-            
-            if (!(model instanceof Observable)) {
-                throw new TypeError("[Component] Config function 'model' must return an observable");
-            }
-            
-            model.subscribe(state => modelSbj.next(state));
             
             let events = null;
             
@@ -384,18 +379,20 @@ function buildUIFunctionFromViewFunction(config) {
             } else if (hasEventsCfg) {
                 events = config.events(actions);
             }
-            
-            let broadcasts = null;
-            
-            if (hasBroadcastsProp) {
-                broadcasts = viewResult.broadcasts;
-            } else if (hasBroadcastsCfg) {
-                broadcasts = config.broadcasts(actions);
+           
+           
+            if (hasModelCfg) {
+               model = config.model(actions);
+                
+                if (!(model instanceof Observable)) {
+                    throw new TypeError("[Component] Config function 'model' must return an observable");
+                }
             }
             
-            ret = {display: viewResult.display, events: events, broadcasts: broadcasts};
+            ret = {display: viewResult.display, events: events};
+        
         }
-
+        
         return ret;
     };
 }

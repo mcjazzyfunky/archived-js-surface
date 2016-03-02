@@ -159,7 +159,10 @@ class ReactAdapterComponent extends React.Component {
     }
     
     render() {
-        if (!this.__hasIniialized) {
+        if (!this.__domTree) {
+            throw new Error('[ReactAdapterComponent:render] '
+                + `Invalid display behavior for components of type '${this.__config.typeId}'`);
+        } else if (!this.__hasIniialized) {
             this.__hasIniialized = true;
             this.__propsSbj.next(this.props);
         }

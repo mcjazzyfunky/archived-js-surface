@@ -4,7 +4,7 @@
 
 import {Component}  from 'js-bling';
 import {Seq} from 'js-prelude';
-import {Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
@@ -14,7 +14,9 @@ import ReactDOM from 'react-dom';
 
 const
     {createElement: dom, createEventBinder: binder} = Component,
-    number = 100;
+    number = 10,
+    pageSize = 25,
+    totalItemCount = 1220;
     
 export const Pagination = Component.createFactory({
     typeId: 'FKPagination',
@@ -155,44 +157,33 @@ function buildLinkListItem(text, isActive, moveToPage) {
 export const DemoOfPagination = Component.createFactory({
     typeId: 'DemoOfPagination',
     
-    properties: {
-        pageIndex: {
-            type: 'number',
-            defaultValue: 0
-        },
-        
-        pageSize: {
-            type: 'number',
-            defaultValue: 25
-        },
-        
-        totalItemCount: {
-            type: 'number',
-            defaultValue: 744
-        }
+    model: actions => {
+        return actions.startWith(0);
     },
     
-    view: behavior => {
+    view: (_, model) => {
         const
-            gotoPageEvents = new Subject(),
-            bindGotoPage = binder(gotoPageEvents, event => event.targetPage);
+            actions = new Subject(),
+            bindOnChange = binder(actions, event => event.targetPage),
         
+            display = 
+                model.map(pageIndex =>
+                    dom('div',
+                        {className: 'container-fluid'},
+                        Seq.range(1, number).map(_ =>
+                            dom('div',
+                                {className: 'row'},
+                                Pagination({
+                                    className: "col-md-3",
+                                    pageIndex: pageIndex,
+                                    pageSize: pageSize,
+                                    totalItemCount: totalItemCount,
+                                    onChange: bindOnChange()})))));
         
-        return gotoPageEvents
-            .startWith(1)
-            .merge(behavior.map(props => props.pageIndex))
-            .combineLatest(behavior, (currPageIdx, props) =>
-                dom('div',
-                    {className: 'container-fluid'},
-                    Seq.range(1, number).map(_ =>
-                        dom('div',
-                            {className: 'row'},
-                            Pagination({
-                                className: "col-md-3",
-                                pageIndex: currPageIdx,
-                                pageSize: props.pageSize,
-                                totalItemCount: props.totalItemCount,
-                                onChange: bindGotoPage()})))))
+        return {
+            display,
+            actions
+        }
     }
 });
 
@@ -293,7 +284,7 @@ function buildLinkListItem2(text, isActive, props, pageIndexToMove = null) {
 class RDemoOfPaginationClass extends React.Component {
     constructor() {
         super();
-        this.state = {currPageIdx: 5};    
+        this.state = {currPageIdx: 0};    
     }
     
     render() {
@@ -306,8 +297,8 @@ class RDemoOfPaginationClass extends React.Component {
                             RPagination({
                                 className: 'col-md-3',
                                 pageIndex: this.state.currPageIdx,
-                                pageSize: this.props.pageSize,
-                                totalItemCount: this.props.totalItemCount,
+                                pageSize: pageSize,
+                                totalItemCount: totalItemCount,
                                 onChange: evt => this.setState({currPageIdx: evt.targetPage})
                             })
                         )))
@@ -322,20 +313,12 @@ const
 
 if (1) {
     Component.mount(
-        DemoOfPagination({
-            pageIndex: 10,
-            pageSize: 25,
-            totalItemCount: 1000       
-        }),
+        DemoOfPagination,
         'main-content',
         'React');
 } else {
     ReactDOM.render(
-        RDemoOfPagination({
-            pageIndex: 10,
-            pageSize: 25,
-            totalItemCount: 1000        
-        }),
+        RDemoOfPagination(),
         document.getElementById('main-content'));
 }
 
