@@ -80,7 +80,7 @@ const Component = {
             throw new TypeError(
                 "[Component.createEventBinder] First argument 'target' must either be "
                 + 'a callback function or an observer or null or undefined');
-        } else if (typeof mapper === 'function') {
+        } else if (typeof mapper !== 'function') {
             throw new TypeError(
                 "[Component.createEventBinder] Second argument 'mapper' must "
                 + 'be a function');
@@ -327,7 +327,7 @@ function buildUIFunctionFromViewFunction(config) {
             const
                 hasFeedbackProp = Objects.isSomething(viewResult.feedback),
                 hasActionsProp = Objects.isSomething(viewResult.actions),
-                hasEventsProp = Objects.isSomething(viewResult.hasEventsProp),
+                hasEventsProp = Objects.isSomething(viewResult.events),
                 hasBroadcastsProp = Objects.isSomething(viewResult.hasBroadcastProp);
                 
             if (hasFeedbackProp + hasActionsProp + hasEventsProp > 1) {
@@ -376,8 +376,7 @@ function buildUIFunctionFromViewFunction(config) {
             }
             
             model.subscribe(state => modelSbj.next(state));
-            model.subscribe(state => console.log(state))
-            console.log(model, hasModelCfg)
+            
             let events = null;
             
             if (hasEventsProp) {

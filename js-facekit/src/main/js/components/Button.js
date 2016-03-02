@@ -3,8 +3,9 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-bling';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
+import {Subject} from 'rxjs';
 
-const dom = Component.createElement;
+const {createElement: dom, createEventBinder: binder} = Component;
 
 export default Component.createFactory({
     typeId: 'FKButton',
@@ -55,14 +56,16 @@ export default Component.createFactory({
     },
     
     view: behavior => {
-        const onClick = Component.createEventBinder();
+        const
+            clickEvents = new Subject(),
+            onClick = binder(clickEvents, event => {event: 'click'});
 
         return {
             display:
                 behavior.map(props => renderButton(props, onClick)),
             
             events: {
-                click: onClick.asObservable()
+                click: clickEvents.asObservable()
             }
         };
     }
@@ -72,11 +75,6 @@ function renderButton(props, onClick) {
     const
         key = props.key,
         
-        doOnClick =
-            typeof props.onClick === 'function'
-            ? onClick.bind(evt => "todo")
-            : null,
-
         icon = Strings.trimToNull(props.icon),
        
         iconPosition = props.iconPosition,
@@ -139,7 +137,7 @@ function renderButton(props, onClick) {
                 className: className,
                 title: tooltip,
                 disabled: disabled,
-                onClick: doOnClick,
+                onClick: onClick(),
                 key: key
             },
             (iconPosition === 'left' || iconPosition === 'top'

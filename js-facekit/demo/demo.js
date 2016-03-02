@@ -13,7 +13,7 @@ import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
 
-import {Observable} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
@@ -22,7 +22,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    dom = Component.createElement,
+    {createElement: dom, createEventBinder: binder} = Component,
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
     sizes = ['large', 'default', 'small', 'extra-small'],
     exampleIcons = ['fa-calendar', 'fa-twitter', 'glyphicon-home', 'glyphicon-print'],
@@ -180,7 +180,8 @@ export const DemoOfPagination = Component.createFactory({
     
     view: (behavior, model) => {
         const
-            onChange = Component.createEventBinder(),
+            changeEvents = new Subject(),
+            onChange = binder((_, pageIndex) => {tagetPage: pageIndex}),
         
             display = 
                 behavior.combineLatest(model, (props, state) =>
@@ -206,7 +207,7 @@ export const DemoOfPagination = Component.createFactory({
                             ))));
         return {
             display,
-            actions: onChange.asObservable()
+            actions: changeEvents.asObservable()
         };
     }
 });
