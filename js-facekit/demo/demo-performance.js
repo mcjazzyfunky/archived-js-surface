@@ -55,7 +55,7 @@ export const Pagination = Component.createFactory({
             bindMoveToPage =
                 binder(changeEvents, (_, pageIndex) => ({targetPage: pageIndex})),
             
-            display = behavior.map(props => {
+            contents = behavior.map(props => {
                 const
                     pageIndex = props.pageIndex,
                     
@@ -137,7 +137,7 @@ export const Pagination = Component.createFactory({
                     changeEvents
             };
 
-        return {display, events};
+        return {contents, events};
     }
 });
 
@@ -166,7 +166,7 @@ export const DemoOfPagination = Component.createFactory({
             actions = new Subject(),
             bindOnChange = binder(actions, event => event.targetPage),
         
-            display = 
+            contents = 
                 model.map(pageIndex =>
                     dom('div',
                         {className: 'container-fluid'},
@@ -181,7 +181,7 @@ export const DemoOfPagination = Component.createFactory({
                                     onChange: bindOnChange()})))));
         
         return {
-            display,
+            contents,
             actions
         }
     }
@@ -195,15 +195,18 @@ export const DemoOfPagination2 = Component.createFactory({
     },
     
     updateState: action => {
-        return {pageIndex: action};
+        return {pageIndex: action.targetPage};
     },
     
     render: (_, state) => {
         const
             actions = new Subject(),
-            bindOnChange = binder(actions, event => event.targetPage),
+
+            bindOnChange = binder(actions, event => ({
+                targetPage: event.targetPage
+            })),
         
-            display = 
+            content = 
                 dom('div',
                     {className: 'container-fluid'},
                     Seq.range(1, number).map(_ =>
@@ -216,9 +219,9 @@ export const DemoOfPagination2 = Component.createFactory({
                                 totalItemCount: totalItemCount,
                                 onChange: bindOnChange()}))));
         return {
-            display,
+            content,
             actions
-        }
+        };
     }
 });
 
@@ -356,4 +359,3 @@ if (1) {
         RDemoOfPagination(),
         document.getElementById('main-content'));
 }
-

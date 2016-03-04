@@ -18,6 +18,10 @@ const ReactAdapter = {
         return ret;
     },
     
+    isElement(obj) {
+        return React.isValidElement(obj); // TODO - is this really correct???
+    },
+    
     mount(content, targetNode) {
         if (!React.isValidElement(content)) {
             throw new TypeError("[ReactAdapter.mount] First argument 'content' has to be a valid element");
@@ -48,7 +52,7 @@ const ReactAdapter = {
             ReactAdapterComponent.call(this, factory, args);
         };
 
-        constructor.displayName = config.typeId;
+        constructor.contentsName = config.typeId;
         constructor.defaultProps = config.defaultProps;
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
@@ -83,28 +87,27 @@ class ReactAdapterComponent extends React.Component {
         
         const 
             result = componentFactory.meta.normalizedConfig.ui(this.__propsSbj, dependencies),
-            ui = result instanceof Observable ? {display: result} : result;
+            ui = result instanceof Observable ? {contents: result} : result;
 
-        if (!(ui  && ui.display instanceof Observable)) {
+        if (!(ui  && ui.contents instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
-                    + `Illegal view configuration of ${config.typeId}:`, ui);
+                    + `Illegal return value of function 'ui' of component factory '${config.typeid}':`, ui);
             
             throw new TypeError(
                     '[ReactAdapterComponent.constructor] '
-                    + config.typeId
-                    + ' view function did not return a proper value');
+                    + `Function 'ui' of component factory '${config.typeId}' did not return a proper value`);
         }
 
-        this.__displayObs = ui.display;
+        this.__contentsObs = ui.contents;
         this.__events = ui.events;
 
-        this.__displayObs.subscribe(display => {
-            if (!React.isValidElement(display)) {
-                console.error('[ReactComponentAdapter] Invalid content:', display);
+        this.__contentsObs.subscribe(contents => {
+            if (!React.isValidElement(contents)) {
+                console.error('[ReactComponentAdapter] Invalid content:', contents);
                 throw new TypeError('[ReactComponentAdapter] Content is not a valid react element');
             }
             
-            this.__domTree = display;
+            this.__domTree = contents;
             this.__needsToBeRendered = true;
             
             setTimeout(() => {
@@ -161,7 +164,7 @@ class ReactAdapterComponent extends React.Component {
     render() {
         if (!this.__domTree) {
             throw new Error('[ReactAdapterComponent:render] '
-                + `Invalid display behavior for components of type '${this.__config.typeId}'`);
+                + `Invalid contents behavior for components of type '${this.__config.typeId}'`);
         } else if (!this.__hasIniialized) {
             this.__hasIniialized = true;
             this.__propsSbj.next(this.props);
