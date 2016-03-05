@@ -4,11 +4,13 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
+import {Subject} from 'rxjs';
 
-const dom = Component.createElement;
+const {createElement: dom, createEventBinder: binder} = Component;
 
 export default Component.createFactory({
-    typeId: 'FKPagination',
+    typeId:
+        'FKPagination',
     
     properties: {
         pageIndex: {
@@ -41,34 +43,22 @@ export default Component.createFactory({
             defaultValue: true
         },
         
-        showLastButton: {
-            type: 'boolean',
-            defaultValue: true
-        },
-        
         onChange: {
             type: 'function',
             defaultValue: null
         }
     },
 
-    view: behavior => {
-        const
-            onChange = Component.createEventBinder();
-
-        return {
-            display:
-                behavior.map(props => renderPagination(props, onChange)),
-
-            events: {
-                change: onChange.toObservable()
-            }
-        };
-    }
+    render:
+        renderPagination
 });
             
-function renderPagination(props, onChange) {
+function renderPagination(props) {
+    const changes = new Subject();
+
     const
+        bindMoveToPage = binder(changes, (_, pageIndex) => ({targetPage: pageIndex})),
+
         pageIndex = props.pageIndex,
         
         metrics = PaginationHelper.calcPaginationMetrics(
@@ -91,34 +81,28 @@ function renderPagination(props, onChange) {
                             ? renderLinkListItem(
                                     1,
                                     pageIndex === 0,
-                                    props,
-                                    onChange,
-                                    0)
+                                    bindMoveToPage(1))
                             : null,
         
         precedingEllipsis = paginationInfo.firstButtonIndex > 1
                                 ? renderLinkListItem(
                                         '...',
                                         false,
-                                        props,
-                                        onChange)
+                                        bindMoveToPage(0)) // TODO
                                 : null,
         
         succeedingEllipsis = paginationInfo.lastButtonIndex < metrics.pageCount - 2
                                     ? renderLinkListItem(
                                             '...',
                                             false,
-                                            props,
-                                            onChange)
+                                            bindMoveToPage(0)) // TODO
                                     : null,
         
         lastPageLink =  metrics.pageCount > 0
                             ? renderLinkListItem(
                                 metrics.pageCount,
                                 pageIndex === metrics.pageCount - 1,
-                                props,
-                                onChange,
-                                metrics.pageCount - 1)
+                                bindMoveToPage(metrics.pageCount - 1))
                             : null,
 
         buttons = Seq.range(
@@ -127,35 +111,35 @@ function renderPagination(props, onChange) {
                     .map(index => renderLinkListItem(
                                         index + 1,
                                         index === pageIndex,
-                                        props,
-                                        onChange,
-                                        index));        
-    return (
-        dom('div',
-            {className: classNameOuter},
-            dom('ul',
-                {className: classNameInner},
-                firstPageLink,
-                precedingEllipsis,
-                ...buttons,
-                succeedingEllipsis,
-                lastPageLink))
-    );
+                                        bindMoveToPage(index))),
+        
+        content =
+            dom('div',
+                {className: classNameOuter},
+                dom('ul',
+                    {className: classNameInner},
+                    firstPageLink,
+                    precedingEllipsis,
+                    ...buttons,
+                    succeedingEllipsis,
+                    lastPageLink));
+                    
+        return {
+            content,
+            events: {
+                change: changes.asObservable()
+            }
+        };
 }
 
-function renderLinkListItem(text, isActive, props, onChange, pageIndexToMove = null) {
-    const
-        onChangeProp = props.onChange,
-        
-        onClick = !isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
-            ? onChange.bind(_ => pageIndexToMove)
-            : null;
-        
+function renderLinkListItem(text, isActive, onMoveToPage) {
     return (
-        dom('li',
-            {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
+        dom('li', {
+                className: isActive ? 'active' : '',
+                key: text !== '...' ? text + '-' + isActive : undefined
+            },
             dom('a',
-                {onClick: onClick},
+                {onClick: onMoveToPage},
                 text))
     );
 }

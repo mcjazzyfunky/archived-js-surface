@@ -4,16 +4,11 @@
 }
 
 .fk-button > .fk-has-text .fk-icon.fk-right {
-    xmargin-left: 0.px;
 }
 
 .fk-button > .fk-has-text .fk-icon.fk-top,
 .fk-button > .fk-has-text .fk-icon.fk-bottom {
     display: block;
-}
-
-.fk-button span.caret {
-    margin-left: 4px;
 }
 
 .fk-button > .btn-link.fk-has-icon.fk-has-text:hover {

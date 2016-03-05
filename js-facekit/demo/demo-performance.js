@@ -14,7 +14,7 @@ import ReactDOM from 'react-dom';
 
 const
     {createElement: dom, createEventBinder: binder} = Component,
-    number = 10,
+    number = 100,
     pageSize = 25,
     totalItemCount = 1220;
     

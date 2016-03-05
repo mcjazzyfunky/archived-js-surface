@@ -21,10 +21,16 @@ import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+const pagination = {
+    pageSize: 25,
+    totalItemCount: 1220
+};
+
+
 const
     {createElement: dom, createEventBinder: binder} = Component,
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
-    sizes = ['large', 'default', 'small', 'extra-small'],
+    sizes = ['large', 'normal', 'small', 'tiny'],
     exampleIcons = ['fa-calendar', 'fa-twitter', 'glyphicon-home', 'glyphicon-print'],
     iconPositions = ['left', 'top', 'right', 'bottom'];
 
@@ -112,11 +118,12 @@ const demoOfButtonsDisplay = (props, bind) => (
             dom('div',
                 {className: 'col-md-2'},
                 'Menu buttons:'),
-            dom('button', {
+            Button({
                     className: 'col-md-2',
-                    type: 'info', text: 'Dropdown button',
+                    type: 'info',
+                    text: 'Dropdown button',
                     menu: [{text: 'Item 1'}]}),
-            dom('button', {
+            Button({
                     className: 'col-md-2',
                     text: 'Split button',
                     onClick: () => alert('Juhuuu'),
@@ -135,7 +142,7 @@ export const DemoOfButtonGroups = Component.createFactory({
     typeId: 'DemoOfButtonGroups',
     
     view: behavior => ({
-        display: behavior.map(props =>
+        contents: behavior.map(props =>
             dom('div',
                 {className: 'container-fluid'},
                 dom('div',
@@ -152,7 +159,7 @@ export const DemoOfButtonGroups = Component.createFactory({
                         Button({text: 'New', type: 'info'}),
                         Button({text: 'Edit', type: 'warning'}),
                         Button({text: 'Delete', type: 'danger'}),
-                        Button({text: 'Export', type: 'success', xxxmenu: [{text: 'Juhu'}]})
+                        Button({text: 'Export', type: 'success', menu: [{text: 'Juhu'}]})
                     ),
                     ButtonGroup(
                         {className: 'col-md-3'},
@@ -164,49 +171,43 @@ export const DemoOfButtonGroups = Component.createFactory({
 export const DemoOfPagination = Component.createFactory({
     typeId: 'DemoOfPagination',
     
-    defaultProps: {
-        pageIndex: 0,
-        pageSize: 25,
-        totalItemCount: 744
+    initialState: {
+        currentPage: 0
     },
     
-    model: actions => {return Observable.of({pageIdx: 1});
-        return (
-            actions
-                .map(action => ({pageIdx: action}))
-                .startWith({pageIdx: 0})
-        );
+    updateState(action, state) {
+        return {currentPage: action.targetPage};
     },
     
-    view: (behavior, model) => {
+    render(props, state) {
         const
             changeEvents = new Subject(),
-            onChange = binder((_, pageIndex) => {tagetPage: pageIndex}),
+            onChange = binder(changeEvents, event => ({targetPage: event.targetPage}))(),
+
+            content = 
+                dom('div',
+                    {className: 'container-fluid'},
+                    ...Seq.range(1, 100).map(_ =>
+                        dom('div',
+                            {className: 'row'},
+                            Pagination({
+                                className: 'col-md-3',
+                                pageIndex: state.currentPage,
+                                pageSize: pagination.pageSize,
+                                totalItemCount: pagination.totalItemCount,
+                                onChange: onChange
+                            }),
+                            Pager({
+                                className: 'col-md-3',
+                                pageIndex: state.currentPage,
+                                pageSize: pagination.pageSize,
+                                totalItemCount: pagination.totalItemCount,
+                                onChange: onChange 
+                            })
+                        )));
         
-            display = 
-                behavior.combineLatest(model, (props, state) =>
-                    dom('div',
-                        {className: 'container-fluid'},
-                        ...Seq.range(1, 100).map(_ =>
-                            dom('div',
-                                {className: 'row'},
-                                Pagination({
-                                    className: 'col-md-3',
-                                    pageIndex: model.pageIdx,
-                                    pageSize: props.pageSize,
-                                    totalItemCount: props.totalItemCount,
-                                    onChange: onChange.bind(({targetPage}) => targetPage)
-                                }),
-                                Pager({
-                                    className: 'col-md-3',
-                                    pageIndex: model.pageIdx,
-                                    pageSize: props.pageSize,
-                                    totalItemCount: props.totalItemCount,
-                                    onChange: evt => alert('juhu') 
-                                })
-                            ))));
         return {
-            display,
+            content,
             actions: changeEvents.asObservable()
         };
     }

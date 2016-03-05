@@ -23,7 +23,7 @@ export default Component.createFactory({
         
         type: {
             type: 'string',
-            options: ['default'],
+            options: ['default', 'link', 'info', 'warning', 'danger', 'success'],
             defaultValue: 'default'
         },
         
@@ -34,8 +34,8 @@ export default Component.createFactory({
         
         size: {
             type: 'string',
-            options: ['default'],
-            defaultValue: 'default'
+            options: ['normal', 'large', 'small', 'tiny'],
+            defaultValue: 'normal'
         },
         
         iconPosition: {
@@ -55,24 +55,24 @@ export default Component.createFactory({
         }
     },
     
-    view: behavior => {
-        const
-            clickEvents = new Subject(),
-            onClick = binder(clickEvents, event => {event: 'click'});
+    render: props => {
+        const clicks = new Subject();
 
         return {
-            display:
-                behavior.map(props => renderButton(props, onClick)),
+            content:
+                renderButton(props, clicks),
             
             events: {
-                click: clickEvents.asObservable()
+                click: clicks
             }
         };
     }
 });
     
-function renderButton(props, onClick) {
+function renderButton(props, clicks) {
     const
+        onClick = binder(clicks, event => {event: 'click'})(),
+        
         key = props.key,
         
         icon = Strings.trimToNull(props.icon),
@@ -115,12 +115,12 @@ function renderButton(props, onClick) {
         
         caret =
             hasMenu
-            ? dom({className: 'caret'})
+            ? dom('span', {className: 'caret'})
             : null,
 
         sizeClass =
             Objects.get(
-                {large: 'btn-lg', small: 'btn-sm', 'extra-small': 'btn-xs'},
+                {large: 'btn-lg', small: 'btn-sm', tiny: 'btn-xs'},
                 props.size, ''),
 
         className =
@@ -160,6 +160,7 @@ function renderButton(props, onClick) {
                         dom('a',
                             null,
                             'Juhu'))));
+
     } else if (isSplitButton) {
         ret = 
             dom('div',
@@ -167,6 +168,7 @@ function renderButton(props, onClick) {
                 button,
                 dom('button',
                     {className: 'btn dropdown-toggle btn-' + type},
+                    ' ',
                     caret),
                 dom('ul',
                     {className: 'dropdown-menu'},

@@ -121,13 +121,14 @@ class ReactAdapterComponent extends React.Component {
             Object.keys(this.__events).forEach(key => {
                 const obs = this.__events[key];
 
+// TODO: Check whether known event name
+
                 if (key.length > 0 && obs instanceof Observable) {
                     obs.subscribe(event => {
                         if (this.props) {
                             const
                                 attr = 'on' + key[0].toUpperCase() + key.substr(1),
                                 callback = this.props[attr];
-                            
                             if (typeof callback === 'function') {
                                 callback(event);
                             }
@@ -136,7 +137,7 @@ class ReactAdapterComponent extends React.Component {
                 } 
             });
         }
-        
+
         this.componentWillReceiveProps(superArgs[0])
         this.__hasInitialized = false;
     }

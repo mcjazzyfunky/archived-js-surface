@@ -6,8 +6,9 @@ import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-bling';
+import {Subject} from 'rxjs';
 
-const dom = Component.createElement;
+const {createElement: dom, createEventBinder: binder}= Component;
 
 export default Component.createFactory({
     typeId: 'FKPager',
@@ -55,21 +56,23 @@ export default Component.createFactory({
     },
 
     view: behavior => {
-        const onChange = Component.createEventBinder();
+        const changes = new Subject();
 
         return {
-            display:
-                 behavior.map(props => renderPager(props, onChange)),
+            contents:
+                 behavior.map(props => renderPager(props, changes)),
                  
             events: {
-                change: onChange.toObservable()
+                change: changes
             }
         };
     }
 });
 
-function renderPager(props, onChange) {
+function renderPager(props, changes) {
     const
+        bindMoveToPage = binder(changes, (_, pageIndex) => {targetPage: pageIndex}),
+        
         metrics =
             PaginationHelper.calcPaginationMetrics(
                 props.pageIndex,
@@ -101,7 +104,7 @@ function renderPager(props, onChange) {
                     className: 'fk-pager-Button-first',
                     tooltip: (showButtonTexts ? '' : 'First'),
                     disabled: disabled || metrics.isFirstPage,
-                    onClick: onChange.bind(_ => {pageIndex: 0})
+                    onClick: bindMoveToPage(0)
                 }),
                 
                 showPreviousButton && Button({
@@ -110,7 +113,7 @@ function renderPager(props, onChange) {
                     className: 'fk-pager-Button-previous',
                     tooltip: (showButtonTexts ? '' : 'Previous'),
                     disabled: disabled || metrics.isFirstPage,
-                    onClick: onChange.bind(_ => {pageIndex: metrics.pageIndex - 1})
+                    onClick: bindMoveToPage(metrics.pageIndex - 1)
                 })),
             (type !== 'randomAccess'
                             ? PaginationInfo({
@@ -128,7 +131,7 @@ function renderPager(props, onChange) {
                     className: 'fk-pager-Button-next',
                     tooltip: (showButtonTexts ? '' : 'Next'),
                     disabled: disabled || metrics.isLastPage,
-                    onClick: onChange.bind(_ => {pageIndex: metrics.pageIndex + 1})
+                    onClick: bindMoveToPage(metrics.pageIndex + 1)
                 }),
                 showLastButton && Button({
                     text: (showButtonTexts ? 'Last' : ''),
@@ -136,7 +139,7 @@ function renderPager(props, onChange) {
                     className: 'fk-pager-Button-last',
                     tooltip: (showButtonTexts ? '' : 'Last'),
                     disabled: disabled || metrics.isLastPage,
-                    onClick: onChange.bind(_ =>{pageIndex: metrics.pageCount - 1})
+                    onClick: bindMoveToPage(metrics.pageCount - 1)
                 })))
     );
 }
