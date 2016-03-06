@@ -55,22 +55,13 @@ export default Component.createFactory({
         }
     },
     
-    render: props => {
-        const clicks = new Subject();
-
-        return {
-            content:
-                renderButton(props, clicks),
-            
-            events: {
-                click: clicks
-            }
-        };
-    }
+    render: renderButton
 });
     
-function renderButton(props, clicks) {
+function renderButton(props) {
     const
+        clicks = new Subject(),
+        
         onClick = binder(clicks, event => {event: 'click'})(),
         
         key = props.key,
@@ -129,27 +120,26 @@ function renderButton(props, clicks) {
                 sizeClass,
                 (text === null ? null : 'fk-has-text'),
                 (iconElement === null ? null : 'fk-has-icon'),
-                (!isDropdown ? null : 'dropdown-toggle'));
+                (!isDropdown ? null : 'dropdown-toggle')),
 
-    const button = (
-        dom('button', {
-                type: 'button',
-                className: className,
-                title: tooltip,
-                disabled: disabled,
-                onClick: onClick(),
-                key: key
-            },
-            (iconPosition === 'left' || iconPosition === 'top'
-                    ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
-                    : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
-            (isDropdown ? caret : null))
-    );
+        button =
+            dom('button', {
+                    type: 'button',
+                    className: className,
+                    title: tooltip,
+                    disabled: disabled,
+                    onClick: onClick,
+                    key: key
+                },
+                (iconPosition === 'left' || iconPosition === 'top'
+                        ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
+                        : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
+                (isDropdown ? caret : null));
     
-    let ret;
+    let content;
 
     if (isDropdown) {
-        ret =
+        content =
             dom('div',
                 {className: 'fk-button btn-group ' + props.className},
                 button,
@@ -162,7 +152,7 @@ function renderButton(props, clicks) {
                             'Juhu'))));
 
     } else if (isSplitButton) {
-        ret = 
+        content = 
             dom('div',
                 {className: 'fk-button btn-group ' + props.className},
                 button,
@@ -178,12 +168,17 @@ function renderButton(props, clicks) {
                             null,
                             'Juhu'))));
     } else {
-        ret =
+        content =
             dom('div',
                 {className: 'fk-button btn-group ' + props.className},
                 button);
     }
 
-    return ret;
+    return {
+        content,
+        events: {
+            click: clicks.asObservable()
+        }
+    };
 }
 

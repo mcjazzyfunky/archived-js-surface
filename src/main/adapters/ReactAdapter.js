@@ -52,8 +52,15 @@ const ReactAdapter = {
             ReactAdapterComponent.call(this, factory, args);
         };
 
-        constructor.contentsName = config.typeId;
-        constructor.defaultProps = config.defaultProps;
+        constructor.displayName = config.typeId;
+        constructor.defaultProps = {};
+        
+        if (config.properties) {
+            Object.keys(config.properties).forEach(property => {
+                constructor.defaultProps[property] = config.properties[property].defaultValue;  
+            });
+        } 
+        
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
     },

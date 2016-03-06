@@ -43,6 +43,11 @@ export default Component.createFactory({
             defaultValue: true
         },
         
+        maxPageButtonCount: {
+            type: 'number',
+            defaultValue: 6
+        },
+        
         onChange: {
             type: 'function',
             defaultValue: null
@@ -69,7 +74,7 @@ function renderPagination(props) {
         paginationInfo = PaginationHelper.determineVisiblePaginationButtons(
                                 props.pageIndex,
                                 metrics.pageCount,
-                                6),
+                                props.maxPageButtonCount),
         
         classNameOuter = ComponentHelper.buildCssClass(
                                 'fk-pagination',
@@ -88,14 +93,19 @@ function renderPagination(props) {
                                 ? renderLinkListItem(
                                         '...',
                                         false,
-                                        bindMoveToPage(0)) // TODO
+                                        bindMoveToPage(Math.max(0,
+                                            paginationInfo.firstButtonIndex
+                                            - Math.floor(paginationInfo.pageButtonCount - 2) / 2)
+                                            - 1))
                                 : null,
         
         succeedingEllipsis = paginationInfo.lastButtonIndex < metrics.pageCount - 2
                                     ? renderLinkListItem(
                                             '...',
                                             false,
-                                            bindMoveToPage(0)) // TODO
+                                        bindMoveToPage(Math.min(metrics.pageCount - 1,
+                                            paginationInfo.lastButtonIndex
+                                            + Math.floor(paginationInfo.pageButtonCount - 2) / 2)))
                                     : null,
         
         lastPageLink =  metrics.pageCount > 0
@@ -112,7 +122,7 @@ function renderPagination(props) {
                                         index + 1,
                                         index === pageIndex,
                                         bindMoveToPage(index))),
-        
+
         content =
             dom('div',
                 {className: classNameOuter},
