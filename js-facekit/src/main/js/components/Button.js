@@ -62,7 +62,7 @@ function renderButton(props) {
     const
         clicks = new Subject(),
         
-        onClick = binder(clicks, event => {event: 'click'})(),
+        onClick = binder(clicks, _ => ({event: 'click'}))(),
         
         key = props.key,
         

@@ -62,7 +62,9 @@ export default Component.createFactory({
 function renderPager(props) {
     const
         changes = new Subject(),
-        bindMoveToPage = binder(changes, (_, pageIndex) => ({targetPage: pageIndex})),
+
+        bindMoveToPage =
+            binder(changes, (_, pageIndex) => ({targetPage: pageIndex})),
         
         metrics =
             PaginationHelper.calcPaginationMetrics(
@@ -122,7 +124,7 @@ function renderPager(props) {
                         className: 'fk-pager-Button-next',
                         tooltip: (showButtonTexts ? '' : 'Next'),
                         disabled: disabled || metrics.isLastPage,
-                        onClick: () => alert("bindMoveToPage(metrics.pageIndex + 1)")
+                        onClick: bindMoveToPage(metrics.pageIndex + 1)
                     }),
                     showLastButton && Button({
                         text: (showButtonTexts ? 'Last' : ''),
@@ -132,7 +134,7 @@ function renderPager(props) {
                         disabled: disabled || metrics.isLastPage,
                         onClick: bindMoveToPage(metrics.pageCount - 1)
                     })));
-changes.subscribe(e => console.log(e))        
+
         return {
             content,
             events: {
