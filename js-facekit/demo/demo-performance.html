@@ -1,39 +1,43 @@
+<!DOCTYPE html>
+
 <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="demo.css"></link>
-        <link rel="stylesheet" type="text/css" href="../src/main/css/button.css"></link>
-        <link rel="stylesheet" type="text/css" href="../src/main/css/pager.css"></link>
-        <link rel="stylesheet" type="text/css" href="../src/main/css/pagination.css"></link>
-        <link rel="stylesheet" type="text/css" href="../src/main/css/pagination-info.css"></link>
-        
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css"></link>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<head>
+    <link rel="stylesheet" type="text/css" href="demo.css"/>
+    <link rel="stylesheet" type="text/css" href="../src/main/css/button.css"/>
+    <link rel="stylesheet" type="text/css" href="../src/main/css/pager.css"/>
+    <link rel="stylesheet" type="text/css" href="../src/main/css/pagination.css"/>
+    <link rel="stylesheet" type="text/css" href="../src/main/css/pagination-info.css"/>
 
-        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../../node_modules/font-awesome/css/font-awesome.min.css"/>
 
-        <script type="text/javascript" src="../../node_modules/systemjs/dist/system.js"></script> 
-        <script type="text/javascript">
-            System.config({
-                baseURL: '../..',
-                transpiler: 'plugin-babel',
-                map: {
-                    'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
-                    'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-                    'js-prelude': 'node_modules/js-prelude/index.js',
-                    'rxjs': 'node_modules/rxjs/bundles/Rx.umd.js',
-                    'react': 'node_modules/react/dist/react.js',
-                    'react-dom': 'node_modules/react-dom/dist/react-dom.js',
-                    'js-bling': 'index.js',
-                    'js-bling-adapter': '../../../src/main/adapters/ReactAdapter.js'
-                }
-            });
-            
-            System.import('js-facekit/demo/demo-performance.js');
-        </script>
-    </head>
-    <body>
-        <div id="main-content">
-        </div>
-    </body>
+    <script type="text/javascript" src="../../node_modules/systemjs/dist/system.js"></script>
+    <script type="text/javascript">
+        System.config({
+            baseURL: '../..',
+            transpiler: 'plugin-babel',
+            paths: {
+                //     '*': '*.js'
+            },
+            map: {
+                'bootstrap': 'node_modules/bootstrap/dist/js/bootstrap.js',
+                'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
+                'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
+                'js-prelude': 'node_modules/js-prelude/index.js',
+                'jquery': 'node_modules/jquery/dist/jquery.js',
+                'rxjs': 'lib/rxjs/Rx.umd.js',
+                'react': 'node_modules/react/dist/react.js',
+                'react-dom': 'node_modules/react-dom/dist/react-dom.js',
+                'js-bling': 'index.js',
+                'js-bling-adapter': 'src/main/adapters/ReactAdapter.js'
+            }
+        });
+
+        System.import('js-facekit/demo/demo-performance.js');
+    </script>
+</head>
+<body>
+<div id="main-content">
+</div>
+</body>
 </html>

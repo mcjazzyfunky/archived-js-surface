@@ -213,15 +213,32 @@ export const DemoOfPagination = Component.createFactory({
     }
 });
 
+const DemoOfTabs = Component.createFactory({
+    typeId: 'DemoOfTabs',
+
+    render: props => {
+        const content =
+            dom('div',
+                null,
+                Tabs(null,
+                    Tab(
+                        {caption: "Tab1"},
+                        "Some content"),
+                    Tab(
+                        {caption: "Tab2"},
+                        "Some other content"),
+                    Tab(
+                        {caption: "Tab3"},
+                        "Some complete other content")));
+        return content;
+    }
+});
 
 const
     demo1 = DemoOfButtons(),
     demo2 = DemoOfButtonGroups(),
-    demo3 = DemoOfPagination({
-        pageIndex: 10,
-        pageSize: 25,
-        totalItemCount: 1000        
-    }),
+    demo3 = DemoOfPagination(),
+    demo4 = DemoOfTabs(),
     demos = Tabs(null,
         Tab({caption: 'Buttons'}, demo1),
         Tab({caption: 'Button groups'}, demo2),
@@ -239,5 +256,5 @@ const demo = VerticalNavi({
 });
 
 Component.mount(
-    demo3,
+    demo4,
     'main-content');

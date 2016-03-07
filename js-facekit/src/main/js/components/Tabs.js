@@ -5,7 +5,7 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Arrays, Seq} from 'js-prelude';
 import $ from 'jquery';
 
-const dom = Component.createElement;
+const {createElement: dom, createEventBinder: binder} = Component;
 
 export default Component.createFactory({
     typeId: 'FKTabs',
@@ -40,10 +40,12 @@ export default Component.createFactory({
         }
     },
     
-    view:
-        behavior => behavior.map(renderTabs),
+    render:
+        renderTabs,
             
     onMount: ({domElement}) => {
+        $("ul.navtabs").tabs();
+        /*
         const
             $elem = $(domElement);
 
@@ -57,12 +59,12 @@ export default Component.createFactory({
                 });
             })
             .on('click', evt => {
-                evt.preventDefault();console.log($.fn)
+                evt.preventDefault();
                 $(evt.target).tab('show')
             });
+        */
     }
 });
-
 
 function renderTabs(props) {
     const
@@ -77,7 +79,7 @@ function renderTabs(props) {
             {className: 'fk-tabs-header'},
             dom('ul',
                 {className: 'nav nav-' + (tabStyle === 'pills' ? 'pills' : 'tabs')},
-                ...Seq.from(props.children).map((child, idx) => renderTab(child, dom, activeTab, idx))));
+                ...Seq.from(props.children).map((child, idx) => renderTab(child, activeTab, idx))));
 
     const body =
         dom('div',
@@ -100,7 +102,7 @@ function renderTabs(props) {
     return ret;
 }
 
-function renderTab(tab, html, activeTab, idx) {
+function renderTab(tab, activeTab, idx) {
     const
         props = tab.props,
         active = activeTab === props.name || idx === parseInt(activeTab, 10),

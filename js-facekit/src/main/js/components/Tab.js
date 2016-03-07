@@ -14,13 +14,9 @@ export default Component.createFactory({
         }  
     },
     
-    view: behavior => behavior.map(renderTab)
+    render:
+        props =>
+            dom('div',
+                {className: 'fk-tab'},
+                props.children)
 });
-
-function renderTab(props) {
-    return (
-        dom('div',
-            {className: 'fk-tab'},
-            props.children)
-    );
-}
