@@ -316,7 +316,7 @@ function checkProperty(propName, propValue, config) {
         const propConfig = config.properties[propName];
 
         if (propConfig === null && typeof propConfig !== 'object') {
-            throw new `Component does not have a property '${propName}'`;            
+            throw `Component does not have a property '${propName}'`;
         }
     } catch (error) {
         if (typeof error !== 'string') {

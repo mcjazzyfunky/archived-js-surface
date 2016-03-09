@@ -59,26 +59,34 @@ export default Component.createFactory({
 });
             
 function renderPagination(props) {
-    const changes = new Subject();
-
     const
+        changes = new Subject(),
+
         bindMoveToPage = binder(changes, (_, pageIndex) => ({targetPage: pageIndex})),
 
-        pageIndex = props.pageIndex,
-        
+        pageIndex = props.get('pageIndex'),
+
+        pageSize = props.get('pageSize'),
+
+        totalItemCount = props.get('totalItemCount'),
+
+        maxPageButtonCount = props.get('maxPageButtonCount'),
+
+        className = props.get('className'),
+
         metrics = PaginationHelper.calcPaginationMetrics(
-                        props.pageIndex,
-                        props.pageSize,
-                        props.totalItemCount),
-        
+                        pageIndex,
+                        pageSize,
+                        totalItemCount),
+
         paginationInfo = PaginationHelper.determineVisiblePaginationButtons(
-                                props.pageIndex,
+                                pageIndex,
                                 metrics.pageCount,
-                                props.maxPageButtonCount),
-        
+                                maxPageButtonCount),
+
         classNameOuter = ComponentHelper.buildCssClass(
                                 'fk-pagination',
-                                props.className),
+                                className),
         
         classNameInner = 'pagination',
         

@@ -1,5 +1,6 @@
 'use strict';
 
+import {Config} from 'js-prelude';
 import {Observable, Subject } from 'rxjs';
 
 import React from 'react';
@@ -161,7 +162,7 @@ class ReactAdapterComponent extends React.Component {
     }
     
     componentWillReceiveProps(nextProps) {
-        this.props = nextProps
+        this.props = new Config(nextProps);
         this.__propsSbj.next(this.props);
     }
     
@@ -175,7 +176,7 @@ class ReactAdapterComponent extends React.Component {
                 + `Invalid contents behavior for components of type '${this.__config.typeId}'`);
         } else if (!this.__hasIniialized) {
             this.__hasIniialized = true;
-            this.__propsSbj.next(this.props);
+            this.__propsSbj.next(this.props instanceof Config ? this.props : new Config(this.props)); // TODO
         }
         
         const ret = this.__domTree;

@@ -9,110 +9,117 @@ const {createElement: dom, createEventBinder: binder} = Component;
 
 export default Component.createFactory({
     typeId: 'FKButton',
-    
+
     properties: {
         text: {
             type: 'string',
             defaultValue: ''
         },
-        
+
         icon: {
             type: 'string',
             defaultValue: ''
         },
-        
+
         type: {
             type: 'string',
             options: ['default', 'link', 'info', 'warning', 'danger', 'success'],
             defaultValue: 'default'
         },
-        
+
         disabled: {
             type: 'boolean',
             defaultValue: false
         },
-        
+
         size: {
             type: 'string',
             options: ['normal', 'large', 'small', 'tiny'],
             defaultValue: 'normal'
         },
-        
+
         iconPosition: {
             type: 'string',
             options: ['top', 'bottom', 'left', 'right'],
             defaultValue: 'left'
         },
-        
+
+        tooltip: {
+            type: 'string',
+            defaultValue: ''
+        },
+
+        className: {
+            type: 'string',
+            defaultValue: ''
+        },
+
         menu: {
             type: Array,
             defaultValue: []
         },
-        
+
         onClick: {
             type: 'function',
             defaultValue: null
         }
     },
-    
+
     render: renderButton
 });
-    
+
 function renderButton(props) {
     const
         clicks = new Subject(),
-        
+
         onClick = binder(clicks, _ => ({event: 'click'}))(),
-        
-        key = props.key,
-        
-        icon = Strings.trimToNull(props.icon),
-       
-        iconPosition = props.iconPosition,
-        
+
+        key = props.get('key', null),
+
+        icon = Strings.trimToNull(props.get('icon')),
+
+        iconPosition = props.get('iconPosition'),
+
         iconElement =
             ComponentHelper.createIconElement(
                 icon,
                 'fk-button-icon fk-icon fk-' + iconPosition),
-        
+
         type =
             Arrays.selectValue(
                 ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
-                props.type,
+                props.get('type'),
                 'default'),
 
-        text = Strings.trimToNull(props.text),
-        
+        text = Strings.trimToNull(props.get('text')),
+
         textElement =
             text === null
             ? null
             : dom('span',
                 {className: 'fk-button-text'},
                 text),
-    
-        tooltip = props.tooltip, // TODO
-        
-        disabled = !!props.disabled,
-        
+
+        tooltip = props.get('tooltip'), // TODO
+
+        disabled = props.get('disabled'),
+
         menu =
-            Seq.from(props.menu)
+            Seq.from(props.getObject('menu'))
                 .toArray(),
-        
+
         hasMenu = menu.length > 0,
-        
+
         isDropdown = hasMenu && !onClick,
-        
+
         isSplitButton = hasMenu && onClick,
-        
+
         caret =
             hasMenu
             ? dom('span', {className: 'caret'})
             : null,
 
-        sizeClass =
-            Objects.get(
-                {large: 'btn-lg', small: 'btn-sm', tiny: 'btn-xs'},
-                props.size, ''),
+        sizeClass = props.get('size'),
 
         className =
             ComponentHelper.buildCssClass(
@@ -135,13 +142,13 @@ function renderButton(props) {
                         ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
                         : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
                 (isDropdown ? caret : null));
-    
+
     let content;
 
     if (isDropdown) {
         content =
             dom('div',
-                {className: 'fk-button btn-group ' + props.className},
+                {className: 'fk-button btn-group ' + props.get('className')},
                 button,
                 dom('ul',
                     {className: 'dropdown-menu'},
@@ -152,9 +159,9 @@ function renderButton(props) {
                             'Juhu'))));
 
     } else if (isSplitButton) {
-        content = 
+        content =
             dom('div',
-                {className: 'fk-button btn-group ' + props.className},
+                {className: 'fk-button btn-group ' + props.get('className')},
                 button,
                 dom('button',
                     {className: 'btn dropdown-toggle btn-' + type},
@@ -170,7 +177,7 @@ function renderButton(props) {
     } else {
         content =
             dom('div',
-                {className: 'fk-button btn-group ' + props.className},
+                {className: 'fk-button btn-group ' + props.get('className')},
                 button);
     }
 

@@ -246,15 +246,19 @@ const
         
         
 const demo = VerticalNavi({
-    menu: [{
-        caption: 'Module 1',
-    }, {
-        caption: 'Module 2'
-    }, {
-        caption: 'module 3'
-    }]
+    menu: {
+        type: 'section',
+        title: 'Section 1',
+        items: [{
+            caption: 'Module 1'
+        }, {
+            caption: 'Module 2'
+        }, {
+            caption: 'module 3'
+        }]
+    }
 });
 
 Component.mount(
-    demo4,
+    demo3,
     'main-content');

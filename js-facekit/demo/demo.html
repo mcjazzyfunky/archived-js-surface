@@ -11,6 +11,7 @@
         <link rel="stylesheet" href="../../node_modules/bootstrap/dist/css/bootstrap.css"/>
         <link rel="stylesheet" href="../../node_modules/font-awesome/css/font-awesome.min.css"/>
 
+        <script type="text/javascript" src="../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
         <script type="text/javascript" src="../../node_modules/systemjs/dist/system.js"></script>
 
 
@@ -18,9 +19,6 @@
             System.config({
                 baseURL: '../..',
                 transpiler: 'plugin-babel',
-                paths: {
-               //     '*': '*.js'
-                },
                 meta: {
                     'node_modules/bootstrap/dist/js/bootstrap.js': {
                         format: 'global',
@@ -32,7 +30,7 @@
                     'bootstrap': 'node_modules/bootstrap/dist/js/bootstrap.js',
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-                    'js-prelude': 'node_modules/js-prelude/index.js',
+                    'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.js',
                     'rxjs': 'lib/rxjs/Rx.umd.js',
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',

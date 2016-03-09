@@ -9,6 +9,11 @@ export default Component.createFactory({
     typeId: 'FKButtonGroup',
     
     properties: {
+        className: {
+            type: 'string',
+            defaultValue: ''
+        },
+
         disabled: {
             type: 'boolean',
             defaultValue: false
@@ -22,7 +27,7 @@ export default Component.createFactory({
 function renderButtonGroup(props) {
     const
         children =
-            props.children || [], // TODO !!!
+            props.getArray('children', []),
         
         hasChildren =
             children instanceof Array && children.length > 0,
@@ -31,7 +36,7 @@ function renderButtonGroup(props) {
             ComponentHelper.buildCssClass(
                 'fk-button-group',
                 (hasChildren ? 'btn-group' : ''),
-                props.className);
+                props.get('className'));
     
     return (
         dom('div',

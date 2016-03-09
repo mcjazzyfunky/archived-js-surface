@@ -14,6 +14,11 @@ export default Component.createFactory({
     typeId: 'FKPager',
     
     properties: {
+        type: {
+            type: 'string',
+            defaultValue: ''
+        },
+
         pageIndex: {
             type: 'number',
             defaultValue: null
@@ -48,6 +53,16 @@ export default Component.createFactory({
             type: 'boolean',
             defaultValue: true
         },
+
+        showButtonTexts: {
+            type: 'boolean',
+            defaultValue: false
+        },
+
+        disabled: {
+            type: 'boolean',
+            defaultValue: false
+        },
         
         onChange: {
             type: 'function',
@@ -68,27 +83,27 @@ function renderPager(props) {
         
         metrics =
             PaginationHelper.calcPaginationMetrics(
-                props.pageIndex,
-                props.pageSize,
-                props.totalItemCount),
+                props.get('pageIndex'),
+                props.get('pageSize'),
+                props.get('totalItemCount')),
 
-        type = props.type,
+        type = props.get('type'),
         
-        disabled = !!props.disabled,
+        disabled = props.get('disabled'),
         
-        showFirstButton = !!props.showFirstButton,
+        showFirstButton = props.get('showFirstButton'),
         
-        showNextButton = !!props.showNextButton,
+        showNextButton = props.get('showNextButton'),
         
-        showPreviousButton = !!props.showPreviousButton,
+        showPreviousButton = props.get('showPreviousButton'),
         
-        showLastButton =  !!props.showLastButton,
+        showLastButton =  props.get('showLastButton'),
         
-        showButtonTexts = !!props.showButtonTexts,
+        showButtonTexts = props.get('showButtonTexts'),
     
         content =
             dom('div',
-                {className: 'fk-pager ' + props.className},
+                {className: 'fk-pager ' + props.get('className')},
                 ButtonGroup(
                     null,
                     showFirstButton && Button({
