@@ -13,7 +13,7 @@ const ReactAdapter = {
         }
 
         const ret = (isComponentFactory(tag))
-                ? tag.meta.convertedFactory(props, children)
+                ? tag._meta.convertedFactory(props, children)
                 : React.createElement(tag, props, ...children);
 
         return ret;
@@ -33,7 +33,7 @@ const ReactAdapter = {
     
     convertComponentFactory(factory) {
         if (!isComponentFactory(factory)) {
-            console.error("[ReactAdapter.createElement] Illegal value for first argument 'factory':", factory);
+            console.error("[ReactAdapter.convertComponentFactory] Illegal value for first argument 'factory':", factory);
 
             throw new TypeError(
                 '[ReactAdapter:convertComponentFactory] '
@@ -41,7 +41,7 @@ const ReactAdapter = {
         }
 
         const
-            config = factory.meta.config,
+            config = factory._meta.config,
             typeId = config.typeId;
             
         if (typeof typeId !== 'string') {
@@ -83,10 +83,10 @@ class ReactAdapterComponent extends React.Component {
         super(...superArgs);
         
         const
-            config = componentFactory.meta.config,
+            config = componentFactory._meta.config,
             dependencies = {}; // TODO
         
-        this.__config = componentFactory.meta.config;
+        this.__config = componentFactory._meta.config;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
         this.__subscriptionDisplay = null;
@@ -94,7 +94,7 @@ class ReactAdapterComponent extends React.Component {
         
         
         const 
-            result = componentFactory.meta.normalizedConfig.ui(this.__propsSbj, dependencies),
+            result = componentFactory._meta.ui(this.__propsSbj, dependencies),
             ui = result instanceof Observable ? {contents: result} : result;
 
         if (!(ui  && ui.contents instanceof Observable)) {
@@ -195,9 +195,8 @@ export default ReactAdapter;
 
 function isComponentFactory(value) {
     return typeof value === 'function'
-        && value.meta
-        && value.meta.config
-        && value.meta.Component
-        && typeof value.meta.Component.isFactory === 'function'
-        && value.meta.Component.isFactory(value);
+        && !!value._meta
+        && !!value._meta.Component
+        && typeof value._meta.Component.isFactory === 'function'
+        && value._meta.Component.isFactory(value);
 }

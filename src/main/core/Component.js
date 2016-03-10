@@ -28,7 +28,7 @@ const Component = {
         }
 
         return (Component.isFactory(tag))
-            ? tag.meta.convertedFactory(props, children)
+            ? tag._meta.convertedFactory(props, children)
             : ComponentAdapter.createElement(tag, props, children);    
     },
     
@@ -54,14 +54,8 @@ const Component = {
         };
         
         try {
-            ret.meta = {
-                config: config,
-                normalizedConfig: normalizeConfig(config),
-                Component: Component,
-                convertedFactory: () => null // will be set below
-            };
-    
-            convertedFactory = ComponentAdapter.convertComponentFactory(ret);
+            ret._meta = buildComponentMeta(config, ret);
+            convertedFactory = ret._meta.convertedFactory;
         } catch (err) {
             console.error(
                 `[Component.createFactory] Erroneous configuration of component factory '${config.typeId}':`,
@@ -72,8 +66,7 @@ const Component = {
         }
 
         
-        ret.meta.convertedFactory = ret;
-        Object.freeze(ret.meta);
+        Object.freeze(ret._meta);
         Object.freeze(ret);
         
         return ret;
@@ -81,11 +74,10 @@ const Component = {
 
     isFactory(componentFactory) {
         return typeof componentFactory === 'function'
-                && componentFactory.meta
-                && componentFactory.meta.config
-                && componentFactory.meta.normalizedConfig
-                && componentFactory.meta.convertedFactory
-                && componentFactory.meta.Component === Component;
+                && !!componentFactory._meta
+                && !!componentFactory._meta.config
+                && !!componentFactory._meta.convertedFactory
+                && componentFactory._meta.Component === Component;
     },
     
     createEventBinder(target, mapper = event => event) {
@@ -330,14 +322,17 @@ function checkProperty(propName, propValue, config) {
 }
 
 // @throws TypeError
-function normalizeConfig(config) {
+function buildComponentMeta(config, factory) {
     // Config has already been checked - no need to check it again.
     
     const ret = {
+        config,
         properties: {}, // will be filled below
         propertyNames: new Set(),
         eventNames: new Set(),
         ui: null,       // will be set below
+        Component: Component,
+        convertedFactory: () => null // will be set below
     };
     
     if (config.properties) {
@@ -378,6 +373,8 @@ function normalizeConfig(config) {
         ret.ui = buildUIFunctionFromRenderFunction(config);
     }
 
+    factory._meta = ret; // TODO - very ugly!
+    ret.convertedFactory = ComponentAdapter.convertComponentFactory(factory);
     Object.freeze(ret);
     return ret;
 }
