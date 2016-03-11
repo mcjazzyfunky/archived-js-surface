@@ -2,7 +2,7 @@
 
 import ComponentAdapter from 'js-bling-adapter';
 import {Observable, Subject} from 'rxjs';
-import {Objects} from 'js-prelude';
+import {Objects,Config} from 'js-prelude';
 
 try {
     if (!ComponentAdapter || typeof ComponentAdapter !== 'object') {
@@ -11,8 +11,8 @@ try {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createElement' function");
     } else if (typeof ComponentAdapter.isElement !== 'function') {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'isElement' function");
-    } else if (typeof ComponentAdapter.convertComponentFactory !== 'function') {
-        throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createComponentFactory' function");
+    } else if (typeof ComponentAdapter.createComponentCreator !== 'function') {
+        throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createComponentCreator' function");
     } else if (typeof ComponentAdapter.mount !== 'function') {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'mount' function");
     }
@@ -28,7 +28,7 @@ const Component = {
         }
 
         return (Component.isFactory(tag))
-            ? tag._meta.convertedFactory(props, children)
+            ? tag._meta.componentCreator(props, children)
             : ComponentAdapter.createElement(tag, props, children);    
     },
     
@@ -47,15 +47,15 @@ const Component = {
                     + configError);
         } 
         
-        let convertedFactory;
+        let componentCreator;
         
         const ret = (initialProps, ...children) => {
-            return convertedFactory(initialProps, children);
+            return componentCreator(initialProps, children);
         };
         
         try {
             ret._meta = buildComponentMeta(config, ret);
-            convertedFactory = ret._meta.convertedFactory;
+            componentCreator = ret._meta.componentCreator;
         } catch (err) {
             console.error(
                 `[Component.createFactory] Erroneous configuration of component factory '${config.typeId}':`,
@@ -76,7 +76,7 @@ const Component = {
         return typeof componentFactory === 'function'
                 && !!componentFactory._meta
                 && !!componentFactory._meta.config
-                && !!componentFactory._meta.convertedFactory
+                && !!componentFactory._meta.componentCreator
                 && componentFactory._meta.Component === Component;
     },
     
@@ -332,7 +332,8 @@ function buildComponentMeta(config, factory) {
         eventNames: new Set(),
         ui: null,       // will be set below
         Component: Component,
-        convertedFactory: () => null // will be set below
+        componentCreator: () => null, // will be set below
+        validateAndMapProps: createPropsValdatorAndMapper(config)
     };
     
     if (config.properties) {
@@ -373,8 +374,7 @@ function buildComponentMeta(config, factory) {
         ret.ui = buildUIFunctionFromRenderFunction(config);
     }
 
-    factory._meta = ret; // TODO - very ugly!
-    ret.convertedFactory = ComponentAdapter.convertComponentFactory(factory);
+    ret.componentCreator = ComponentAdapter.createComponentCreator(ret);
     Object.freeze(ret);
     return ret;
 }
@@ -620,3 +620,10 @@ function buildUIFunctionFromViewFunction(config) {
     };
 }
 
+function createPropsValdatorAndMapper(config) {
+    return props => {
+        const ret = props instanceof Config ? props : new Config(props);
+
+        return ret;
+    };
+}

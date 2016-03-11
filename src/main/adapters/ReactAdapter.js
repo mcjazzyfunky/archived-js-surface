@@ -1,6 +1,5 @@
 'use strict';
 
-import {Config} from 'js-prelude';
 import {Observable, Subject } from 'rxjs';
 
 import React from 'react';
@@ -12,8 +11,8 @@ const ReactAdapter = {
             throw new TypeError("[ReactAdapter.createElement] First argument 'tag' must not be empty");
         }
 
-        const ret = (isComponentFactory(tag))
-                ? tag._meta.convertedFactory(props, children)
+        const ret = (tag && tag._meta && tag._meta.componentCreator)
+                ? tag._meta.componentCreator(props, children)
                 : React.createElement(tag, props, ...children);
 
         return ret;
@@ -31,26 +30,26 @@ const ReactAdapter = {
         ReactDOM.render(content, targetNode);
     },
     
-    convertComponentFactory(factory) {
-        if (!isComponentFactory(factory)) {
-            console.error("[ReactAdapter.convertComponentFactory] Illegal value for first argument 'factory':", factory);
+    createComponentCreator(componentMeta) {
+        if (componentMeta === null || typeof componentMeta !== 'object') {
+            console.error("[ReactAdapter.createComponent] Illegal value for first argument 'componentMeta':", componentMeta);
 
             throw new TypeError(
-                '[ReactAdapter:convertComponentFactory] '
-                + "First argument 'factory' must be a component factory");
+                '[ReactAdapter:createComponent] '
+                + "First argument 'componentMeta' must be an object");
         }
 
         const
-            config = factory._meta.config,
+            config = componentMeta.config,
             typeId = config.typeId;
             
         if (typeof typeId !== 'string') {
-            console.error('[ReactAdapter:convertComponentFactory] Illegal type id:', typeId);
-            throw new TypeError('[ReactAdapter:convertComponentFactory] Illegal type id of component factory');
+            console.error('[ReactAdapter:createComponent] Illegal type id:', typeId);
+            throw new TypeError('[ReactAdapter:createComponent] Illegal type id of component');
         }
         
         const constructor = function (...args) {
-            ReactAdapterComponent.call(this, factory, args);
+            ReactAdapterComponent.call(this, componentMeta, args);
         };
 
         constructor.displayName = config.typeId;
@@ -72,38 +71,35 @@ const ReactAdapter = {
 };
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentFactory, superArgs) {
-       if (!isComponentFactory(componentFactory)) {
+    constructor(componentMeta, superArgs) {
+       if (!componentMeta || typeof componentMeta !== 'object') {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
-                + 'First argument must be a proper component factory created by '
-                + "'Component.createFactory'");
-        }        
+                + "First argument 'componentMeta' must be an object");
+        }
         
         super(...superArgs);
         
         const
-            config = componentFactory._meta.config,
+            {config, validateAndMapProps} = componentMeta,
             dependencies = {}; // TODO
         
-        this.__config = componentFactory._meta.config;
+        this.__config = config;
+        this.__validateAndMapProps = validateAndMapProps;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
-        this.__subscriptionDisplay = null;
-        
-        
-        
+
         const 
-            result = componentFactory._meta.ui(this.__propsSbj, dependencies),
+            result = componentMeta.ui(this.__propsSbj, dependencies),
             ui = result instanceof Observable ? {contents: result} : result;
 
         if (!(ui  && ui.contents instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
-                    + `Illegal return value of function 'ui' of component factory '${config.typeid}':`, ui);
+                    + `Illegal return value of function 'ui' component of type '${config.typeId}':`, ui);
             
             throw new TypeError(
                     '[ReactAdapterComponent.constructor] '
-                    + `Function 'ui' of component factory '${config.typeId}' did not return a proper value`);
+                    + `Function 'ui' of component '${config.typeId}' did not return a proper value`);
         }
 
         this.__contentsObs = ui.contents;
@@ -162,7 +158,7 @@ class ReactAdapterComponent extends React.Component {
     }
     
     componentWillReceiveProps(nextProps) {
-        this.props = new Config(nextProps);
+        this.props = this.__validateAndMapProps(nextProps);
         this.__propsSbj.next(this.props);
     }
     
@@ -176,7 +172,7 @@ class ReactAdapterComponent extends React.Component {
                 + `Invalid contents behavior for components of type '${this.__config.typeId}'`);
         } else if (!this.__hasIniialized) {
             this.__hasIniialized = true;
-            this.__propsSbj.next(this.props instanceof Config ? this.props : new Config(this.props)); // TODO
+            this.__propsSbj.next(this.__validateAndMapProps(this.props));
         }
         
         const ret = this.__domTree;
@@ -192,11 +188,3 @@ class ReactAdapterComponent extends React.Component {
 
 export default ReactAdapter;
 
-
-function isComponentFactory(value) {
-    return typeof value === 'function'
-        && !!value._meta
-        && !!value._meta.Component
-        && typeof value._meta.Component.isFactory === 'function'
-        && value._meta.Component.isFactory(value);
-}
