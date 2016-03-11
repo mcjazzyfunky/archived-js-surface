@@ -94,7 +94,7 @@ function renderPagination(props) {
                             ? renderLinkListItem(
                                     1,
                                     pageIndex === 0,
-                                    bindMoveToPage(1))
+                                    bindMoveToPage(0))
                             : null,
         
         precedingEllipsis = paginationInfo.firstButtonIndex > 1

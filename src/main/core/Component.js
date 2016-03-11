@@ -11,8 +11,8 @@ try {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createElement' function");
     } else if (typeof ComponentAdapter.isElement !== 'function') {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'isElement' function");
-    } else if (typeof ComponentAdapter.createComponentCreator !== 'function') {
-        throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createComponentCreator' function");
+    } else if (typeof ComponentAdapter.createAdaptedFactory !== 'function') {
+        throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'createAdaptedFactory' function");
     } else if (typeof ComponentAdapter.mount !== 'function') {
         throw new TypeError("The component adapter of module 'js-bling-adapter' does not provide a 'mount' function");
     }
@@ -28,7 +28,7 @@ const Component = {
         }
 
         return (Component.isFactory(tag))
-            ? tag._meta.componentCreator(props, children)
+            ? tag.adaptedFactory(props, children)
             : ComponentAdapter.createElement(tag, props, children);    
     },
     
@@ -47,15 +47,13 @@ const Component = {
                     + configError);
         } 
         
-        let componentCreator;
-        
         const ret = (initialProps, ...children) => {
-            return componentCreator(initialProps, children);
+            return ret.adaptedFactory(initialProps, children);
         };
         
         try {
-            ret._meta = buildComponentMeta(config, ret);
-            componentCreator = ret._meta.componentCreator;
+            ret.__meta = buildComponentMeta(config, ret);
+            ret.adaptedFactory = ComponentAdapter.createAdaptedFactory(createAdaptionParams(config));
         } catch (err) {
             console.error(
                 `[Component.createFactory] Erroneous configuration of component factory '${config.typeId}':`,
@@ -66,7 +64,7 @@ const Component = {
         }
 
         
-        Object.freeze(ret._meta);
+        Object.freeze(ret.__meta);
         Object.freeze(ret);
         
         return ret;
@@ -74,10 +72,8 @@ const Component = {
 
     isFactory(componentFactory) {
         return typeof componentFactory === 'function'
-                && !!componentFactory._meta
-                && !!componentFactory._meta.config
-                && !!componentFactory._meta.componentCreator
-                && componentFactory._meta.Component === Component;
+                && componentFactory.adaptedFactory
+                && !!componentFactory.__meta;
     },
     
     createEventBinder(target, mapper = event => event) {
@@ -329,11 +325,7 @@ function buildComponentMeta(config, factory) {
         config,
         properties: {}, // will be filled below
         propertyNames: new Set(),
-        eventNames: new Set(),
-        ui: null,       // will be set below
-        Component: Component,
-        componentCreator: () => null, // will be set below
-        validateAndMapProps: createPropsValdatorAndMapper(config)
+        eventNames: new Set()
     };
     
     if (config.properties) {
@@ -366,19 +358,34 @@ function buildComponentMeta(config, factory) {
         }
     }
     
+    return ret;
+}
+
+function createAdaptionParams(config) {
+    const ret = {
+        config: config,
+        validateAndMapProps: createPropsValidatorAndMapper(config),
+        ui: null // will be set below
+    };
+
     if (config.ui) {
         ret.ui = config.ui;
     } else if (config.view) {
-        ret.ui = buildUIFunctionFromViewFunction(config);    
+        ret.ui = buildUIFunctionFromViewFunction(config);
     } else if (config.render) {
         ret.ui = buildUIFunctionFromRenderFunction(config);
     }
 
-    ret.componentCreator = ComponentAdapter.createComponentCreator(ret);
-    Object.freeze(ret);
     return ret;
 }
 
+function createPropsValidatorAndMapper(config) {
+    return props => {
+        const ret = props instanceof Config ? props : new Config(props);
+
+        return ret;
+    };
+}
 // @throws Error
 function buildUIFunctionFromRenderFunction(config) {
     const {properties, render, publish, initialState, updateState} = config;
@@ -616,14 +623,6 @@ function buildUIFunctionFromViewFunction(config) {
         
         }
         
-        return ret;
-    };
-}
-
-function createPropsValdatorAndMapper(config) {
-    return props => {
-        const ret = props instanceof Config ? props : new Config(props);
-
         return ret;
     };
 }

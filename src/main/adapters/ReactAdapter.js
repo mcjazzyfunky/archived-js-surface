@@ -11,8 +11,8 @@ const ReactAdapter = {
             throw new TypeError("[ReactAdapter.createElement] First argument 'tag' must not be empty");
         }
 
-        const ret = (tag && tag._meta && tag._meta.componentCreator)
-                ? tag._meta.componentCreator(props, children)
+        const ret = (tag && tag.adaptedFactory)
+                ? tag.adaptedFactory(props, children)
                 : React.createElement(tag, props, ...children);
 
         return ret;
@@ -30,26 +30,26 @@ const ReactAdapter = {
         ReactDOM.render(content, targetNode);
     },
     
-    createComponentCreator(componentMeta) {
-        if (componentMeta === null || typeof componentMeta !== 'object') {
-            console.error("[ReactAdapter.createComponent] Illegal value for first argument 'componentMeta':", componentMeta);
+    createAdaptedFactory(adaptionParams) {
+        if (!adaptionParams || typeof adaptionParams !== 'object') {
+            console.error(
+                "[ReactAdapter.createAdaptedFactory] Illegal value for first argument 'adaptionParams':", adaptionParams);
 
             throw new TypeError(
-                '[ReactAdapter:createComponent] '
-                + "First argument 'componentMeta' must be an object");
+                "[ReactAdapter:createAdaptedFactory] First argument 'adaptionParams' must be an object");
         }
 
         const
-            config = componentMeta.config,
+            config = adaptionParams.config,
             typeId = config.typeId;
             
         if (typeof typeId !== 'string') {
-            console.error('[ReactAdapter:createComponent] Illegal type id:', typeId);
-            throw new TypeError('[ReactAdapter:createComponent] Illegal type id of component');
+            console.error('[ReactAdapter:createAdaptedFactory] Illegal type id:', typeId);
+            throw new TypeError('[ReactAdapter:createAdaptedFactory] Illegal type id of component');
         }
-        
+
         const constructor = function (...args) {
-            ReactAdapterComponent.call(this, componentMeta, args);
+            ReactAdapterComponent.call(this, adaptionParams, args);
         };
 
         constructor.displayName = config.typeId;
@@ -71,32 +71,32 @@ const ReactAdapter = {
 };
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentMeta, superArgs) {
-       if (!componentMeta || typeof componentMeta !== 'object') {
+    constructor(adaptionParams, superArgs) {
+       if (!adaptionParams || typeof adaptionParams !== 'object') {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
-                + "First argument 'componentMeta' must be an object");
+                + "First argument 'adaptionParams' must be an object");
         }
-        
+
         super(...superArgs);
         
         const
-            {config, validateAndMapProps} = componentMeta,
+            {config, validateAndMapProps} = adaptionParams,
             dependencies = {}; // TODO
-        
+
         this.__config = config;
         this.__validateAndMapProps = validateAndMapProps;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
 
         const 
-            result = componentMeta.ui(this.__propsSbj, dependencies),
+            result = adaptionParams.ui(this.__propsSbj, dependencies),
             ui = result instanceof Observable ? {contents: result} : result;
 
         if (!(ui  && ui.contents instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
                     + `Illegal return value of function 'ui' component of type '${config.typeId}':`, ui);
-            
+
             throw new TypeError(
                     '[ReactAdapterComponent.constructor] '
                     + `Function 'ui' of component '${config.typeId}' did not return a proper value`);
