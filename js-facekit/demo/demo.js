@@ -187,7 +187,7 @@ export const DemoOfPagination = Component.createFactory({
             content = 
                 dom('div',
                     {className: 'container-fluid'},
-                    ...Seq.range(1, 10).map(_ =>
+                    ...Seq.range(1, 100).map(_ =>
                         dom('div',
                             {className: 'row'},
                             Pagination({

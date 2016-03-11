@@ -14,7 +14,7 @@ import ReactDOM from 'react-dom';
 
 const
     {createElement: dom, createEventBinder: binder} = Component,
-    number = 10,
+    number = 100,
     pageSize = 25,
     totalItemCount = 1220;
     
@@ -57,17 +57,17 @@ export const Pagination = Component.createFactory({
             
             contents = behavior.map(props => {
                 const
-                    pageIndex = props.pageIndex,
+                    pageIndex = props.get('pageIndex'),
                     
                     metrics =
                         PaginationHelper.calcPaginationMetrics(
-                            props.pageIndex,
-                            props.pageSize,
-                            props.totalItemCount),
+                            props.get('pageIndex'),
+                            props.get('pageSize'),
+                            props.get('totalItemCount')),
         
                     paginationInfo =
                         PaginationHelper.determineVisiblePaginationButtons(
-                            props.pageIndex,
+                            props.get('pageIndex'),
                             metrics.pageCount,
                             6),
                     
@@ -85,7 +85,7 @@ export const Pagination = Component.createFactory({
                             pageIndex === 0,
                             bindMoveToPage(0))
                         : null,
-        
+
                     precedingEllipsis =
                         paginationInfo.firstButtonIndex > 1
                         ? buildLinkListItem(
@@ -118,7 +118,7 @@ export const Pagination = Component.createFactory({
                                 index === pageIndex,
                                 bindMoveToPage(index))
                         );   
-                                                    
+
                 return (
                     dom('div',
                         {className: classNameOuter},
@@ -349,7 +349,7 @@ const
     RDemoOfPagination = React.createFactory(RDemoOfPaginationClass);
     
 
-if (1) {
+if (0) {
     Component.mount(
         DemoOfPagination2,
         'main-content',

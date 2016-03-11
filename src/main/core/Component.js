@@ -552,10 +552,7 @@ function buildUIFunctionFromViewFunction(config) {
                 ? Observable.of(null)
                 : Observable.create(observer => model.subscribe(observer)),
             
-            context = config.context ? config.context(dependencies) : dependencies,
-            
-            viewResult = config.view(behavior, modelProxy, context);
-            
+            viewResult = config.view(behavior, modelProxy);
             
         let ret;
 
@@ -622,7 +619,7 @@ function buildUIFunctionFromViewFunction(config) {
             ret = {contents: viewResult.contents, events: events};
         
         }
-        
+
         return ret;
     };
 }

@@ -81,8 +81,7 @@ class ReactAdapterComponent extends React.Component {
         super(...superArgs);
         
         const
-            {config, validateAndMapProps} = adaptionParams,
-            dependencies = {}; // TODO
+            {config, validateAndMapProps} = adaptionParams;
 
         this.__config = config;
         this.__validateAndMapProps = validateAndMapProps;
@@ -90,7 +89,7 @@ class ReactAdapterComponent extends React.Component {
         this.__propsSbj = new Subject();
 
         const 
-            result = adaptionParams.ui(this.__propsSbj, dependencies),
+            result = adaptionParams.ui(this.__propsSbj),
             ui = result instanceof Observable ? {contents: result} : result;
 
         if (!(ui  && ui.contents instanceof Observable)) {
