@@ -47,6 +47,11 @@ export default Component.createFactory({
             type: 'number',
             defaultValue: 6
         },
+
+        className: {
+            type: 'string',
+            defaultValue: null
+        },
         
         onChange: {
             type: 'function',

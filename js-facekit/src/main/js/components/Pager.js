@@ -63,6 +63,11 @@ export default Component.createFactory({
             type: 'boolean',
             defaultValue: false
         },
+
+        className: {
+            type: 'string',
+            defaultValue: null
+        },
         
         onChange: {
             type: 'function',

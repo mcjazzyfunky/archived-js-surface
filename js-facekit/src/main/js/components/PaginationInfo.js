@@ -31,6 +31,11 @@ export default Component.createFactory({
             type: 'number',
             defaultValue: null
         },
+
+        className: {
+            type: 'string',
+            defaultValue: null
+        }
     },
 
     view: behavior => behavior.map(renderPaginationInfo) 

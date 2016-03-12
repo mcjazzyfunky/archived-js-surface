@@ -53,7 +53,7 @@ const Component = {
         
         try {
             ret.__meta = buildComponentMeta(config, ret);
-            ret.adaptedFactory = ComponentAdapter.createAdaptedFactory(createAdaptionParams(config));
+            ret.adaptedFactory = ComponentAdapter.createAdaptedFactory(createAdaptionParams(ret.__meta));
         } catch (err) {
             console.error(
                 `[Component.createFactory] Erroneous configuration of component factory '${config.typeId}':`,
@@ -266,59 +266,9 @@ function checkComponentFactoryConfig(config) {
 }
 
 
-function checkProperties(props, config) {
-    let ret = '';
-    
-    if (props === null) {
-        ret = 'Proerties must not be provided as null value';
-    } else if (typeof properties !== 'object') {
-        ret = 'Properties must be provided as object';
-    } else {
-        const propNames = Object.keys(props);
-        
-        for (let propName of propNames) {
-            ret = checkProperty(propName, props[propName], config);
-            
-            if (ret) {
-                break;
-            }
-        }
-        
-        if (!ret) {
-            // TODO
-        }
-    }
-    
-    
-    return ret; 
-}
-
-function checkProperty(propName, propValue, config) {
-    let ret = null;
-    
-    try {
-        if (typeof propName === 'symbol') {
-            throw `Property must not be a symbol (${propName}')`;
-        }
-        
-        const propConfig = config.properties[propName];
-
-        if (propConfig === null && typeof propConfig !== 'object') {
-            throw `Component does not have a property '${propName}'`;
-        }
-    } catch (error) {
-        if (typeof error !== 'string') {
-            throw error;
-        }
-        
-        ret = error;
-    }     
-    
-    return ret;
-}
 
 // @throws TypeError
-function buildComponentMeta(config, factory) {
+function buildComponentMeta(config) {
     // Config has already been checked - no need to check it again.
     
     const ret = {
@@ -361,12 +311,15 @@ function buildComponentMeta(config, factory) {
     return ret;
 }
 
-function createAdaptionParams(config) {
-    const ret = {
-        config: config,
-        validateAndMapProps: createPropsValidatorAndMapper(config),
-        ui: null // will be set below
-    };
+function createAdaptionParams(componentMeta) {
+    const
+        config = componentMeta.config,
+
+        ret = {
+            config: config,
+            validateAndMapProps: createPropsValidatorAndMapper(componentMeta),
+            ui: null // will be set below
+        };
 
     if (config.ui) {
         ret.ui = config.ui;
@@ -379,13 +332,97 @@ function createAdaptionParams(config) {
     return ret;
 }
 
-function createPropsValidatorAndMapper(config) {
+// @throws Error
+function createPropsValidatorAndMapper(componentMeta) {
     return props => {
-        const ret = props instanceof Config ? props : new Config(props);
+        const
+            ret = props instanceof Config ? props : new Config(props),
+            errorMsg = checkProperties(ret, componentMeta);
+
+        if (errorMsg) {
+            const typeId = componentMeta.config.typeId;
+
+            console.error(`Invalid properties for component of type '${typeId}':`, props);
+            throw new Error('[Component] ' + errorMsg);
+        }
 
         return ret;
     };
 }
+
+function checkProperties(props, componentMeta) { // It's ensured that the arguments are fine - no need to validate them
+    let ret = '';
+
+    const
+        config = componentMeta.config,
+        properties = config.properties,
+        propNames = props.keys();
+
+    // Check for unkown property keys
+    for (let propName of propNames) {
+        if (propName !== 'children') {
+            if (typeof propName === 'symbol') {
+                ret = `Property key '${propName}' must not be a symbol`;
+            } else if (!properties || !properties[propName]) {
+                ret = `Unknown property key '${propName}'`;
+            }
+
+            if (ret) {
+                break;
+            }
+        }
+    }
+
+    if (!ret) {
+        for (let propName of propNames) {
+            if (propName !== 'children') {
+                const defaultValue = properties[propName].defaultValue;
+
+                let propValue;
+
+                try {
+                    propValue = props.get(propName, defaultValue);
+                } catch (error) {
+                    ret = error.message;
+                    break;
+                }
+
+                ret = checkProperty(propName, propValue, config);
+
+                if (ret) {
+                    break;
+                }
+            }
+         }
+    }
+
+    return ret;
+}
+
+function checkProperty(propName, propValue, config) {
+    let ret = null;
+
+    try {
+        if (typeof propName === 'symbol') {
+            throw `Property must not be a symbol (${propName}')`;
+        }
+
+        const propConfig = config.properties[propName];
+
+        if (propConfig === null && typeof propConfig !== 'object') {
+            throw `Component does not have a property '${propName}'`;
+        }
+    } catch (error) {
+        if (typeof error !== 'string') {
+            throw error;
+        }
+
+        ret = error;
+    }
+
+    return ret;
+}
+
 // @throws Error
 function buildUIFunctionFromRenderFunction(config) {
     const {properties, render, publish, initialState, updateState} = config;
