@@ -387,7 +387,7 @@ function checkProperties(props, componentMeta) { // It's ensured that the argume
                     break;
                 }
 
-                ret = checkProperty(propName, propValue, config);
+                ret = checkProperty(propName, propValue, config.properties);
 
                 if (ret) {
                     break;
@@ -399,15 +399,13 @@ function checkProperties(props, componentMeta) { // It's ensured that the argume
     return ret;
 }
 
-function checkProperty(propName, propValue, config) {
+function checkProperty(propName, propValue, propConfig) {
     let ret = null;
 
     try {
         if (typeof propName === 'symbol') {
             throw `Property must not be a symbol (${propName}')`;
         }
-
-        const propConfig = config.properties[propName];
 
         if (propConfig === null && typeof propConfig !== 'object') {
             throw `Component does not have a property '${propName}'`;
