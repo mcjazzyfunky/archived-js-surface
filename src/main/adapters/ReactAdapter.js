@@ -1,6 +1,6 @@
 'use strict';
 
-import {Observable, Subject } from 'rxjs';
+import {Observable, Subject} from 'rxjs';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -39,27 +39,12 @@ const ReactAdapter = {
                 "[ReactAdapter:createAdaptedFactory] First argument 'adaptionParams' must be an object");
         }
 
-        const
-            config = adaptionParams.config,
-            typeId = config.typeId;
-            
-        if (typeof typeId !== 'string') {
-            console.error('[ReactAdapter:createAdaptedFactory] Illegal type id:', typeId);
-            throw new TypeError('[ReactAdapter:createAdaptedFactory] Illegal type id of component');
-        }
-
         const constructor = function (...args) {
             ReactAdapterComponent.call(this, adaptionParams, args);
         };
 
-        constructor.displayName = config.typeId;
-        constructor.defaultProps = {};
-        
-        if (config.properties) {
-            Object.keys(config.properties).forEach(property => {
-                constructor.defaultProps[property] = config.properties[property].defaultValue;  
-            });
-        } 
+        constructor.displayName = adaptionParams.typeId;
+        constructor.defaultProps = adaptionParams.defaultProps;
         
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
@@ -79,12 +64,10 @@ class ReactAdapterComponent extends React.Component {
         }
 
         super(...superArgs);
-        
-        const
-            {config, validateAndMapProps} = adaptionParams;
 
-        this.__config = config;
-        this.__validateAndMapProps = validateAndMapProps;
+        this.__typeId = adaptionParams.typeId;
+        this.__validateAndMapProps = adaptionParams.validateAndMapProps;
+        this.__lifecycleCallbacks = adaptionParams.lifecycleCallbacks;
         this.__needsToBeRendered = false;
         this.__propsSbj = new Subject();
 
@@ -94,11 +77,11 @@ class ReactAdapterComponent extends React.Component {
 
         if (!(ui  && ui.contents instanceof Observable)) {
             console.error('[ReactAdapterComponent.constructor] '
-                    + `Illegal return value of function 'ui' component of type '${config.typeId}':`, ui);
+                    + `Illegal return value of function 'ui' component of type '${typeId}':`, ui);
 
             throw new TypeError(
                     '[ReactAdapterComponent.constructor] '
-                    + `Function 'ui' of component '${config.typeId}' did not return a proper value`);
+                    + `Function 'ui' of component '${typeId}' did not return a proper value`);
         }
 
         this.__contentsObs = ui.contents;
@@ -146,13 +129,12 @@ class ReactAdapterComponent extends React.Component {
     }
     
     componentDidMount() {
-        const callback = this.__config.onMount;
+        const callback = this.__lifecycleCallbacks.onMount;
 
         if (typeof callback === 'function') {
             callback({
-                domElement: ReactDOM.findDOMNode(this),
-                config: this.__config
-            })   
+                domElement: ReactDOM.findDOMNode(this)
+            })
         }
     }
     
@@ -168,7 +150,7 @@ class ReactAdapterComponent extends React.Component {
     render() {
         if (!this.__domTree) {
             throw new Error('[ReactAdapterComponent:render] '
-                + `Invalid contents behavior for components of type '${this.__config.typeId}'`);
+                + `Invalid contents behavior for components of type '${this.__typeId}'`);
         } else if (!this.__hasIniialized) {
             this.__hasIniialized = true;
             this.__propsSbj.next(this.__validateAndMapProps(this.props));
@@ -176,7 +158,6 @@ class ReactAdapterComponent extends React.Component {
         
         const ret = this.__domTree;
         this.__needsToBeRenderd = false;
-        
         return ret;
     }
     

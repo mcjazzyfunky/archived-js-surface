@@ -21,7 +21,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-esdoc": "0.0.1",
     "jquery": "^2.2.1",
-    "js-prelude": "^0.1.12",
+    "js-prelude": "^0.1.22",
     "react": "^0.14.7",
     "react-dom": "^0.14.7",
     "systemjs": "^0.19.20",
