@@ -31,7 +31,7 @@ const Component = {
             throw new TypeError("[Component.createElement] First argument 'tag' must not be empty");    
         }
 
-        return (Component.isFactory(tag))
+        return Component.isFactory(tag)
             ? tag.adaptedFactory(props, children)
             : ComponentAdapter.createElement(tag, props, children);    
     },
@@ -55,7 +55,6 @@ const Component = {
 
         try {
             ret.__meta = buildComponentMeta(config, ret);
-            ret.config = factoryConfig;
             ret.adaptedFactory = ComponentAdapter.createAdaptedFactory(buildAdaptionParams(ret.__meta));
         } catch (err) {
             if (!(err instanceof ConfigError)) {
@@ -65,7 +64,7 @@ const Component = {
             const typeIdInfo = !ret.__meta || !ret.__meta.typeId ? '' : ` '${ret.__meta.typeId}'`;
 
             console.error(
-                `[Component.createFactory] Erroneous configuration of component factory '${typeIdInfo}':`,
+                `[Component.createFactory] Erroneous configuration of component factory${typeIdInfo}:`,
                 config);
             
             throw new Error(
@@ -156,10 +155,16 @@ function buildComponentMeta(config) {
             properties: properties,
             propertyNames: new Set(propertyNames),
 
-            eventNames: new Set(
-                propertyNames
-                    .filter(name => name.match(/^on[A-Z]/))
-                    .map(name => name.charAt(2).toLowerCase() + name.substring(3))),
+            mandatoryPropertyNames:
+                new Set(
+                    propertyNames
+                        .filter(name => properties[name].defaultValue === undefined)),
+
+            eventNames:
+                new Set(
+                    propertyNames
+                        .filter(name => name.match(/^on[A-Z]/))
+                        .map(name => name.charAt(2).toLowerCase() + name.substring(3))),
 
             ui: normalizeUI(config),
 
@@ -220,7 +225,7 @@ function normalizeProperties(config) {
 
         ret[propName] = {
             type: type,
-            options: options,
+            options: options && options.length > 0 ? options : null,
             defaultValue: defaultValue,
             rule: rule,
             validation: validation
@@ -306,7 +311,7 @@ function checkProperties(props, componentMeta) { // It's ensured that the argume
         properties = componentMeta.properties,
         propNames = props.keys();
 
-    // Check for unkown property keys
+    // Check for unknown property keys
     for (let propName of propNames) {
         if (propName !== 'children') {
             if (typeof propName === 'symbol') {
@@ -318,6 +323,14 @@ function checkProperties(props, componentMeta) { // It's ensured that the argume
             if (ret) {
                 break;
             }
+        }
+    }
+
+    // Check for missing mandatory properties
+    for (let propName of componentMeta.mandatoryPropertyNames) {
+        if (!props.isDefined(propName)) {
+            ret = `Property '${propName}' is missing`;
+            break;
         }
     }
 
@@ -517,7 +530,7 @@ function buildUIFunctionFromViewFunction(config) {
         model = config.get('model', null),
         events =config.get('events', null);
 
-    return (behavior, dependencies) => {
+    return behavior => {
         const
             modelProxy =
                 !model
