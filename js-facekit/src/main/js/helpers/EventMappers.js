@@ -1,5 +1,10 @@
 'use strict';
 
+import {Component} from 'js-bling';
+import {Subject} from 'rxjs';
+
+const {createEventBinder: binder} = Component;
+
 export default class EventMappers {
     /**
      * @ignore
