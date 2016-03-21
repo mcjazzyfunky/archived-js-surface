@@ -5,8 +5,8 @@ import {Observable, Subject} from 'rxjs';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-const ReactAdapter = { 
-    createElement(tag, props, children) {
+export default class ReactAdapter {
+    static createElement(tag, props, children) {
         if (tag === undefined || tag === null) {
             throw new TypeError("[ReactAdapter.createElement] First argument 'tag' must not be empty");
         }
@@ -16,21 +16,21 @@ const ReactAdapter = {
                 : React.createElement(tag, props, ...children);
 
         return ret;
-    },
-    
-    isElement(obj) {
+    }
+
+    static isElement(obj) {
         return React.isValidElement(obj); // TODO - is this really correct???
-    },
+    }
     
-    mount(content, targetNode) {
+    static mount(content, targetNode) {
         if (!React.isValidElement(content)) {
             throw new TypeError("[ReactAdapter.mount] First argument 'content' has to be a valid element");
         }
 
         ReactDOM.render(content, targetNode);
-    },
+    }
     
-    createAdaptedFactory(adaptionParams) {
+    static createAdaptedFactory(adaptionParams) {
         if (!adaptionParams || typeof adaptionParams !== 'object') {
             console.error(
                 "[ReactAdapter.createAdaptedFactory] Illegal value for first argument 'adaptionParams':", adaptionParams);
@@ -48,10 +48,13 @@ const ReactAdapter = {
         
         constructor.prototype = Object.create(ReactAdapterComponent.prototype);
         return React.createFactory(constructor);
-    },
-    
-    toString() {
-        return 'ReactComponentAdapter/singleton';
+    }
+
+    /**
+     * @ignore
+     */
+    static toString() {
+        return 'ReactComponentAdapter/class';
     }
 };
 
@@ -166,5 +169,4 @@ class ReactAdapterComponent extends React.Component {
     }
 }
 
-export default ReactAdapter;
 

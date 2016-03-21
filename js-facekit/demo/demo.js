@@ -1,6 +1,5 @@
 'use strict';
 
-
 import Button from '../src/main/js/components/Button.js';
 import ButtonGroup from '../src/main/js/components/ButtonGroup.js';
 import Pager from '../src/main/js/components/Pager.js';
@@ -9,6 +8,7 @@ import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
 import Tabs from '../src/main/js/components/Tabs.js';
 import Tab from '../src/main/js/components/Tab.js';
 import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
+import TextField from '../src/main/js/components/TextField.js';
 
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
@@ -234,16 +234,27 @@ const DemoOfTabs = Component.createFactory({
     }
 });
 
+const DemoOfInputFields = Component.createFactory({
+    typeId: 'DemoOfInputFields',
+
+    render: props => (
+        dom('div',
+            null,
+            TextField({onChange: event => console.log('change', event)}))
+    )
+})
+
 const
     demo1 = DemoOfButtons(),
     demo2 = DemoOfButtonGroups(),
     demo3 = DemoOfPagination(),
     demo4 = DemoOfTabs(),
+    demo5 = DemoOfInputFields(),
     demos = Tabs(null,
         Tab({caption: 'Buttons'}, demo1),
         Tab({caption: 'Button groups'}, demo2),
         Tab({caption: 'Pagination'}, demo3));
-        
+
         
 const demo = VerticalNavi({
     menu: {

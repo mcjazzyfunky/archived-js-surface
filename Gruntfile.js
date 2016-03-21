@@ -26,18 +26,18 @@ module.exports = function (grunt) {
         esdoc : {
             dist : {
                 options: {
-                    source: 'src/main/js',
+                    source: 'src/main',
                     destination: 'dist/v<%= pkg.version %>/docs/api',
-                    undocumentIdentifier: false,
-                    unexportIdentifier: true,
-                    includeSource: false,
+                    //undocumentIdentifier: false,
+                    //unexportIdentifier: true,
+                    includeSource: true,
                     //autoPrivate: false,
                     title: 'js-bling'
                 }
             }
         },
         browserify: {
-            js-blingReact: {
+            dist: {
                 //extend: true,
                 //src: ['build/src/**/*.js'],
                 src: 'build/src/js-bling.js',

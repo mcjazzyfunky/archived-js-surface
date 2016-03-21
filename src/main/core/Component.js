@@ -7,7 +7,7 @@ import {Strings, Types, Config, ConfigError} from 'js-prelude';
 {
     let error = null;
 
-    if (!ComponentAdapter || typeof ComponentAdapter !== 'object') {
+    if (!ComponentAdapter) {
         error = "The imported module for 'js-bling-adapter' did not return a proper ComponentAdapter";
     } else if (typeof ComponentAdapter.createElement !== 'function') {
         error = "The component adapter of module 'js-bling-adapter' does not provide a 'createElement' function";
@@ -25,8 +25,19 @@ import {Strings, Types, Config, ConfigError} from 'js-prelude';
     }
 }
 
-const Component = {
-    createElement(tag, props, ...children) {
+/**
+ * Non-instantiable component utility class with static methods to create component factories
+ * and handle components and their events.
+ */
+export default class Component {
+    /**
+     * @ignore
+     */
+    constructor() {
+        throw new Error('[Component.constructor] Class Component is not instantiable');
+    }
+
+    static createElement(tag, props, ...children) {
         if (tag === undefined || tag === null) {
             throw new TypeError("[Component.createElement] First argument 'tag' must not be empty");    
         }
@@ -34,13 +45,13 @@ const Component = {
         return Component.isFactory(tag)
             ? tag.adaptedFactory(props, children)
             : ComponentAdapter.createElement(tag, props, children);    
-    },
+    }
     
-    isElement(obj) {
+    static isElement(obj) {
         return ComponentAdapter.isElement(obj);
-    },
+    }
     
-    createFactory(factoryConfig) {
+    static createFactory(factoryConfig) {
         if (!factoryConfig || typeof factoryConfig !== 'object') {
             console.error('[Component.createFactory] Illegal factory configuration:', factoryConfig);
             throw new TypeError("[Component.createFactory] First argument 'factoryConfig' must be an object");
@@ -73,16 +84,16 @@ const Component = {
 
         Object.freeze(ret);
         return ret;
-    },
+    }
 
-    isFactory(componentFactory) {
+    static isFactory(componentFactory) {
         return typeof componentFactory === 'function'
                 && typeof componentFactory.adaptedFactory === 'function'
                 && componentFactory.__meta
                 && typeof componentFactory.__meta === 'object';
-    },
+    }
     
-    createEventBinder(target, mapper = event => event) {
+    static createEventBinder(target, mapper = event => event) {
         if (target !== undefined && target !== null
             && typeof target !== 'function'
             && typeof target.next !== 'function') {
@@ -109,9 +120,9 @@ const Component = {
         }
 
         return ret;
-    },
+    }
 
-    mount(content, targetNode) {
+    static mount(content, targetNode) {
         let mountNode = null;
         
         if (typeof targetNode === 'string') {
@@ -139,9 +150,14 @@ const Component = {
             Component.isFactory(content) ? content() : content,
             mountNode);
     }
-};
 
-export default Component;
+    /**
+     * @ignore
+     */
+    static toString() {
+        return 'Component/class'
+    }
+};
 
 // @throws
 function buildComponentMeta(config) {
@@ -388,6 +404,7 @@ function buildUIFunctionFromRenderFunction(config) {
         properties = config.getObject('properties', null),
         render = config.getFunction('render', null),
         initialState = config.get('initialState', null),
+        initialStateProvider = typeof initialState === 'function' ? initialState : props => initialState,
         updateState = config.getFunction('updateState', null),
         publish = config.getFunction('publish', null),
         eventNames = new Set();
@@ -405,13 +422,15 @@ function buildUIFunctionFromRenderFunction(config) {
             actions = new Subject(),
 
             events = {}, // will be filled below
-        
+
             model =
                 !updateState
                 ? Observable.of(null)
-                : actions
-                    .startWith(initialState) // TODO: initialState may also be a function
-                    .scan((state, action) => {
+                : Observable.merge(
+                    behavior.take(1).map(props => initialStateProvider(props)),
+                    actions
+                      .startWith(initialState) // TODO: initialState may also be a function
+                      .scan((state, action) => {
                         let ret = state;
                             
 
@@ -422,15 +441,15 @@ function buildUIFunctionFromRenderFunction(config) {
                         }
                             
                         return ret;
-                    });
-    
+                    }));
+
         for (let eventName of eventNames) {
             events[eventName] = new Subject();
         }
         
         const contents = behavior.combineLatest(model, (props, state) => {
             let ret;
-            
+
             const result = render(props, state);
             
             if (Component.isElement(result)) {
@@ -470,10 +489,6 @@ function buildUIFunctionFromRenderFunction(config) {
                 throw new TypeError(
                     "Property 'actions' of the object returned by function 'render' must be "
                     + 'an observable or undefined');
-            } else if (result.events && result.actions) {
-                throw new TypeError(
-                    "The object returned by function 'render' must not have both properties "
-                    + "'actions' and 'events' together");
             } else {
                 let toPublish =  null;
 
@@ -482,7 +497,7 @@ function buildUIFunctionFromRenderFunction(config) {
                 
                     if (publish) {
                         result.actions.subscribe(action => {
-                            const toPublish = publish(action, props, state);
+                            toPublish = publish(action, props, state);
                             
                             if (toPublish !== undefined && toPublish !== null && typeof toPublish !== 'object') {
                                 throw new TypeError(
@@ -528,7 +543,7 @@ function buildUIFunctionFromViewFunction(config) {
     const
         view = config.getFunction('view'),
         model = config.get('model', null),
-        events =config.get('events', null);
+        events = config.get('events', null);
 
     return behavior => {
         const
