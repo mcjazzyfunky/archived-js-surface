@@ -38,24 +38,22 @@ export default Component.createFactory({
         }
     },
 
-    view: behavior => behavior.map(renderPaginationInfo) 
+    render({props}) {
+        const
+            metrics = PaginationHelper.calcPaginationMetrics(
+                props.get('pageIndex'),
+                props.get('pageSize'),
+                props.get('totalItemCount'));
+
+        return (
+            dom('div',
+                {className: 'fk-pagination-info'},
+                props.type !== 'infoAboutItems'
+                    ? getPageInfo(metrics)
+                    : getItemsInfo(metrics))
+        );
+    }
 });
-
-function renderPaginationInfo(props) {
-    const
-        metrics = PaginationHelper.calcPaginationMetrics(
-                        props.get('pageIndex'),
-                        props.get('pageSize'),
-                        props.get('totalItemCount'));
-
-    return (
-        dom('div',
-            {className: 'fk-pagination-info'},
-            props.type !== 'infoAboutItems'
-                   ? getPageInfo(metrics)
-                   : getItemsInfo(metrics))
-    );
-}
 
 function getPageInfo(metrics) {
    return 'Page '

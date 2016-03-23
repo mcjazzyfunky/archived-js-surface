@@ -20,11 +20,11 @@ export default Component.createFactory({
         }
     },
 
-    view:
-        behavior => behavior.map(renderButtonGroup)
+    render:
+        renderButtonGroup
 });
 
-function renderButtonGroup(props) {
+function renderButtonGroup({props}) {
     const
         children =
             props.getArray('children', []),

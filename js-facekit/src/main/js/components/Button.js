@@ -1,11 +1,12 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
+import EventMappers from '../helpers/EventMappers.js';
 import {Component} from 'js-bling';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
-import {Subject} from 'rxjs';
 
-const {createElement: dom, createEventBinder: binder} = Component;
+
+const {createElement: dom} = Component;
 
 export default Component.createFactory({
     typeId: 'FKButton',
@@ -68,13 +69,11 @@ export default Component.createFactory({
     render: renderButton
 });
 
-function renderButton(props) {
+function renderButton({props}) {
     const
-        clicks = new Subject(),
-
-        onClick = binder(clicks, _ => ({event: 'click'}))(),
-
         key = props.get('key', null),
+
+        onClick = props.get('onClick'),
 
         icon = Strings.trimToNull(props.get('icon')),
 
@@ -129,13 +128,21 @@ function renderButton(props) {
                 (iconElement === null ? null : 'fk-has-icon'),
                 (!isDropdown ? null : 'dropdown-toggle')),
 
+        doOnClick = event => {
+            const onClick = props.get('onClick');
+
+            if (onClick) {
+                onClick(EventMappers.mapClickEvent(event));
+            }
+        },
+
         button =
             dom('button', {
                     type: 'button',
                     className: className,
                     title: tooltip,
                     disabled: disabled,
-                    onClick: onClick,
+                    onClick: doOnClick,
                     key: key
                 },
                 (iconPosition === 'left' || iconPosition === 'top'
@@ -143,10 +150,10 @@ function renderButton(props) {
                         : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
                 (isDropdown ? caret : null));
 
-    let content;
+    let ret;
 
     if (isDropdown) {
-        content =
+        ret =
             dom('div',
                 {className: 'fk-button btn-group ' + props.get('className')},
                 button,
@@ -159,7 +166,7 @@ function renderButton(props) {
                             'Juhu'))));
 
     } else if (isSplitButton) {
-        content =
+        ret =
             dom('div',
                 {className: 'fk-button btn-group ' + props.get('className')},
                 button,
@@ -175,17 +182,12 @@ function renderButton(props) {
                             null,
                             'Juhu'))));
     } else {
-        content =
+        ret =
             dom('div',
                 {className: 'fk-button btn-group ' + props.get('className')},
                 button);
     }
 
-    return {
-        content,
-        events: {
-            click: clicks.asObservable()
-        }
-    };
+    return ret;
 }
 

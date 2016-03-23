@@ -34,4 +34,14 @@ export default class EventMappers {
             value: event.target.value
         };
     }
+
+    static mapClickEvent(event) {
+        if (!event || !event.target) {
+            throw new TypeError("[EventMappers.mapInputEvent] First argument 'event' is not an 'input event'");
+        }
+
+        return {
+            type: 'click'
+        };
+    }
 }

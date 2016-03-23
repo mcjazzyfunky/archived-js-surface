@@ -4,9 +4,8 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-bling';
 import {Seq} from 'js-prelude';
-import {Subject} from 'rxjs';
 
-const {createElement: dom, createEventBinder: binder} = Component;
+const {createElement: dom} = Component;
 
 export default Component.createFactory({
     typeId:
@@ -63,11 +62,14 @@ export default Component.createFactory({
         renderPagination
 });
             
-function renderPagination(props) {
+function renderPagination({props}) {
     const
-        changes = new Subject(),
+        onChange = props.get('onChange', null),
 
-        bindMoveToPage = binder(changes, (_, pageIndex) => ({targetPage: pageIndex})),
+        bindMoveToPage = pageIndex =>
+            !onChange
+            ? null
+            : _ => onChange({targetPage: pageIndex}),
 
         pageIndex = props.get('pageIndex'),
 
@@ -143,35 +145,29 @@ function renderPagination(props) {
                 renderLinkListItem(
                    index + 1,
                    index === pageIndex,
-                   bindMoveToPage(index))),
+                   bindMoveToPage(index)));
 
-        content =
-            dom('div',
-                {className: classNameOuter},
-                dom('ul',
-                    {className: classNameInner},
-                    firstPageLink,
-                    precedingEllipsis,
-                    ...buttons,
-                    succeedingEllipsis,
-                    lastPageLink));
-                    
-        return {
-            content,
-            events: {
-                change: changes.asObservable()
-            }
-        };
+    return (
+        dom('div',
+            {className: classNameOuter},
+            dom('ul',
+                {className: classNameInner},
+                firstPageLink,
+                precedingEllipsis,
+                ...buttons,
+                succeedingEllipsis,
+                lastPageLink))
+    );
 }
 
-function renderLinkListItem(text, isActive, onMoveToPage) {
+function renderLinkListItem(text, isActive, moveToPage) {
     return (
         dom('li', {
                 className: isActive ? 'active' : '',
                 key: text !== '...' ? text + '-' + isActive : undefined
             },
             dom('a',
-                {onClick: onMoveToPage},
+                {onClick: moveToPage},
                 text))
     );
 }

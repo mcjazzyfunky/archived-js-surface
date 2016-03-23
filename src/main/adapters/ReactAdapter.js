@@ -1,6 +1,7 @@
 'use strict';
 
 import {Observable, Subject} from 'rxjs';
+import {Config} from 'js-prelude';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -67,101 +68,80 @@ class ReactAdapterComponent extends React.Component {
         }
 
         super(...superArgs);
+        this.__adaptionParams = adaptionParams;
 
-        this.__typeId = adaptionParams.typeId;
-        this.__validateAndMapProps = adaptionParams.validateAndMapProps;
-        this.__lifecycleCallbacks = adaptionParams.lifecycleCallbacks;
-        this.__needsToBeRendered = false;
-        this.__propsSbj = new Subject();
-
-        const 
-            result = adaptionParams.ui(this.__propsSbj),
-            ui = result instanceof Observable ? {contents: result} : result;
-
-        if (!(ui  && ui.contents instanceof Observable)) {
-            console.error('[ReactAdapterComponent.constructor] '
-                    + `Illegal return value of function 'ui' component of type '${typeId}':`, ui);
-
-            throw new TypeError(
-                    '[ReactAdapterComponent.constructor] '
-                    + `Function 'ui' of component '${typeId}' did not return a proper value`);
+        if (!this.__adaptionParams.stateUpdate) {
+            this.state = null;
+        } else if (typeof this.__adaptionParams.initialState === 'function') {
+            this.state = this.__adaptionParams.initialState(this.props);
+        } else {
+            this.state = this.__adaptionParams.initialState;
         }
 
-        this.__contentsObs = ui.contents;
-        this.__events = ui.events;
+        this.props = this.__adaptionParams.validateAndMapProps(this.props);
+    }
 
-        this.__contentsObs.subscribe(contents => {
-            if (!React.isValidElement(contents)) {
-                console.error('[ReactComponentAdapter] Invalid content:', contents);
-                throw new TypeError('[ReactComponentAdapter] Content is not a valid react element');
-            }
-            
-            this.__domTree = contents;
-            this.__needsToBeRendered = true;
-            
-            setTimeout(() => {
-                if (this.__needsToBeRendered) {
-                    this.forceUpdate();
-                }
-            }, 0);
-        });
-        
-        if (this.__events !== null && typeof this.__events === 'object') {
-            Object.keys(this.__events).forEach(key => {
-                const obs = this.__events[key];
-
-// TODO: Check whether known event name
-
-                if (key.length > 0 && obs instanceof Observable) {
-                    obs.subscribe(event => {
-                        if (this.props) {
-                            const
-                                attr = 'on' + key[0].toUpperCase() + key.substr(1),
-                                callback = this.props[attr];
-                            if (typeof callback === 'function') {
-                                callback(event);
-                            }
-                        }
-                    });
-                } 
-            });
-        }
-
-        this.componentWillReceiveProps(superArgs[0])
-        this.__hasInitialized = false;
+    componentWillReceiveProps(nextProps) {
+        this.props = this.__adaptionParams.validateAndMapProps(nextProps);
     }
     
     componentDidMount() {
-        const callback = this.__lifecycleCallbacks.onMount;
+        const callback = this.__adaptionParams.onMount;
 
         if (typeof callback === 'function') {
             callback({
+                state: this.state,
                 domElement: ReactDOM.findDOMNode(this)
             })
         }
     }
     
-    componentWillReceiveProps(nextProps) {
-        this.props = this.__validateAndMapProps(nextProps);
-        this.__propsSbj.next(this.props);
-    }
-    
-    shouldComponentUpdate() {
-        return this.__needsToBeRendered;
-    }
-    
     render() {
-        if (!this.__domTree) {
-            throw new Error('[ReactAdapterComponent:render] '
-                + `Invalid contents behavior for components of type '${this.__typeId}'`);
-        } else if (!this.__hasIniialized) {
-            this.__hasIniialized = true;
-            this.__propsSbj.next(this.__validateAndMapProps(this.props));
+        if (!(this.props instanceof Config)) {
+            this.props = this.__adaptionParams.validateAndMapProps(this.props);
         }
-        
-        const ret = this.__domTree;
-        this.__needsToBeRenderd = false;
-        return ret;
+
+        const
+            update = {}, // will be enhanced below
+
+            stateTransitions =
+                !this.__adaptionParams.stateUpdate
+                ? null
+                : this.__adaptionParams.stateUpdate({
+                    state: this.state
+                }),
+
+            ctrl =
+                !this.__adaptionParams.control
+                ? {}
+                : this.__adaptionParams.control({
+                    props: this.props,
+                    state: this.state,
+                    update: update
+                });
+
+        if (stateTransitions) {
+            for (let transitionName of Object.keys(stateTransitions)) {
+                update[transitionName] = (...args) => {
+                    return new Promise((resolve, reject) => {
+                        try {
+                            const newState = stateTransitions[transitionName](...args);
+                            this.setState(newState);
+                            resolve(newState);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    });
+                }
+            }
+        }
+
+        return this.__adaptionParams.render({
+            props: this.props,
+            state: this.state,
+            ctrl,
+            update
+        });
     }
     
     toString() {

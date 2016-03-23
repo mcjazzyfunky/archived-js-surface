@@ -22,6 +22,26 @@ export const Pagination = Component.createFactory({
     typeId: 'FKPagination',
    
     properties: {
+        className: {
+            type: 'string',
+            defaultValue: null
+        },
+
+        pageIndex: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        pageSize: {
+            type: 'number',
+            defaultValue: null
+        },
+
+        totalItemCount: {
+            type: 'number',
+            defaultValue: null
+        },
+
         showFirstButton: {
             type: 'boolean',
             defaultValue: true
@@ -48,96 +68,89 @@ export const Pagination = Component.createFactory({
         }
     },
 
-    view: behavior => {
-        const 
-            changeEvents = new Subject(),
-            
-            bindMoveToPage =
-                binder(changeEvents, (_, pageIndex) => ({targetPage: pageIndex})),
-            
-            contents = behavior.map(props => {
-                const
-                    pageIndex = props.get('pageIndex'),
-                    
-                    metrics =
-                        PaginationHelper.calcPaginationMetrics(
-                            props.get('pageIndex'),
-                            props.get('pageSize'),
-                            props.get('totalItemCount')),
-        
-                    paginationInfo =
-                        PaginationHelper.determineVisiblePaginationButtons(
-                            props.get('pageIndex'),
-                            metrics.pageCount,
-                            6),
-                    
-                    classNameOuter =
-                        ComponentHelper.buildCssClass(
-                            'fk-pagination',
-                            props.className),
-        
-                    classNameInner = 'pagination',
-                    
-                    firstPageLink =
-                        metrics.pageCount > 0
-                        ? buildLinkListItem(
-                            1,
-                            pageIndex === 0,
-                            bindMoveToPage(0))
-                        : null,
+    render({props}) {
+        const
+            pageIndex = props.get('pageIndex'),
 
-                    precedingEllipsis =
-                        paginationInfo.firstButtonIndex > 1
-                        ? buildLinkListItem(
-                            '...',
-                            false)
-                        : null,
-    
-                    succeedingEllipsis =
-                        paginationInfo.lastButtonIndex < metrics.pageCount - 2
-                        ? buildLinkListItem(
-                            '...',
-                            false)
-                        : null,
-                    
-                    lastPageLink =
-                        metrics.pageCount > 0
-                        ? buildLinkListItem(
-                            metrics.pageCount,
-                            pageIndex === metrics.pageCount - 1,
-                            bindMoveToPage(metrics.pageCount - 1))
-                        : null,
-    
-                    buttons =
-                        Seq.range(
-                            paginationInfo.firstButtonIndex ,
-                            paginationInfo.lastButtonIndex + 1)
-                        .map(
-                            index => buildLinkListItem(
-                                index + 1,
-                                index === pageIndex,
-                                bindMoveToPage(index))
-                        );   
+            metrics =
+                PaginationHelper.calcPaginationMetrics(
+                    props.get('pageIndex'),
+                    props.get('pageSize'),
+                    props.get('totalItemCount')),
 
-                return (
-                    dom('div',
-                        {className: classNameOuter},
-                        dom('u',
-                            {className: classNameInner},
-                            firstPageLink,
-                            precedingEllipsis,
-                            buttons.toArray(),
-                            succeedingEllipsis,
-                            lastPageLink))
+            paginationInfo =
+                PaginationHelper.determineVisiblePaginationButtons(
+                    props.get('pageIndex'),
+                    metrics.pageCount,
+                    6),
+
+            classNameOuter =
+                ComponentHelper.buildCssClass(
+                    'fk-pagination',
+                    props.get('className')),
+
+            classNameInner = 'pagination',
+
+            moveToPage = targetPage => {
+                const onChange = props.get('onChange', null);
+
+                if (onChange) {
+                    onChange({targetPage: targetPage});
+                }
+            },
+
+            firstPageLink =
+                metrics.pageCount > 0
+                ? buildLinkListItem(
+                    1,
+                    pageIndex === 0,
+                    () => moveToPage(0))
+                : null,
+
+            precedingEllipsis =
+                paginationInfo.firstButtonIndex > 1
+                ? buildLinkListItem(
+                    '...',
+                    false)
+                : null,
+
+            succeedingEllipsis =
+                paginationInfo.lastButtonIndex < metrics.pageCount - 2
+                ? buildLinkListItem(
+                    '...',
+                    false)
+                : null,
+
+            lastPageLink =
+                metrics.pageCount > 0
+                ? buildLinkListItem(
+                    metrics.pageCount,
+                    pageIndex === metrics.pageCount - 1,
+                    () => moveToPage(metrics.pageCount - 1))
+                : null,
+
+            buttons =
+                Seq.range(
+                    paginationInfo.firstButtonIndex ,
+                    paginationInfo.lastButtonIndex + 1)
+                .map(
+                    index => buildLinkListItem(
+                        index + 1,
+                        index === pageIndex,
+                        () => moveToPage(index))
                 );
-            }),
-        
-            events = {
-                change:
-                    changeEvents
-            };
 
-        return {contents, events};
+        return (
+            dom('div',
+                {className: classNameOuter},
+                dom('u',
+                    {className: classNameInner},
+                    firstPageLink,
+                    precedingEllipsis,
+                    buttons.toArray(),
+                    succeedingEllipsis,
+                    lastPageLink))
+        );
     }
 });
 
@@ -156,72 +169,30 @@ function buildLinkListItem(text, isActive, moveToPage) {
 
 export const DemoOfPagination = Component.createFactory({
     typeId: 'DemoOfPagination',
-    
-    model: actions => {
-        return actions.startWith(0);
-    },
-    
-    view: (_, model) => {
-        const
-            actions = new Subject(),
-            bindOnChange = binder(actions, event => event.targetPage),
-        
-            contents = 
-                model.map(pageIndex =>
-                    dom('div',
-                        {className: 'container-fluid'},
-                        Seq.range(1, number).map(_ =>
-                            dom('div',
-                                {className: 'row'},
-                                Pagination({
-                                    className: "col-md-3",
-                                    pageIndex: pageIndex,
-                                    pageSize: pageSize,
-                                    totalItemCount: totalItemCount,
-                                    onChange: bindOnChange()})))));
-        
-        return {
-            contents,
-            actions
-        }
-    }
-});
 
-export const DemoOfPagination2 = Component.createFactory({
-    typeId: 'DemoOfPagination',
-    
     initialState: {
         pageIndex: 0
     },
-    
-    updateState: action => {
-        return {pageIndex: action.targetPage};
-    },
-    
-    render: (_, state) => {
-        const
-            actions = new Subject(),
 
-            bindOnChange = binder(actions, event => ({
-                targetPage: event.targetPage
-            })),
-        
-            content = 
-                dom('div',
-                    {className: 'container-fluid'},
-                    Seq.range(1, number).map(_ =>
-                        dom('div',
-                            {className: 'row'},
-                            Pagination({
-                                className: "col-md-3",
-                                pageIndex: state.pageIndex,
-                                pageSize: pageSize,
-                                totalItemCount: totalItemCount,
-                                onChange: bindOnChange()}))));
-        return {
-            content,
-            actions
-        };
+    stateUpdate: ({state}) => ({
+        moveToPage: pageIndex => {
+            return {pageIndex: pageIndex};
+        }
+    }),
+
+    render({state, update}) {
+        return (
+            dom('div',
+                {className: 'container-fluid'},
+                Seq.range(1, number).map(_ =>
+                    dom('div',
+                        {className: 'row'},
+                        Pagination({
+                            className: "col-md-3",
+                            pageIndex: state.pageIndex,
+                            pageSize: pageSize,
+                            totalItemCount: totalItemCount,
+                            onChange: evt => update.moveToPage(evt.targetPage)})))));
     }
 });
 
@@ -349,9 +320,9 @@ const
     RDemoOfPagination = React.createFactory(RDemoOfPaginationClass);
     
 
-if (0) {
+if (1) {
     Component.mount(
-        DemoOfPagination2,
+        DemoOfPagination,
         'main-content',
         'React');
 } else {

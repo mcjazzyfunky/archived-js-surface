@@ -93,35 +93,6 @@ export default class Component {
                 && typeof componentFactory.__meta === 'object';
     }
     
-    static createEventBinder(target, mapper = event => event) {
-        if (target !== undefined && target !== null
-            && typeof target !== 'function'
-            && typeof target.next !== 'function') {
-                
-            throw new TypeError(
-                "[Component.createEventBinder] First argument 'target' must either be "
-                + 'a callback function or an subject or null or undefined');
-        } else if (typeof mapper !== 'function') {
-            throw new TypeError(
-                "[Component.createEventBinder] Second argument 'mapper' must 'be a function");
-        }
-        
-        let ret;
-        
-        if (!target) {
-            ret = () => null;
-        } else {
-            const consumer =
-                typeof target === 'function'
-                ? event => { event === undefined || event === null || target(event) }
-                : event => { event === undefined || event === null || target.next(event) };
-            
-            ret = (...args) => event => consumer(mapper(event, ...args));
-        }
-
-        return ret;
-    }
-
     static mount(content, targetNode) {
         let mountNode = null;
         
@@ -182,11 +153,23 @@ function buildComponentMeta(config) {
                         .filter(name => name.match(/^on[A-Z]/))
                         .map(name => name.charAt(2).toLowerCase() + name.substring(3))),
 
-            ui: normalizeUI(config),
+            initialState:
+                config.get('initialState', null),
 
-            lifecycleCallbacks: {
-                onMount: config.getFunction('onMount', null)
-            }
+            stateUpdate:
+                config.getFunction('stateUpdate', null),
+
+            control:
+                config.getFunction('control', null),
+
+            render:
+                config.getFunction('render'),
+
+            onMounted:
+                config.getFunction('onMounted', null),
+
+            onRendered:
+                config.getFunction('onRendered', null)
         };
 
     Object.freeze(ret);
@@ -209,9 +192,13 @@ function buildAdaptionParams(componentMeta) {
     const ret = {
         typeId: componentMeta.typeId,
         validateAndMapProps: createPropsValidatorAndMapper(componentMeta),
-        ui: componentMeta.ui,
+        initialState: componentMeta.initialState,
+        stateUpdate: componentMeta.stateUpdate,
+        control: componentMeta.control,
+        render: componentMeta.render,
         defaultProps: defaultProps,
-        lifecycleCallbacks: componentMeta.lifecycleCallbacks
+        onMounted: componentMeta.onMounted,
+        onRendered: componentMeta.onRendered
     };
 
     return ret;
@@ -246,42 +233,6 @@ function normalizeProperties(config) {
             rule: rule,
             validation: validation
         }
-    }
-
-    return ret;
-}
-
-function normalizeUI(config) {
-    // Already ensured that argument 'config' is an instance of class Config
-
-    let ret;
-
-    const
-        initialState = config.isDefined('initialState') ? config.get('initialState') : undefined,
-        updateState = config.getFunction('updateState', null),
-        ui = config.getFunction('ui', null),
-        events = config.getFunction('events', null),
-        view = config.getFunction('view', null),
-        model = config.getFunction('model', null),
-        render = config.getFunction('render', null),
-        publish = config.getFunction('publish', null);
-
-    if (!ui && !view && !render) {
-        throw new ConfigError("One of the function 'ui', 'view' or 'render' must be provided");
-    } else if (!!ui + !!view + !!render > 1) {
-        throw new ConfigError("Only one of the functions 'ui', 'view' or 'render' shall be provided");
-    } else if (view) {
-        ret = buildUIFunctionFromViewFunction(config);
-    } else if (render) {
-        if (initialState !== undefined && !updateState) {
-            throw new ConfigError("Missing function 'updateState'");
-        } else if (updateState && initialState === undefined) {
-            throw new ConfigError("Missing parameter 'initialState");
-        }
-
-        ret = buildUIFunctionFromRenderFunction(config);
-    } else {
-        ret = ui;
     }
 
     return ret;
@@ -398,227 +349,4 @@ function checkProperty(propName, propValue, propConfig) {
     return ret;
 }
 
-// @throws Error
-function buildUIFunctionFromRenderFunction(config) {
-    const
-        properties = config.getObject('properties', null),
-        render = config.getFunction('render', null),
-        initialState = config.get('initialState', null),
-        initialStateProvider = typeof initialState === 'function' ? initialState : props => initialState,
-        updateState = config.getFunction('updateState', null),
-        publish = config.getFunction('publish', null),
-        eventNames = new Set();
-
-    if (properties) {
-        for (let property of Object.keys(properties)) {
-            if (property.match(/^on[A-Z]/)) {
-                eventNames.add(property.charAt(2).toLowerCase() + property.substring(3));
-            }
-        };
-    }
-
-    return behavior => {
-        const
-            actions = new Subject(),
-
-            events = {}, // will be filled below
-
-            model =
-                !updateState
-                ? Observable.of(null)
-                : Observable.merge(
-                    behavior.take(1).map(props => initialStateProvider(props)),
-                    actions
-                      .startWith(initialState) // TODO: initialState may also be a function
-                      .scan((state, action) => {
-                        let ret = state;
-                            
-
-                        try {
-                            ret = updateState(action, state);
-                        } catch (err) {
-                            setTimeout(() => { throw err; }, 0); // TODO - prevent that events are published
-                        }
-                            
-                        return ret;
-                    }));
-
-        for (let eventName of eventNames) {
-            events[eventName] = new Subject();
-        }
-        
-        const contents = behavior.combineLatest(model, (props, state) => {
-            let ret;
-
-            const result = render(props, state);
-            
-            if (Component.isElement(result)) {
-                if (updateState) {
-                    throw new TypeError(
-                        "Function 'updateState' is provided therefore function "
-                        + "'render' must return an object with both properties "
-                        + "'content' and 'actions'");
-                }
-                
-                ret = result;
-            } else if (result === null || typeof result !== 'object' || result.content === undefined) {
-                throw new TypeError(
-                    "Function 'render' must either return an Observable or an object "
-                    + "containing at least property 'content'");
-            } else if (updateState && result.actions === undefined) {
-                throw new TypeError(
-                    "Function 'updateState' is provided therefore the object returned "
-                    + "by function 'render' must have a property 'actions'");
-            } else if (!updateState && result.actions !== undefined) {
-                throw new TypeError(
-                    "Function 'updateState' is not provided therefore the object returned "
-                    + "by function 'render' must not have a property 'actions'");
-            } else if (result.events === null) {
-                throw new TypeError(
-                    "The property 'events' of the object returned by function 'render' "
-                    + 'must not be null');
-            } else if (result.events !== undefined && typeof result.events !== 'object') {
-                throw new TypeError(
-                    "The property 'events' of the object returned by function 'render' "
-                    + 'has to be an object or undefined');
-            } else if (publish && result.events !== undefined) {
-                throw new TypeError(
-                    "Function 'publish' is provided therefore the object returned "
-                    + "by function 'render' must not have a property 'actions'"); 
-            } else if (result.actions !== undefined && !(result.actions instanceof Observable)) {
-                throw new TypeError(
-                    "Property 'actions' of the object returned by function 'render' must be "
-                    + 'an observable or undefined');
-            } else {
-                let toPublish =  null;
-
-                if (result.actions) {
-                    result.actions.subscribe(actions); // TODO - unsubscribe???
-                
-                    if (publish) {
-                        result.actions.subscribe(action => {
-                            toPublish = publish(action, props, state);
-                            
-                            if (toPublish !== undefined && toPublish !== null && typeof toPublish !== 'object') {
-                                throw new TypeError(
-                                    "The return value of function 'publish' must be undefined, null or an object");
-                            }
-                        }); 
-                    }
-                } else if (result.events) {
-                    toPublish = result.events;
-                }
-                
-                if (toPublish) {
-                    for (let eventName of Object.keys(toPublish)) {
-                        if (!eventNames.has(eventName)) {
-                            throw new TypeError(
-                                !result.events
-                                
-                                ? "The object returned by function 'publish' contains a property "
-                                + `of name '${eventName}' which is not a known event name`
-                                
-                                : "The object returned by function 'render' contains a property "
-                                + `'events' which has a property '${eventName}' which is not a knwon event name`);
-                        }
-
-                        toPublish[eventName].subscribe(events[eventName]);
-                    }
-                }
-                
-                ret = result.content;
-            }
-            
-            return ret;
-        });
-    
-        return {
-            contents,
-            events
-        };
-    };
-}
-
-function buildUIFunctionFromViewFunction(config) {
-    const
-        view = config.getFunction('view'),
-        model = config.get('model', null),
-        events = config.get('events', null);
-
-    return behavior => {
-        const
-            modelProxy =
-                !model
-                ? Observable.of(null)
-                : Observable.create(observer => model.subscribe(observer)),
-            
-            viewResult = view(behavior, modelProxy);
-            
-        let ret;
-
-        if (viewResult instanceof Observable) {
-            if (model || events) {
-                throw new TypeError(
-                    "[Component] The result of the 'view' function must be an object containing "
-                    + " the property 'actions' as 'model' or/and 'events' are configured");
-            }
-            
-            ret = {contents: viewResult, events: null};
-        } else if (viewResult === null) {
-            throw new TypeError("[Component] The result of the 'view' function must not be null");
-        } else if (typeof viewResult !== 'object') {
-            throw new TypeError("[Component] The result of the 'view' function must be an observable or and object");
-        } else if (!Types.isSomething(viewResult.contents)) {
-            throw new TypeError("[Component] The result of the 'view' function does not provide a 'contents' observable");
-        } else if (!(viewResult.contents instanceof Observable)) {
-            throw new TypeError("[Compoent] The 'contents' property of the result of the 'view' function must be an observable");
-        } else {
-            const
-                hasActionsProp = Types.isSomething(viewResult.actions),
-                hasEventsProp = Types.isSomething(viewResult.events);
-                
-            if (hasActionsProp + hasEventsProp > 1) {
-                throw new Error("[Component] The result of function 'view' can only "
-                    + " contain either an 'action' property or an 'view' not both ")
-            } else if (hasEventsProp && model) {
-                throw new Error("[Component] The result of function 'view' has "
-                    + "a property for 'events' so the compoent configuration "
-                    + "must not provide a 'model' function");
-            } else if (hasEventsProp && events) {
-                throw new Error("[Component] The result of the function 'view' has "
-                    + "a property for 'events' so the component configuration "
-                    + "must not provide a 'events' function");
-            }
-            
-            let actions;
-            
-            if (hasActionsProp) {
-                actions = viewResult.actions;
-            } else {
-                actions = Observable.empty();
-            }
-        
-            
-            let publishing = null;
-            
-            if (hasEventsProp) {
-                publishing = viewResult.events;
-            } else if (events) {
-                publishing = events(actions);
-            }
-           
-            if (model) {
-               const states = model(actions);
-
-                if (!(states instanceof Observable)) {
-                    throw new TypeError("[Component] Config function 'model' must return an observable");
-                }
-            }
-            
-            ret = {contents: viewResult.contents, events: publishing};
-        }
-
-        return ret;
-    };
-}
 
