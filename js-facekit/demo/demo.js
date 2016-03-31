@@ -178,7 +178,7 @@ const DemoOfPagination = Component.createFactory({
         currentPage: 0
     },
     
-    stateUpdate: ({state}) => ({
+    updateState: ({state}) => ({
         moveToPage(targetPage) {
             return {currentPage: targetPage};
         }
@@ -276,7 +276,7 @@ const demo6 = Component.createFactory({
     initialState:
         {counter: 0},
 
-    stateUpdate: ({state}) => ({
+    updateState: ({state}) => ({
         increaseCounter() {
             return {counter: state.counter + 1}
         },

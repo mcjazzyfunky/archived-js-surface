@@ -174,7 +174,7 @@ export const DemoOfPagination = Component.createFactory({
         pageIndex: 0
     },
 
-    stateUpdate: ({state}) => ({
+    updateState: ({state}) => ({
         moveToPage: pageIndex => {
             return {pageIndex: pageIndex};
         }

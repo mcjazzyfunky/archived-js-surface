@@ -156,8 +156,8 @@ function buildComponentMeta(config) {
             initialState:
                 config.get('initialState', null),
 
-            stateUpdate:
-                config.getFunction('stateUpdate', null),
+            updateState:
+                config.getFunction('updateState', null),
 
             control:
                 config.getFunction('control', null),
@@ -193,7 +193,7 @@ function buildAdaptionParams(componentMeta) {
         typeId: componentMeta.typeId,
         validateAndMapProps: createPropsValidatorAndMapper(componentMeta),
         initialState: componentMeta.initialState,
-        stateUpdate: componentMeta.stateUpdate,
+        updateState: componentMeta.updateState,
         control: componentMeta.control,
         render: componentMeta.render,
         defaultProps: defaultProps,

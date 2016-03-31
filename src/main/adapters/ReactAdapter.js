@@ -70,7 +70,7 @@ class ReactAdapterComponent extends React.Component {
         super(...superArgs);
         this.__adaptionParams = adaptionParams;
 
-        if (!this.__adaptionParams.stateUpdate) {
+        if (!this.__adaptionParams.updateState) {
             this.state = null;
         } else if (typeof this.__adaptionParams.initialState === 'function') {
             this.state = this.__adaptionParams.initialState(this.props);
@@ -105,9 +105,9 @@ class ReactAdapterComponent extends React.Component {
             update = {}, // will be enhanced below
 
             stateTransitions =
-                !this.__adaptionParams.stateUpdate
+                !this.__adaptionParams.updateState
                 ? null
-                : this.__adaptionParams.stateUpdate({
+                : this.__adaptionParams.updateState({
                     state: this.state
                 }),
 
