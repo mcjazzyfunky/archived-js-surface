@@ -1,21 +1,24 @@
 'use strict';
 
 import ComponentAdapter from '../core/ComponentAdapter';
-import ComponentSpec from '../core/ComponentSpec';
+import ComponentConfig from '../core/ComponentConfig';
+
+import Observable from '../util/Observable';
+import Subject from '../util/Subject';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 export default class ReactComponentAdapter extends ComponentAdapter {
-    constructor(componentSpec) {
-        if (!(componentSpec instanceof ComponentSpec)) {
+    constructor(componentConfig) {
+        if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactComponentAdapter.constructor] '
-                + "First argument 'componentSpec' must be an instance of "
-                + 'class ComponentSpec');
+                + "First argument 'componentConfig' must be an instance of "
+                + 'class ComponentConfig');
         }
 
-        this.__spec = componentSpec;
+        this.__componentConfig = componentConfig;
     }
 
     createElement(tag, props, children) {
@@ -34,7 +37,7 @@ export default class ReactComponentAdapter extends ComponentAdapter {
         return React.isValidElement(what); // TODO - is this really correct???
     }
 
-    createAdaptedFactory(componentSpec) {
+    createAdaptedFactory(componentConfig) {
         throw Error('[ComponentAdapter#isElement] Method not implemented/overridden');
     }
 
@@ -65,28 +68,58 @@ export default class ReactComponentAdapter extends ComponentAdapter {
 
 
 class ReactAdapterComponent extends React.Component {
-    constructor(compentSpec, superArgs) {
-        if (!(componentSpec instanceof ComponentSpec)) {
+    constructor(componentConfig, superArgs) {
+        if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
-                + "First argument 'componentSpec' must be an instance "
-                + 'of class ComponentSpec');
+                + "First argument 'componentConfig' must be an instance "
+                + 'of class ComponentConfig');
         }
 
         super(...superArgs);
-        this.__componentSpec = componentSpec;
+        this.__componentConfig = componentConfig;
 
-        componentSpec.validateProps(this.props);
+        componentConfig.validateProps(this.props);
+
+        this.__behavior = new Subject();
+        this.__contents = componentConfig.getView(this.__behavior.asObservable(), this.context);
+        this.__contentsSubscription = null;
+        this.__currentContent = null;
+
+        if (this.__contents instanceof Observable) {
+            throw new TypeError(
+                '[ReactComponentAdapter.constructor] View function of '
+                + `component of type '${this.__componentConfig.getTypeName()} `
+                + 'must return an observable');
+        }
+    }
+
+    componentWillMount() {
+        this.__contentsSubscription = this.__contents.subscribe(content => {
+            this.__currentContent = content;
+            this.forceUpdate();
+        });
+    }
+
+    componentWillUnmount() {
+        this.__contentsSubscription.unsubscribe();
+        this.__contentsSubscription = null;
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__componentSpec.validateProps(nextProps);
+        this.__componentConfig.validateProps(nextProps);
+        this.__behavior.next(nextProps);
     }
 
-    componentDidMount() {
+    shouldComponentUpdate() {
+        return false;
     }
 
     render() {
+        const ret = this.__currentContent.virtualElement;
+        this.__currentContent = null;
+
+        return ret;
     }
 
     /**

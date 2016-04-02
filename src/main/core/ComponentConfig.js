@@ -2,11 +2,11 @@
 
 const regexComponentTypeName = /^[A-Z][a-zA-Z0-9]$/;
 
-export default class ComponentSpec {
+export default class ComponentConfig {
     constructor(spec) {
         if (spec === null || typeof spec !== 'object') {
             throw new TypeError(
-                '[ComponentSpec.constructor] '
+                '[ComponentConfig.constructor] '
                 + "First argument 'spec' must be an object");
         }
 
@@ -22,7 +22,7 @@ export default class ComponentSpec {
             this.__defaultProps = this.__readDefaultProps();
             this.__view = this.__readViewParam();
         } catch (err) {
-            let message = '[ComponentSpec.constructor] ';
+            let message = '[ComponentConfig.constructor] ';
 
             if (this.__typeName) {
                 message += 'Error in specification for component of type '

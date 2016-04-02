@@ -2,7 +2,7 @@
 
 'use strict';
 
-import ComponentSpec from './ComponentSpec';
+import ComponentSpec from './ComponentConfig';
 import ComponentAdapter from './ComponentAdapter';
 
 const
