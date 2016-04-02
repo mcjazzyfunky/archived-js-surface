@@ -1,30 +1,28 @@
 'use strict';
 
 import {Store, Strings} from 'js-prelude';
-import TodosStore from './stores/TodoStore.js';
+import Storage from './stores/TodoStore.js';
 import {Component} from 'js-surface';
 
 const {createElement: dom} = Component;
 
-export const storeFacetsFactory = Store.createFacetsFactory({
-    initialValue: {
-        editing: false
-    },
-
-    getters: {
-        isEditing() {
-            return this.state.editing;
-        }
-    },
-
-    actions: {
-        setEditing(value) {
-            return Objects.transform(this.state, {
-                editing: {$set: !!value}
-            });
-        }
+class ComponentStorage extends Storage {
+    get initialValue() {
+        return {
+            editing: false
+        };
     }
-});
+
+    isEditing() {
+        return this.state.editing;
+    }
+
+    setEditing(value) {
+        return Objects.transform(this.state, {
+            editing: {$set: !!value}
+        });
+    }
+}
 
 
 export default Component.createFactory({
@@ -42,9 +40,9 @@ export default Component.createFactory({
         }
     },
 
-    view: Component.createStoreBasedView({
-        getStoreFacets() {
-            return storeSuiteFactory();
+    view: Component.createStorageBasedView({
+        getStorage() {
+            return new ComponentStorage();
         },
 
         render({ctrl}) {
