@@ -138,7 +138,7 @@ function buildComponentMeta(config) {
         propertyNames = !properties ? [] : Object.keys(properties),
 
         ret = {
-            typeId: config.getStringMatchingRegex(typeIdRegex, 'typeId'),
+            typeId: config.getStringMatchingRegex('typeId', typeIdRegex),
             properties: properties,
             propertyNames: new Set(propertyNames),
 

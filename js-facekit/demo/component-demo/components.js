@@ -1,10 +1,10 @@
 'use strict';
 
-import Button from '../src/main/js/components/Button.js';
-import ButtonGroup from '../src/main/js/components/ButtonGroup.js';
-import Pager from '../src/main/js/components/Pager.js';
-import Pagination from '../src/main/js/components/Pagination.js';
-import PaginationInfo from '../src/main/js/components/PaginationInfo.js';
+import Button from '../../src/main/js/components/Button.js';
+import ButtonGroup from '../../src/main/js/components/ButtonGroup.js';
+import Pager from '../../src/main/js/components/Pager.js';
+import Pagination from '../../src/main/js/components/Pagination.js';
+import PaginationInfo from '../../src/main/js/components/PaginationInfo.js';
 /*
 import Tabs from '../src/main/js/components/Tabs.js';
 import Tab from '../src/main/js/components/Tab.js';
@@ -17,8 +17,8 @@ import {Seq} from 'js-prelude';
 
 import {Observable, Subject} from 'rxjs';
 
-import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
-import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
+import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
+import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

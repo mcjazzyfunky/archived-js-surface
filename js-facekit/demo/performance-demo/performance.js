@@ -6,8 +6,8 @@ import {Component}  from 'js-surface';
 import {Seq} from 'js-prelude';
 import {Observable, Subject} from 'rxjs';
 
-import PaginationHelper from '../src/main/js/helpers/PaginationHelper.js';
-import ComponentHelper from '../src/main/js/helpers/ComponentHelper.js';
+import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
+import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
