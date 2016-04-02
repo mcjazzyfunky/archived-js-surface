@@ -2,7 +2,7 @@
 
 /** @jsx dom */
 
-import {Component}  from 'js-bling';
+import {Component}  from 'js-surface';
 import {Seq} from 'js-prelude';
 import {Observable, Subject} from 'rxjs';
 

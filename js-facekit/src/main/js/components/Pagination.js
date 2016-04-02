@@ -2,7 +2,7 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 import {Seq} from 'js-prelude';
 
 const {createElement: dom} = Component;

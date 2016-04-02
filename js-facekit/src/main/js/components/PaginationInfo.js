@@ -3,7 +3,7 @@
 import {Config, Objects, Seq} from 'js-prelude';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 
 const dom = Component.createElement;
 

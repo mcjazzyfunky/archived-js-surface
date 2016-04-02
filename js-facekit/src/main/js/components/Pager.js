@@ -5,7 +5,7 @@ import ButtonGroup from '../components/ButtonGroup.js';
 import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 
 const {createElement: dom} = Component;
 

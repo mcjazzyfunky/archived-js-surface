@@ -40,7 +40,7 @@ export default Store.createClass({
                             text: Strings.asString(todo.text),
                             completed: !!todo.completed,
                             id: index
-                        }));
+                        })),
 
                 filter: adjustFilter(paramsState.filter)
             };
@@ -105,7 +105,7 @@ export default Store.createClass({
         },
 
         setTodoText(id, text) {
-            return Objects.transform(this.state, {
+            this.state = Objects.transform(this.state, {
                 todos: {$update: todos => todos.map(todo =>
                     todo.id === id
                     ? Object.transform(todo, {text: {$set: text}})

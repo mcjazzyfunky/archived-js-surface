@@ -1,7 +1,7 @@
 'use static';
 
 import {Strings, Seq} from 'js-prelude';
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 
 const dom = Component.createElement;
 

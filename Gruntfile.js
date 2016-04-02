@@ -32,7 +32,7 @@ module.exports = function (grunt) {
                     //unexportIdentifier: true,
                     includeSource: true,
                     //autoPrivate: false,
-                    title: 'js-bling'
+                    title: 'js-surface'
                 }
             }
         },
@@ -40,8 +40,8 @@ module.exports = function (grunt) {
             dist: {
                 //extend: true,
                 //src: ['build/src/**/*.js'],
-                src: 'build/src/js-bling.js',
-                dest: 'dist/v<%= pkg.version %>/js-bling-<%= pkg.version %>.js'
+                src: 'build/src/js-surface.js',
+                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'
             }
         },
         uglify: {
@@ -55,8 +55,8 @@ module.exports = function (grunt) {
                         + '*/\n'
             },
             js: {
-                src: ['dist/v<%= pkg.version %>/js-bling-<%= pkg.version %>.js'],
-                dest: 'dist/v<%= pkg.version %>/js-bling-<%= pkg.version %>.js'
+                src: ['dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'],
+                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'
             }
         },
         compress: {
@@ -64,8 +64,8 @@ module.exports = function (grunt) {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/v<%= pkg.version %>/js-bling-<%= pkg.version %>.js'],
-                dest: 'dist/v<%= pkg.version %>/js-bling-<%= pkg.version %>.js.gz'
+                src: ['dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'],
+                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js.gz'
             }
         },
        asciidoctor: [{

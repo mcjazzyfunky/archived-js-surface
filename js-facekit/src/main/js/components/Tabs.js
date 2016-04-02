@@ -1,6 +1,6 @@
 'use strict';
 
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Arrays, Seq} from 'js-prelude';
 import $ from 'jquery';

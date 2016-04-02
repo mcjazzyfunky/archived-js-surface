@@ -12,7 +12,7 @@ import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
 import TextField from '../src/main/js/components/TextField.js';
 */
 
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 import {Seq} from 'js-prelude';
 
 import {Observable, Subject} from 'rxjs';

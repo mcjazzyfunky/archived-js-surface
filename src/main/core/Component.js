@@ -1,6 +1,6 @@
 'use strict';
 
-import ComponentAdapter from 'js-bling-adapter';
+import ComponentAdapter from 'js-surface-adapter';
 import {Observable, Subject} from 'rxjs';
 import {Strings, Types, Config, ConfigError} from 'js-prelude';
 
@@ -8,15 +8,15 @@ import {Strings, Types, Config, ConfigError} from 'js-prelude';
     let error = null;
 
     if (!ComponentAdapter) {
-        error = "The imported module for 'js-bling-adapter' did not return a proper ComponentAdapter";
+        error = "The imported module for 'js-surface-adapter' did not return a proper ComponentAdapter";
     } else if (typeof ComponentAdapter.createElement !== 'function') {
-        error = "The component adapter of module 'js-bling-adapter' does not provide a 'createElement' function";
+        error = "The component adapter of module 'js-surface-adapter' does not provide a 'createElement' function";
     } else if (typeof ComponentAdapter.isElement !== 'function') {
-        error = "The component adapter of module 'js-bling-adapter' does not provide a 'isElement' function";
+        error = "The component adapter of module 'js-surface-adapter' does not provide a 'isElement' function";
     } else if (typeof ComponentAdapter.createAdaptedFactory !== 'function') {
-        error = "The component adapter of module 'js-bling-adapter' does not provide a 'createAdaptedFactory' function";
+        error = "The component adapter of module 'js-surface-adapter' does not provide a 'createAdaptedFactory' function";
     } else if (typeof ComponentAdapter.mount !== 'function') {
-        error = "The component adapter of module 'js-bling-adapter' does not provide a 'mount' function";
+        error = "The component adapter of module 'js-surface-adapter' does not provide a 'mount' function";
     }
 
     if (error) {

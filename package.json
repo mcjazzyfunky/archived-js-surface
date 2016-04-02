@@ -1,7 +1,7 @@
 {
-  "name": "js-bling",
+  "name": "js-surface",
   "version": "0.1.0",
-  "homepage": "https://github.com/mcjazzyfunky/js-bling",
+  "homepage": "https://github.com/mcjazzyfunky/js-surface",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",

@@ -1,7 +1,7 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component} from 'js-bling';
+import {Component} from 'js-surface';
 
 const dom = Component.createElement;
 
