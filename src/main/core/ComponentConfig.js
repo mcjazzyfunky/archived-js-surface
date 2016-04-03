@@ -1,6 +1,6 @@
 'use strict';
 
-const regexComponentTypeName = /^[A-Z][a-zA-Z0-9]$/;
+const regexComponentTypeName = /^[A-Z][a-zA-Z0-9]*$/;
 
 export default class ComponentConfig {
     constructor(spec) {
@@ -17,7 +17,7 @@ export default class ComponentConfig {
             this.__propertyNames = new Set(Object.keys(this.__properties));
 
             this.__hasProperties =
-                propertiesParam === true || this.__propertyNames.length > 0;
+                this.__properties === true || this.__propertyNames.length > 0;
 
             this.__defaultProps = this.__readDefaultProps();
             this.__view = this.__readViewParam();
@@ -68,7 +68,7 @@ export default class ComponentConfig {
                 + "Spec parameter 'typeName' must be a string");
         } else if (!typeName.match(regexComponentTypeName)) {
             throw new Error(
-                + "Spec parameter 'typeName' must match regular expression "
+                "Spec parameter 'typeName' must match regular expression "
                 + regexComponentTypeName);
         }
 
@@ -78,19 +78,24 @@ export default class ComponentConfig {
     __readPropertiesParam() {
         const
             propertiesParam = this.__spec.properties,
-            typeOfPropertiesParam = typeof propertiesParam;
+            typeOfPropertiesParam = typeof propertiesParam,
+            propertiesParamIsObject = typeOfPropertiesParam === 'object',
+            propertiesParamIsBoolean = typeOfPropertiesParam === 'boolean';
 
-        if (typeOfPropertiesParam !== 'object' && typeOfPropertiesParam !== 'boolean') {
+        if (propertiesParam !== undefined
+                && propertiesParamIsObject
+                && propertiesParamIsBoolean) {
+
             throw new TypeError(
-                "Spec parameter properties must either be an object, a boolean value or null");
+                "Spec parameter 'properties' must either be an object, "
+                + 'a boolean value or undefined');
         }
 
-        const ret =
-            propertiesParam === null || typeOfPropertiesParam === 'boolean'
+        return (
+            propertiesParam === undefined || propertiesParamIsBoolean
             ? {}
-            : propertiesParam;
-
-        return ret;
+            : propertiesParam
+        );
     }
 
     __readDefaultProps() {

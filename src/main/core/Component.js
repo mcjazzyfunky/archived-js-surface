@@ -2,8 +2,8 @@
 
 'use strict';
 
-import ComponentSpec from './ComponentConfig';
-import ComponentAdapter from './ComponentAdapter';
+import ComponentSpec from './ComponentConfig.js';
+import ComponentAdapter from './ComponentAdapter.js';
 
 const
     regexAdapterName = /^a-z[a-zA-Z0-9]*$/,

@@ -1,20 +1,17 @@
 'use strict';
 
-import Adapter from '../core/ComponentAdapter';
-import ComponentConfig from '../core/ComponentConfig';
-
-import Publisher from '../core/Publisher';
-import Emitter from '../core/Emitter';
+import {ComponentAdapter, ComponentConfig, Emitter} from 'js-surface';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export default class ReactComponentAdapter extends Adapter {
+export default class ReactComponentAdapter extends ComponentAdapter {
     createElement(tag, props, children) {
+        // TODO: For performance reasons
         if (tag === undefined || tag === null) {
             throw new TypeError(
-                '[ReactAdapter.createElement] '
-                + "First argument 'tag' must not be empty");
+                '[ReactComponentAdapter.createElement] '
+                + "First argument 'tag' must not be undefined or null");
         }
 
         return (tag && tag.adaptedFactory)
@@ -82,6 +79,11 @@ class ReactAdapterComponent extends React.Component {
                 '[ReactAdapterComponent.constructor] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
+        } else if (!(propsEmitterFactory instanceof Emitter)) {
+            throw new TypeError(
+                '[ReactAdapterComponent.constructor] '
+                + "Second argument 'propsEmitterFactory' must be an instance "
+                + 'of class Emitter');
         }
 
         super(...superArgs);
@@ -90,33 +92,27 @@ class ReactAdapterComponent extends React.Component {
         this.__contentToRender = null;
 
         this.__propsEmitter = propsEmitterFactory(content => {
-            this.forceUpdate();
             this.__contentToRender = content;
+            this.forceUpdate();
         });
 
         if (!(this.__propsEmitter instanceof Emitter)) {
             throw new TypeError(
-                '[ReactAdapter.constructor] Vigew function of '
-                + `component of type '${this.__componentConfig.getTypeName()} `
-                + 'must return an observable');
+                '[ReactAdapter.constructor] '
+                + "The invocation of second argument 'propsEmitterFactory' "
+                + 'must return an instance of class Emitter');
         }
     }
 
     componentWillMount() {
-        this.__contentsSubscription = this.__contents.subscribe(content => {
-            this.__currentContent = content;
-            this.forceUpdate();
-        });
     }
 
     componentWillUnmount() {
-        this.__contentsSubscription.unsubscribe();
-        this.__contentsSubscription = null;
+        this.__propsEmitter.complete();
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__componentConfig.validateProps(nextProps);
-        this.__behavior.next(nextProps);
+        this.__propsEmitter.next(nextProps);
     }
 
     shouldComponentUpdate() {
@@ -124,8 +120,8 @@ class ReactAdapterComponent extends React.Component {
     }
 
     render() {
-        const ret = this.__currentContent.virtualElement;
-        this.__currentContent = null;
+        const ret = this.__contentToRender;
+        this.__contentToRender = null;
 
         return ret;
     }
