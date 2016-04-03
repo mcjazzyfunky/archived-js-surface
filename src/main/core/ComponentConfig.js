@@ -49,20 +49,12 @@ export default class ComponentConfig {
         return this.__properties;
     }
 
-    getPropertyNames() {
-        return this.__propertyNames;
-    }
-
     hasProperties() {
-        return this.__hasPropeties;
+        return this.__hasProperties;
     }
 
     getDefaultProps() {
         return this.__defaultProps;
-    }
-
-    validateProps(props) {
-        return props; // TODO: implement
     }
 
     ___readTypeNameParam() {

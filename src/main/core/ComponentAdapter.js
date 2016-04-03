@@ -9,7 +9,7 @@ export default class ComponentAdapter {
         throw Error('[ComponentAdapter#isElement] Method not implemented/overridden');
     }
 
-    createAdaptedFactory(componentSpec) {
+    createAdaptedFactory(componentConfig, propsEmitterFactory) {
         throw Error('[ComponentAdapter#isElement] Method not implemented/overridden');
     }
 

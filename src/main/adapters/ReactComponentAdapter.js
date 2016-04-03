@@ -1,30 +1,19 @@
 'use strict';
 
-import ComponentAdapter from '../core/ComponentAdapter';
+import Adapter from '../core/ComponentAdapter';
 import ComponentConfig from '../core/ComponentConfig';
 
-import Observable from '../util/Observable';
-import Subject from '../util/Subject';
+import Publisher from '../core/Publisher';
+import Emitter from '../core/Emitter';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export default class ReactComponentAdapter extends ComponentAdapter {
-    constructor(componentConfig) {
-        if (!(componentConfig instanceof ComponentConfig)) {
-            throw new TypeError(
-                '[ReactComponentAdapter.constructor] '
-                + "First argument 'componentConfig' must be an instance of "
-                + 'class ComponentConfig');
-        }
-
-        this.__componentConfig = componentConfig;
-    }
-
+export default class ReactComponentAdapter extends Adapter {
     createElement(tag, props, children) {
         if (tag === undefined || tag === null) {
             throw new TypeError(
-                '[ReactComponentAdapter.createElement] '
+                '[ReactAdapter.createElement] '
                 + "First argument 'tag' must not be empty");
         }
 
@@ -37,14 +26,33 @@ export default class ReactComponentAdapter extends ComponentAdapter {
         return React.isValidElement(what); // TODO - is this really correct???
     }
 
-    createAdaptedFactory(componentConfig) {
-        throw Error('[ComponentAdapter#isElement] Method not implemented/overridden');
+    createAdaptedFactory(componentConfig, propsEmitterFactory) {
+        if (!(componentConfig instanceof ComponentConfig)) {
+            throw new TypeError(
+                '[ReactComponentAdapter.createAdaptedFactory] '
+                + "First argument 'componentConfig' must be an instance "
+                + 'of class ComponentConfig');
+        } else if (typeof propsEmitterFactory !== 'function') {
+            throw new TypeError(
+                '[ReactComponentAdapter.createAdapterFactory] '
+                + "Second argument 'propsEmitterFactory' must be a function");
+        }
+
+        const constructor = function (...args) {
+            ReactAdapterComponent.call(this, componentConfig, propsEmitterFactory, args);
+        };
+
+        constructor.displayName = componentConfig.getTypeName();
+        constructor.defaultProps = componentConfig.getDefaultProps();
+        constructor.prototype = Object.create(ReactAdapterComponent.prototype);
+
+        return React.createFactory(constructor);
     }
 
     mount(content, targetNode) {
         if (!React.isValidElement(content)) {
             throw new TypeError(
-                '[ReactComponentAdapter.mount] '
+                '[ReactAdapter.mount] '
                 + "First argument 'content' has to be a valid element");
         }
 
@@ -55,20 +63,20 @@ export default class ReactComponentAdapter extends ComponentAdapter {
      * @ignore
      */
     toString() {
-        return 'ReactComponentAdapter/instance';
+        return 'ReactAdapter/instance';
     }
 
     /**
      * @ignore
      */
     static toString() {
-        return 'ReactComponentAdapter/class';
+        return 'ReactAdapter/class';
     }
 }
 
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentConfig, superArgs) {
+    constructor(componentConfig, propsEmitterFactory, superArgs) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
@@ -77,18 +85,18 @@ class ReactAdapterComponent extends React.Component {
         }
 
         super(...superArgs);
+
         this.__componentConfig = componentConfig;
+        this.__contentToRender = null;
 
-        componentConfig.validateProps(this.props);
+        this.__propsEmitter = propsEmitterFactory(content => {
+            this.forceUpdate();
+            this.__contentToRender = content;
+        });
 
-        this.__behavior = new Subject();
-        this.__contents = componentConfig.getView(this.__behavior.asObservable(), this.context);
-        this.__contentsSubscription = null;
-        this.__currentContent = null;
-
-        if (this.__contents instanceof Observable) {
+        if (!(this.__propsEmitter instanceof Emitter)) {
             throw new TypeError(
-                '[ReactComponentAdapter.constructor] View function of '
+                '[ReactAdapter.constructor] Vigew function of '
                 + `component of type '${this.__componentConfig.getTypeName()} `
                 + 'must return an observable');
         }
