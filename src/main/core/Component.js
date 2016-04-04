@@ -2,12 +2,9 @@
 
 'use strict';
 
-import ComponentSpec from './ComponentConfig.js';
+import ComponentConfig from './ComponentConfig.js';
 import ComponentAdapter from './ComponentAdapter.js';
-
-const
-    regexAdapterName = /^[a-z][a-zA-Z0-9]*$/,
-    adapterRegistry = new Map();
+import Publisher from './Publisher.js';
 
 let activeAdapter = null;
 
@@ -53,12 +50,32 @@ export default class Component {
                 return ret.adaptedFactory(initialProps, children);
             },
 
-            componentConfig = new ComponentSpec(spec);
+            componentConfig = new ComponentConfig(spec),
+
+            fnBehaviorAndCtxToView = (behavior, context = null) => {
+                if (!(behavior instanceof Publisher)) {
+                    throw new TypeError(
+                        '[Component.createFactory] '
+                        + "First argument 'behavior' of local method "
+                        + "'fnBehaviorAndCtxTowView' must be an instance "
+                        + 'of class Publisher');
+                } else if (typeof context !== 'object') {
+                    throw new TypeError(
+                        '[Component.createFactory] '
+                        + "Second argument 'context' of local method "
+                        + "'fnBehaviorAndCtxToView' must be an object");
+                }
+
+                // TODO .........................
+            };
 
         ret.__componentConfig = componentConfig;
-        ret.adaptedFactory = activeAdapter.createAdaptedFactory(componentConfig);
+
+        ret.adaptedFactory = activeAdapter.createAdaptedFactory(
+            componentConfig, fnBehaviorAndCtxToView);
 
         Object.freeze(ret);
+        return ret;
     }
 
     static isFactory(what) {
@@ -117,53 +134,6 @@ export default class Component {
         activeAdapter = adapter;
     }
 
-/*
-    static registerAdapter(adapterName, adapter) {
-        if (typeof adapterName !== 'string') {
-            throw new TypeError(
-                '[Component.registerAdapter] '
-                + "First argument 'adapterName' must be a string");
-        } else if (!adapterName.match(regexAdapterName)) {
-            throw new Error(
-                '[Component.registerAdapter] '
-                + "First argument 'adapterName' must match the "
-                + 'regular expression '
-                + regexAdapterName);
-        } else if (!(adapter instanceof ComponentAdapter)) {
-            throw new TypeError(
-                '[Component.registerAdapter] '
-                + "Second argument 'adapter' must be an instance of class "
-                + "'ComponentAdapter'");
-        }
-
-        adapterRegistry.set(adapterName, adapter);
-
-        if (activeAdapter === null) {
-            activeAdapter = adapter;
-        }
-    }
-
-    static acitivateAdapter(adapterName) {
-        if (typeof adapterName !== 'string') {
-            throw new TypeError(
-                '[Component.acitivateAdapter] '
-                + "First argument 'adapterName' must be a string");
-        } else if (!adapterName.match(regexAdapterName)) {
-            throw new Error(
-                '[Component.acitivateAdapter] '
-                + "First argument 'adapterName' must match the "
-                + 'the regular expression '
-                + regexAdapterName);
-        } else if (!adapterRegistry.has(adapterName)) {
-            throw new Error(
-                '[Component.activeComponentAdapter] '
-                + 'No component adapter registered with name '
-                + `'${adapterName}'`);
-        }
-
-        activeAdapter = adapterRegistry.get(adapterName);
-    }
-*/
     /**
      * @ignore
      */

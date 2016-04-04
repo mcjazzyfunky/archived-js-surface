@@ -1,11 +1,15 @@
 'use strict';
 
-import {Component, ComponentAdapter, ComponentConfig, Emitter} from 'js-surface';
+import {Component, ComponentAdapter, ComponentConfig, Processor, Publisher} from 'js-surface';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 class ReactComponentAdapter extends ComponentAdapter {
+    constructor(id) {
+        super(id);
+    }
+
     createElement(tag, props, children) {
         // TODO: For performance reasons
         if (tag === undefined || tag === null) {
@@ -23,20 +27,20 @@ class ReactComponentAdapter extends ComponentAdapter {
         return React.isValidElement(what); // TODO - is this really correct???
     }
 
-    createAdaptedFactory(componentConfig, propsEmitterFactory) {
+    createAdaptedFactory(componentConfig, fnBehaviorAndCtxToView) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactComponentAdapter.createAdaptedFactory] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
-        } else if (typeof propsEmitterFactory !== 'function') {
+        } else if (typeof fnBehaviorAndCtxToView !== 'function') {
             throw new TypeError(
                 '[ReactComponentAdapter.createAdapterFactory] '
-                + "Second argument 'propsEmitterFactory' must be a function");
+                + "Second argument 'fnBehaviorAndCtxToView' must be a function");
         }
 
         const constructor = function (...args) {
-            ReactAdapterComponent.call(this, componentConfig, propsEmitterFactory, args);
+            ReactAdapterComponent.call(this, componentConfig, fnBehaviorAndCtxToView, args);
         };
 
         constructor.displayName = componentConfig.getTypeName();
@@ -73,46 +77,55 @@ class ReactComponentAdapter extends ComponentAdapter {
 
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentConfig, propsEmitterFactory, superArgs) {
+    constructor(componentConfig, fnBehaviorAndCtxToView, superArgs) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
-        } else if (!(propsEmitterFactory instanceof Emitter)) {
+        } else if (typeof fnBehaviorAndCtxToView !== 'function') {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
-                + "Second argument 'propsEmitterFactory' must be an instance "
-                + 'of class Emitter');
+                + "Second argument 'fnBehaviorAndCtxToView' must "
+                + 'be a function');
         }
 
         super(...superArgs);
 
         this.__componentConfig = componentConfig;
         this.__contentToRender = null;
+        this.__propsProcessor = new Processor();
+        this.__viewSubscription = null;
 
-        this.__propsEmitter = propsEmitterFactory(content => {
-            this.__contentToRender = content;
-            this.forceUpdate();
-        });
+        this.__viewPublisher = fnBehaviorAndCtxToView(
+            this.__propsProcessor.asPublisher(), this.context);
 
-        if (!(this.__propsEmitter instanceof Emitter)) {
+        if (!(this.__viewPublisher instanceof Publisher)) {
             throw new TypeError(
                 '[ReactAdapter.constructor] '
-                + "The invocation of second argument 'propsEmitterFactory' "
-                + 'must return an instance of class Emitter');
+                + "The invocation of second argument 'fnBehaviorAndCtxToView' "
+                + 'must return an instance of class Publisher');
         }
     }
 
     componentWillMount() {
+        this.__viewSubscription = this.__viewPublisher.subscribe({
+            next(value) {
+                this.__contentToRender = value;
+                this.forceUpdate();
+            }
+        });
+
+        this.__propsProcessor.next(this.props);
     }
 
     componentWillUnmount() {
-        this.__propsEmitter.complete();
+        this.__viewSubscription.unsubscribe();
+        this.__viewSubscription = null;
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__propsEmitter.next(nextProps);
+        this.__propsProcessor.next(nextProps);
     }
 
     shouldComponentUpdate() {
@@ -120,6 +133,11 @@ class ReactAdapterComponent extends React.Component {
     }
 
     render() {
+        if (!this.__contentToRender) {
+            throw new Error(
+                '[ReactComponentAdapter#render] Something went wrong - no content to render');
+        }
+
         const ret = this.__contentToRender;
         this.__contentToRender = null;
 
