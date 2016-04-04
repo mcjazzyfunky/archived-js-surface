@@ -16,6 +16,10 @@ export default class ComponentConfig {
             this.__properties = this.__readPropertiesParam();
             this.__propertyNames = new Set(Object.keys(this.__properties));
 
+            this.__mandatoryPropertyNames =
+                Object.keys(this.__properties)
+                    .filter(propName => this.__properties[propName].defaultValue === undefined); // TODO
+
             this.__hasProperties =
                 this.__properties === true || this.__propertyNames.length > 0;
 
@@ -47,6 +51,14 @@ export default class ComponentConfig {
 
     getProperties() {
         return this.__properties;
+    }
+
+    getPropertyNames() {
+        return this.__propertyNames;
+    }
+
+    getMandatoryPropertyNames() {
+        return this.__mandatoryPropertyNames;
     }
 
     hasProperties() {

@@ -4,7 +4,9 @@
 
 import ComponentConfig from './ComponentConfig.js';
 import ComponentAdapter from './ComponentAdapter.js';
+import PropertiesValidator from '../internal/PropertiesValidator.js';
 import Publisher from './Publisher.js';
+
 
 let activeAdapter = null;
 
@@ -70,6 +72,7 @@ export default class Component {
             };
 
         ret.__componentConfig = componentConfig;
+        ret.__propertiesValidator = new PropertiesValidator(componentConfig);
 
         ret.adaptedFactory = activeAdapter.createAdaptedFactory(
             componentConfig, fnBehaviorAndCtxToView);
@@ -79,7 +82,7 @@ export default class Component {
     }
 
     static isFactory(what) {
-        return !!(what && what.__componentConfig && what.adaptedFactory);
+        return !!(what && what.__componentConfig);
     }
 
     static mount(content, targetNode) {
@@ -99,16 +102,16 @@ export default class Component {
         if (typeof targetNode === 'string') {
             mountNode = document.getElementById(targetNode);
         } else if (targetNode
-                && targetNode.firstChild !== undefined
-                && typeof targetNode.appendChild === 'function'
-                && typeof targetNode.removeChild === 'function') {
+            && targetNode.firstChild !== undefined
+            && typeof targetNode.appendChild === 'function'
+            && typeof targetNode.removeChild === 'function') {
 
             mountNode = targetNode;
         }
 
         if (!mountNode) {
             throw new Error('[Component.mount] Invalid target node'
-                  + (typeof targetNode !== 'string' ? '' : ` '${targetNode}'`));
+                + (typeof targetNode !== 'string' ? '' : ` '${targetNode}'`));
         }
 
         while (mountNode.firstChild) {
@@ -141,3 +144,4 @@ export default class Component {
         return 'Component/class';
     }
 }
+
