@@ -72,9 +72,8 @@ export default class Publisher {
                 }
             };
 
-
         if (!subscriptionResultIsFunction
-            && (!result || typeof result.unsubscribe !== 'function')) {
+            && (!subscriptionResult || typeof subscriptionResult.unsubscribe !== 'function')) {
 
             throw new TypeError(
                 "[Publisher.subscribe] The 'onSubscribe' function used for "
@@ -90,19 +89,24 @@ function normalizeSubscriber(subscriber) {
     const subscriberIsFunction = typeof subscriber === 'function';
 
     return {
-        next:
-            subscriberIsFunction || !subscriber.next
-            ? subscriber
-            : subscriber.next,
+        next(value) {
+            if (subscriberIsFunction) {
+                subscriber(value)
+            } else if (subscriber.next) {
+                subscriber.next(value)
+            }
+        },
 
-        error:
-            subscriberIsFunction || !subscriber.error
-            ? () => {}
-            : subscriber.error,
+        error(err) {
+            if (!subscriberIsFunction && subscriber.error) {
+                subscriber.error(err)
+            }
+        },
 
-        complete:
-            subscriberIsFunction || !subscriber.complete
-            ? () => {}
-            : subscriber.complete
+        complete() {
+            if (!subscriberIsFunction && subscriber.complete) {
+                subscriber.complete()
+            }
+        }
     };
 }

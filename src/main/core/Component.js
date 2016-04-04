@@ -23,7 +23,7 @@ export default class Component {
                 '[Component.createElement] No component adapter available');
         }
 
-        activeAdapter.createElement(tag, props, children);
+        return activeAdapter.createElement(tag, props, children);
     }
 
     static isElement(what) {
@@ -66,7 +66,7 @@ export default class Component {
                         + "'fnBehaviorAndCtxToView' must be an object");
                 }
 
-                // TODO .........................
+                return componentConfig.getView()(behavior, context);
             };
 
         ret.__componentConfig = componentConfig;

@@ -57,6 +57,10 @@ export default class ComponentConfig {
         return this.__defaultProps;
     }
 
+    getView() {
+        return this.__view;
+    }
+
     ___readTypeNameParam() {
         const typeName = this.__spec.typeName;
 

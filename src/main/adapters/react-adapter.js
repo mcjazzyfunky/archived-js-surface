@@ -96,6 +96,7 @@ class ReactAdapterComponent extends React.Component {
         this.__contentToRender = null;
         this.__propsProcessor = new Processor();
         this.__viewSubscription = null;
+        this.__mounted = false;
 
         this.__viewPublisher = fnBehaviorAndCtxToView(
             this.__propsProcessor.asPublisher(), this.context);
@@ -109,17 +110,24 @@ class ReactAdapterComponent extends React.Component {
     }
 
     componentWillMount() {
+        const self = this;
+
         this.__viewSubscription = this.__viewPublisher.subscribe({
             next(value) {
-                this.__contentToRender = value;
-                this.forceUpdate();
+                self.__contentToRender = value;
+
+                if (self.__mounted) {
+                    self.forceUpdate();
+                }
             }
         });
 
         this.__propsProcessor.next(this.props);
+        this.__mounted = true;
     }
 
     componentWillUnmount() {
+        this.__mounted = false;
         this.__viewSubscription.unsubscribe();
         this.__viewSubscription = null;
     }
