@@ -17,10 +17,13 @@
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
                     'js-surface': 'index.js'
-                }
+               }
             });
 
-            System.import('js-facekit/demo/simple-demo/simple.js');
+            System.import('src/main/adapters/react-adapter.js')
+                .then(function() {
+                    System.import('js-facekit/demo/simple-demo/simple.js')
+                });
         </script>
     </head>
     <body>

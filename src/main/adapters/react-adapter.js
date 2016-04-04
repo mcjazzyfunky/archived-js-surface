@@ -1,11 +1,11 @@
 'use strict';
 
-import {ComponentAdapter, ComponentConfig, Emitter} from 'js-surface';
+import {Component, ComponentAdapter, ComponentConfig, Emitter} from 'js-surface';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-export default class ReactComponentAdapter extends ComponentAdapter {
+class ReactComponentAdapter extends ComponentAdapter {
     createElement(tag, props, children) {
         // TODO: For performance reasons
         if (tag === undefined || tag === null) {
@@ -134,3 +134,4 @@ class ReactAdapterComponent extends React.Component {
     }
 }
 
+Component.loadAdapter(new ReactComponentAdapter());

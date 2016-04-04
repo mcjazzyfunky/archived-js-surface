@@ -6,7 +6,7 @@ import ComponentSpec from './ComponentConfig.js';
 import ComponentAdapter from './ComponentAdapter.js';
 
 const
-    regexAdapterName = /^a-z[a-zA-Z0-9]*$/,
+    regexAdapterName = /^[a-z][a-zA-Z0-9]*$/,
     adapterRegistry = new Map();
 
 let activeAdapter = null;
@@ -23,7 +23,7 @@ export default class Component {
     static createElement(tag, props, ...children) {
         if (activeAdapter === null) {
             throw new Error(
-                '[Component.mount] No component adapter available');
+                '[Component.createElement] No component adapter available');
         }
 
         activeAdapter.createElement(tag, props, children);
@@ -32,7 +32,7 @@ export default class Component {
     static isElement(what) {
         if (activeAdapter === null) {
             throw new Error(
-                '[Component.mount] No component adapter available');
+                '[Component.isElement] No component adapter available');
         }
 
         return activeAdapter.isElement(what);
@@ -43,6 +43,9 @@ export default class Component {
             throw new TypeError(
                 '[Component.createFactory] '
                 + "First argument 'spec' must be an object");
+        } else if (activeAdapter === null) {
+            throw new Error(
+                '[Component.createFactory] No component adapter available');
         }
 
         const
@@ -50,16 +53,16 @@ export default class Component {
                 return ret.adaptedFactory(initialProps, children);
             },
 
-            componentCfg = new ComponentSpec(spec);
+            componentConfig = new ComponentSpec(spec);
 
-        ret.__componentCfg = componentCfg;
-        ret.adaptedFactory = ComponentAdapter.createAdaptedFactory(componentCfg);
+        ret.__componentConfig = componentConfig;
+        ret.adaptedFactory = activeAdapter.createAdaptedFactory(componentConfig);
 
         Object.freeze(ret);
     }
 
     static isFactory(what) {
-        return !!(what && what.__componentCfg && what.adaptedFactory);
+        return !!(what && what.__componentConfig && what.adaptedFactory);
     }
 
     static mount(content, targetNode) {
@@ -100,6 +103,21 @@ export default class Component {
             mountNode);
     }
 
+    static loadAdapter(adapter) {
+        if (!(adapter instanceof ComponentAdapter)) {
+            throw new TypeError(
+                "[Component.loadAdapter] First argument 'adapter' must be "
+                + 'an instance of class ComponentAdapter');
+        } else if (activeAdapter !== null) {
+            throw new Error(
+                '[Component.loadAdapter] A component adapter has already been loaded. '
+                + "It's not allowed to load another one.");
+        }
+
+        activeAdapter = adapter;
+    }
+
+/*
     static registerAdapter(adapterName, adapter) {
         if (typeof adapterName !== 'string') {
             throw new TypeError(
@@ -145,7 +163,7 @@ export default class Component {
 
         activeAdapter = adapterRegistry.get(adapterName);
     }
-
+*/
     /**
      * @ignore
      */

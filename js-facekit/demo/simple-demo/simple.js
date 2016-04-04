@@ -16,7 +16,7 @@ const SimpleDemo = Component.createFactory({
         return contentPublisher;
     }
 });
-alert(1);
+
 Component.mount(
     SimpleDemo,
     'main-content');
