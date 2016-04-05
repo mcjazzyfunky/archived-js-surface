@@ -1,10 +1,11 @@
 'use strict';
 
-import {Component, Processor, Publisher, commonView} from 'js-surface';
+import {Component, Processor, Publisher} from 'js-surface';
+import {commonView} from 'js-surface-views';
 import {Objects, Seq, Storage} from 'js-prelude';
 
 const {createElement: dom} = Component;
-
+console.log(commonView)
 
 class ComponentStorage extends Storage {
     get initialState() {

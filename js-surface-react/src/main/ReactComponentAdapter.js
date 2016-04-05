@@ -1,11 +1,11 @@
 'use strict';
 
-import {Component, ComponentAdapter, ComponentConfig, Processor, Publisher} from 'js-surface';
+import {ComponentAdapter, ComponentConfig, Processor, Publisher} from 'js-surface';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-class ReactComponentAdapter extends ComponentAdapter {
+export default class ReactComponentAdapter extends ComponentAdapter {
     constructor(id) {
         super(id);
     }
@@ -159,5 +159,3 @@ class ReactAdapterComponent extends React.Component {
         return 'ReactAdapterComponent/class';
     }
 }
-
-Component.loadAdapter(new ReactComponentAdapter());

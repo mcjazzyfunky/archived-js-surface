@@ -1,7 +1,7 @@
 'use strict';
 
 import {
-    Config, ConfigError, EventStream, EventSubject, Storage
+    Config, ConfigError, Storage
 } from 'js-prelude';
 
 import {Publisher, Processor} from 'js-surface';
@@ -91,8 +91,8 @@ function commonViewFromObject(spec) {
                     dispatch: storage.dispatcher
                 };
 
-            ++index
-
+            ++index;
+            
             if (index === 0 && onWillMount) {
                 onWillMount(params);
             } else if (index > 0 && onWillUpdate) {
@@ -165,19 +165,7 @@ function commonViewFromObject(spec) {
         });
 
         return contentProcessor;
-       // return eventStreamToPublisher(stream);
     };
 }
 
-function eventStreamToPublisher(eventStream) {
-    return new Publisher(subscriber => {
-        return eventStream.subscribe(subscriber);
-    })
-}
-
-function publisherToEventStream(publisher) {
-    return new EventStream(subscriber => {
-        return publisher.subscribe(subscriber);
-    })
-}
 

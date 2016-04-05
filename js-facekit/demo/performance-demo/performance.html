@@ -35,12 +35,17 @@
                 'react': 'node_modules/react/dist/react.js',
                 'react-dom': 'node_modules/react-dom/dist/react-dom.js',
                 'js-surface': 'index.js',
-                'js-surface-adapter': 'src/main/adapters/ReactAdapter.js'
+                'js-surface-views': 'js-surface-views/index.js'
             }
         });
 
         System.import('bootstrap');
-        System.import('js-facekit/demo/performance-demo/performance.js');
+        
+        System.import('src/main/adapters/react-adapter.js')
+                .then(function() {
+                    System.import('js-facekit/demo/performance-demo/performance.js');
+                });
+
     </script>
 </head>
 <body>
