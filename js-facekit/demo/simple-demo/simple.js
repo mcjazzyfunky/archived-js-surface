@@ -5,11 +5,20 @@ import {Objects, Seq, Storage} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
-class ComponentStorage extends Storage{
+
+class ComponentStorage extends Storage {
+    constructor(params) {
+        super(params);
+
+        this.modificationEvents.subscribe(event => {
+            this.notify({type: 'update'});
+        });
+    }
+
     get initialState() {
         return {
             counter: 0
-        };
+        }
     }
 
     getCounter() {
@@ -33,7 +42,7 @@ const SimpleDemo = Component.createFactory({
     typeName: 'SimpleDemo',
 
     view: commonView({
-        getStorage() {
+        createStorage() {
             return new ComponentStorage();
         },
 
@@ -42,14 +51,14 @@ const SimpleDemo = Component.createFactory({
                 dom('div',
                     null,
                     dom('button', {
-                        onClick: ctrl.decrementCounter()
+                        onClick: _ => ctrl.decrementCounter()
                     },
                     '-'),
                     dom('label',
                         null,
                         ctrl.getCounter()),
                     dom('button', {
-                        onClick: ctrl.incrementCounter()
+                        onClick: _ => ctrl.incrementCounter()
                     },
                     '+'))
             );
@@ -82,5 +91,5 @@ const SimpleDemo = Component.createFactory({
 });
 
 Component.mount(
-    SimpleDemo,
+    SimpleDemo({onUpdate: event => console.log(111, event)}),
     'main-content');

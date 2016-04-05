@@ -48,12 +48,12 @@ function commonViewFromFunction(renderFunction) {
 function commonViewFromObject(spec) {
     const
         config = new Config(spec),
-        getStorage = config.getFunction('getStorage', null),
+        createStorage = config.getFunction('createStorage', null),
         render = config.getFunction('render');
 
 
     return (behavior, context) => {
-        const storage = getStorage();
+        const storage = createStorage ? createStorage() : null;
 
         if (!(storage instanceof Storage)) {
             throw new ConfigError(
@@ -61,20 +61,62 @@ function commonViewFromObject(spec) {
                 + 'return an instance of class Storage');
         }
 
+        let propsConfig = null;
+
         const stream =
             publisherToEventStream(behavior)
                 .combineLatest(
                     storage.modificationEvents
-                        .startWith(null), (props, state) => {
+                        .startWith(null), (props, _) => {
+                            let params = null;
 
-                        return render({
-                            props,
-                            context,
-                            store: storage.store,
-                            ctrl: storage.control,
-                            dispatch: storage.dispatcher
+                            propsConfig = new Config(props);
+
+                            if (!storage) {
+                                params = {
+                                    propsConfig
+                                };
+                            } else {
+                                params = {
+                                    propsConfig,
+                                    context,
+                                    store: storage.store,
+                                    ctrl: storage.controller,
+                                    dispatch: storage.dispatcher
+                                }
+                            }
+
+                            return render(params);
                         });
-                    });
+
+        storage.notificationEvents.subscribe({
+            next: notification => {
+                const
+                    notificationIsArray = Array.isArray(notification),
+                    notificationIsObject = notification !== null & typeof notification === 'object';
+
+                if (notificationIsArray || notificationIsObject) {
+                    const [type, event] =
+                        notificationIsArray
+                            ? notification
+                            : [notification.type, notification];
+
+                    if (type && typeof type === 'string') {
+                        const callback = propsConfig.getFunction('on' + type[0].toUpperCase() + type.substr(1), null);
+
+                        if (callback) {
+                            callback(event);
+                        }
+                    }
+                }
+            },
+
+            error: err => {
+                setTimeout(() => {
+                    throw err;
+                }, 0);
+            }
+        });
 
         return eventStreamToPublisher(stream);
     };
