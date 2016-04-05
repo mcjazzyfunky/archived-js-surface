@@ -4,7 +4,7 @@ import {
     Config, ConfigError, EventStream, EventSubject, Storage
 } from 'js-prelude';
 
-import {Publisher} from 'js-surface';
+import {Publisher, Processor} from 'js-surface';
 
 export default function commonView(spec) {
     const
@@ -49,7 +49,13 @@ function commonViewFromObject(spec) {
     const
         config = new Config(spec),
         createStorage = config.getFunction('createStorage', null),
-        render = config.getFunction('render');
+        render = config.getFunction('render'),
+        onWillMount = config.getFunction('onWillMount', null),
+        onDidMount = config.getFunction('onDidMount', null),
+        onWillUnmount = config.getFunction('onWillUnmount', null),
+        onDidUnmount = config.getFunction('onDidUnmount', null),
+        onWillUpdate = config.getFunction('onWillUpdate', null),
+        onDidUpdate = config.getFunction('onDidUpdate', null);
 
 
     return (behavior, context) => {
@@ -61,33 +67,73 @@ function commonViewFromObject(spec) {
                 + 'return an instance of class Storage');
         }
 
-        let propsConfig = null;
+        let
+            index = -1,
+            params = null,
+            propsConfig = null;
 
-        const stream =
-            publisherToEventStream(behavior)
-                .combineLatest(
-                    storage.modificationEvents
-                        .startWith(null), (props, _) => {
-                            let params = null;
 
-                            propsConfig = new Config(props);
+        const contentProcessor = new Processor();
 
-                            if (!storage) {
-                                params = {
-                                    propsConfig
-                                };
-                            } else {
-                                params = {
-                                    propsConfig,
-                                    context,
-                                    store: storage.store,
-                                    ctrl: storage.controller,
-                                    dispatch: storage.dispatcher
-                                }
-                            }
+        const performRendering = () => {
+            const params =
+                !storage
 
-                            return render(params);
-                        });
+                    ? {
+                    props: propsConfig
+                }
+
+                : {
+                    props: propsConfig,
+                    context,
+                    store: storage.store,
+                    ctrl: storage.controller,
+                    dispatch: storage.dispatcher
+                };
+
+            ++index
+
+            if (index === 0 && onWillMount) {
+                onWillMount(params);
+            } else if (index > 0 && onWillUpdate) {
+                onWillUpdate(params);
+            }
+
+            contentProcessor.next(render(params));
+
+            if (index === 0 && onDidMount) {
+                setTimeout(() => onDidMount(params), 0);
+            } else if (index > 0 && onDidUpdate) {
+                setTimeout(() => onDidUpdate(params), 0);
+            }
+        };
+
+        behavior.subscribe({
+            next(props) {
+                propsConfig = new Config(props);
+                performRendering();
+            },
+
+            error(err) {
+                contentProcessor.error(err);
+            },
+
+            complete() {
+                if (onWillUnmount) {
+                    onWillUnmount(props);
+                }
+
+                contentProcessor.complete();
+
+                if (onDidUnmount) {
+                    onDidUnmount(props);
+                }
+            }
+        });
+
+        storage.modificationEvents.subscribe(_ => {
+            performRendering();
+        });
 
         storage.notificationEvents.subscribe({
             next: notification => {
@@ -118,7 +164,8 @@ function commonViewFromObject(spec) {
             }
         });
 
-        return eventStreamToPublisher(stream);
+        return contentProcessor;
+       // return eventStreamToPublisher(stream);
     };
 }
 

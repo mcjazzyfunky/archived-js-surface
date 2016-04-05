@@ -7,14 +7,6 @@ const {createElement: dom} = Component;
 
 
 class ComponentStorage extends Storage {
-    constructor(params) {
-        super(params);
-
-        this.modificationEvents.subscribe(event => {
-            this.notify({type: 'update'});
-        });
-    }
-
     get initialState() {
         return {
             counter: 0
@@ -26,15 +18,33 @@ class ComponentStorage extends Storage {
     }
 
     incrementCounter() {
+        const oldCounter = this.state.counter;
+
         this.state = Objects.transform(this.state, {
             counter: {$update: n => n + 1}
         });
+
+        this.notify({
+            type: 'update',
+            method: 'increment',
+            counter: this.state.counter,
+            oldCounter: oldCounter
+        })
     }
 
     decrementCounter() {
+        const oldCounter = this.state.counter;
+
         this.state = Objects.transform(this.state, {
             counter: {$update: n => n - 1}
         });
+
+        this.notify({
+            type: 'update',
+            method: 'decrement',
+            counter: this.state.counter,
+            oldCounter: oldCounter
+        })
     }
 }
 
@@ -62,6 +72,36 @@ const SimpleDemo = Component.createFactory({
                     },
                     '+'))
             );
+        },
+
+        onWillMount() {
+            console.log('onWillMount');
+            alert('onWillMount')
+        },
+
+        onDidMount() {
+            console.log('onDidMount');
+            alert('onDidMount')
+        },
+
+        onWillUnmount() {
+            console.log('onWillUnmount');
+            alert('onWillMount')
+        },
+
+        onDidUnmount() {
+            console.log('onDidUnmount');
+            alert('onDidMount')
+        },
+
+        onWillUpdate() {
+            console.log('onWillUpdate');
+            alert('onWillUpdate')
+        },
+
+        onDidUpdate() {
+            console.log('onDidUpdate');
+            alert('onDidUpdate')
         }
     })
 
@@ -91,5 +131,5 @@ const SimpleDemo = Component.createFactory({
 });
 
 Component.mount(
-    SimpleDemo({onUpdate: event => console.log(111, event)}),
+    SimpleDemo({onUpdate: event => console.log(event)}),
     'main-content');
