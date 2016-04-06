@@ -91,21 +91,21 @@ function normalizeSubscriber(subscriber) {
     return {
         next(value) {
             if (subscriberIsFunction) {
-                subscriber(value)
+                subscriber(value);
             } else if (subscriber.next) {
-                subscriber.next(value)
+                subscriber.next(value);
             }
         },
 
         error(err) {
             if (!subscriberIsFunction && subscriber.error) {
-                subscriber.error(err)
+                subscriber.error(err);
             }
         },
 
         complete() {
             if (!subscriberIsFunction && subscriber.complete) {
-                subscriber.complete()
+                subscriber.complete();
             }
         }
     };

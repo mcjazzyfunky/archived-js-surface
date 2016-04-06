@@ -5,24 +5,24 @@
         <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
         <script type="text/javascript" src="../../../node_modules/systemjs/dist/system.js"></script>
 
-
         <script type="text/javascript">
             System.config({
                 baseURL: '../../..',
                 transpiler: 'plugin-babel',
+                xdefaultJSExtensions: true,
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
                     'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.js',
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
-                    'js-surface': 'index.js',
+                    'js-surface': 'js-surface-core/index.js',
+                    'js-surface-react': 'js-surface-react/index.js',
                     'js-surface-views': 'js-surface-views/index.js',
-                    'js-surface-react': 'js-surface-react/index.js'
                }
             });
 
-            System.import('js-surface-react ')
+            System.import('js-surface-react')
                 .then(function() {
                     System.import('./counter.js')
                 });
