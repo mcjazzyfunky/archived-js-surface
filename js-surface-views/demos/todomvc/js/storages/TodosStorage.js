@@ -20,7 +20,7 @@ const
         filter: 'all'
     };
 
-export default class TodoStorage extends Storage {
+export default class TodosStorage extends Storage {
     get initialState() {
         let ret;
 
@@ -65,13 +65,13 @@ export default class TodoStorage extends Storage {
     }
 
     setFilter(value) {
-        return Objects.transform(this.state, {
+        this.state = Objects.transform(this.state, {
             filter: {$set: adjustFilter(value)}
         });
     }
 
     addTodo(text, completed = false) {
-        return Objects.transform(this.state, {
+        this.state = Objects.transform(this.state, {
             todos: {$push: {
                 id: ++nextTodoId,
                 text: text,
@@ -81,19 +81,19 @@ export default class TodoStorage extends Storage {
     }
 
     removeTodo(id) {
-        return Objects.transform(this.state, {
+        this.state = Objects.transform(this.state, {
             todos: {$update: todos => todos.filter(todo => todo.id === id)}
         })
     }
 
     clearCompletedTodos() {
-        return Objects.transform(this.state, {
+        this.state = Objects.transform(this.state, {
             todos: {$update: todods => todos.filter(todo => todo.completed)}
         });
     }
 
     setTodoCompleted(id, value = true) {
-        return Objects.transform(this.state, {
+        this.state = Objects.transform(this.state, {
             todos: {$update: todos => todos.map(todo =>
                 todo.id === id
                     ? Objects.transform(todo, {completed: {$set: !value}})
@@ -102,8 +102,15 @@ export default class TodoStorage extends Storage {
         });
     }
 
+    setAllTodosCompleted(value = true) {
+        this.state = Objects.transform(this.state, {
+            todos: {$update: todos =>
+                todos.map(todo => todo.completed = value)}
+        });
+    }
+
     setTodoText(id, text) {
-        return Objects.transform(this.state, {
+        this.state =  Objects.transform(this.state, {
             todos: {$update: todos => todos.map(todo =>
                 todo.id === id
                 ? Object.transform(todo, {text: {$set: text}})

@@ -256,7 +256,7 @@ const
         Tab({caption: 'Pagination'}, demo3));
 
         
-const demo = VerticalNavi({
+const demos = VerticalNavi({
     menu: {
         type: 'section',
         title: 'Section 1',

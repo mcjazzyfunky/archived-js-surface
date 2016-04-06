@@ -5,7 +5,6 @@ import {commonView} from 'js-surface-views';
 import {Objects, Seq, Storage} from 'js-prelude';
 
 const {createElement: dom} = Component;
-console.log(commonView)
 
 class ComponentStorage extends Storage {
     get initialState() {
@@ -77,32 +76,32 @@ const SimpleDemo = Component.createFactory({
 
         onWillMount() {
             console.log('onWillMount');
-            alert('onWillMount')
+            //alert('onWillMount')
         },
 
         onDidMount() {
             console.log('onDidMount');
-            alert('onDidMount')
+            //alert('onDidMount')
         },
 
         onWillUnmount() {
             console.log('onWillUnmount');
-            alert('onWillMount')
+            //alert('onWillMount')
         },
 
         onDidUnmount() {
             console.log('onDidUnmount');
-            alert('onDidMount')
+            //alert('onDidMount')
         },
 
         onWillUpdate() {
             console.log('onWillUpdate');
-            alert('onWillUpdate')
+            //alert('onWillUpdate')
         },
 
         onDidUpdate() {
             console.log('onDidUpdate');
-            alert('onDidUpdate')
+            //alert('onDidUpdate')
         }
     })
 

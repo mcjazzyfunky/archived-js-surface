@@ -1,7 +1,7 @@
 'use strict';
 
 import {Store, Strings} from 'js-prelude';
-import Storage from './stores/TodoStore.js';
+import TodosStorage from './storages/TodosStorage.js';
 import {Component} from 'js-surface';
 
 const {createElement: dom} = Component;
@@ -36,7 +36,7 @@ export default Component.createFactory({
 
     context: {
         todosStore: {
-            type: TodosStore
+            type: TodosStorage.storeClass
         }
     },
 
