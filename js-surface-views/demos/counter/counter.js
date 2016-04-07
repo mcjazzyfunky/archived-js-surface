@@ -131,5 +131,5 @@ const SimpleDemo = Component.createFactory({
 });
 
 Component.mount(
-    SimpleDemo({onUpdate: event => console.log(event)}),
+    SimpleDemo({onUpdate: event => console.log(event)}, 'juhu'),
     'main-content');
