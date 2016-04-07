@@ -6,11 +6,12 @@ import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
+import {commonView} from 'js-surface-views';
 
 const {createElement: dom} = Component;
 
 export default Component.createFactory({
-    typeId: 'FKPager',
+    typeName: 'FKPager',
     
     properties: {
         type: {
@@ -74,8 +75,8 @@ export default Component.createFactory({
         }
     },
 
-    render:
-        renderPager
+    view:
+        commonView(renderPager)
 });
 
 function renderPager({props}) {

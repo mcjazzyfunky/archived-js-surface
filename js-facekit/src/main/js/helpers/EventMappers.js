@@ -1,7 +1,6 @@
 'use strict';
 
 import {Component} from 'js-surface';
-import {Subject} from 'rxjs';
 
 const {createEventBinder: binder} = Component;
 

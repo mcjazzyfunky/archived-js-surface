@@ -3,13 +3,14 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
 import {Component} from 'js-surface';
+import {commonView} from 'js-surface-views';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
 
 
 const {createElement: dom} = Component;
 
 export default Component.createFactory({
-    typeId: 'FKButton',
+    typeName: 'FKButton',
 
     properties: {
         text: {
@@ -66,7 +67,7 @@ export default Component.createFactory({
         }
     },
 
-    render: renderButton
+    view: commonView(renderButton)
 });
 
 function renderButton({props}) {
@@ -83,13 +84,13 @@ function renderButton({props}) {
             ComponentHelper.createIconElement(
                 icon,
                 'fk-button-icon fk-icon fk-' + iconPosition),
-
+        
         type =
             Arrays.selectValue(
                 ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
                 props.get('type'),
                 'default'),
-
+        
         text = Strings.trimToNull(props.get('text')),
 
         textElement =

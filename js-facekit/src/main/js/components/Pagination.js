@@ -3,12 +3,13 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-surface';
+import {commonView} from 'js-surface-views';
 import {Seq} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
 export default Component.createFactory({
-    typeId:
+    typeName:
         'FKPagination',
     
     properties: {
@@ -58,8 +59,8 @@ export default Component.createFactory({
         }
     },
 
-    render:
-        renderPagination
+    view:
+        commonView(renderPagination)
 });
             
 function renderPagination({props}) {

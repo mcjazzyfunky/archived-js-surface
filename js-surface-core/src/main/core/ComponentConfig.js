@@ -27,7 +27,7 @@ export default class ComponentConfig {
             this.__view = this.__readViewParam();
         } catch (err) {
             let message = '[ComponentConfig.constructor] ';
-
+            
             if (this.__typeName) {
                 message += 'Error in specification for component of type '
                     + `'${this.__typeName}'`;
@@ -78,10 +78,10 @@ export default class ComponentConfig {
 
         if (typeName === undefined) {
             throw new TypeError(
-                + "Spec parameter 'typeName' is missing");
+                "Spec parameter 'typeName' is missing");
         } else if (typeof typeName !== 'string') {
             throw new TypeError(
-                + "Spec parameter 'typeName' must be a string");
+                "Spec parameter 'typeName' must be a string");
         } else if (!typeName.match(regexComponentTypeName)) {
             throw new Error(
                 "Spec parameter 'typeName' must match regular expression "
@@ -101,7 +101,7 @@ export default class ComponentConfig {
         if (propertiesParam !== undefined
                 && propertiesParamIsObject
                 && propertiesParamIsBoolean) {
-
+            
             throw new TypeError(
                 "Spec parameter 'properties' must either be an object, "
                 + 'a boolean value or undefined');

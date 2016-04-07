@@ -2,11 +2,12 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
+import {commonView} from 'js-surface-views';
 
 const dom = Component.createElement;
 
 export default Component.createFactory({
-    typeId: 'FKButtonGroup',
+    typeName: 'FKButtonGroup',
     
     properties: {
         className: {
@@ -20,8 +21,8 @@ export default Component.createFactory({
         }
     },
 
-    render:
-        renderButtonGroup
+    view:
+        commonView(renderButtonGroup)
 });
 
 function renderButtonGroup({props}) {

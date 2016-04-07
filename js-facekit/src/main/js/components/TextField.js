@@ -2,8 +2,8 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
+import {EventSubject} from 'js-prelude';
 import {Component} from 'js-surface';
-import {Subject} from 'rxjs';
 
 const {createElement: dom, createEventBinder: binder} = Component;
 
@@ -90,12 +90,12 @@ export default Component.createFactory({
                     'fk-text-field',
                     props.get('className')),
 
-            actions = new Subject(),
+            actions = new EventSubject(),
 
-            changeEvents = !visible ? null : new Subject(),
+            changeEvents = !visible ? null : new EventSubject(),
             onChange = binder(changeEvents, event => EventMappers.mapChangeEvent(event))(),
 
-            inputEvents = !visible ? null : new Subject(),
+            inputEvents = !visible ? null : new EventSubject(),
             onInput = binder(inputEvents, event => EventMappers.mapInputEvent(event))(),
 
             content =

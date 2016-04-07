@@ -13,9 +13,8 @@ import TextField from '../src/main/js/components/TextField.js';
 */
 
 import {Component} from 'js-surface';
-import {Seq} from 'js-prelude';
-
-import {Observable, Subject} from 'rxjs';
+import {commonView} from 'js-surface-views';
+import {Objects, Seq, Storage} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
@@ -38,9 +37,9 @@ const
 
 
 const DemoOfButtons = Component.createFactory({
-    typeId: 'DemoOfButtons',
+    typeName: 'DemoOfButtons',
 
-    render({props}) {
+    view: commonView(({props}) => {
         return (
             dom('div',
                 {className: 'container-fluid'},
@@ -139,14 +138,14 @@ const DemoOfButtons = Component.createFactory({
                         menu: [{text: 'Item 1'}]
                     })))
         );
-    }
+    })
 });
 
 const DemoOfButtonGroups = Component.createFactory({
-    typeId: 'DemoOfButtonGroups',
+    typeName: 'DemoOfButtonGroups',
     
-    render:
-        ({props}) =>
+    view:
+        commonView(({props}) =>
             dom('div',
                 {className: 'container-fluid'},
                 dom('div',
@@ -167,50 +166,66 @@ const DemoOfButtonGroups = Component.createFactory({
                     ),
                     ButtonGroup(
                         {className: 'col-md-3'},
-                        Button({text: 'Single Button', type: 'default'}))))
+                        Button({text: 'Single Button', type: 'default'})))))
 });
 
 
-const DemoOfPagination = Component.createFactory({
-    typeId: 'DemoOfPagination',
-    
-    initialState: {
-        currentPage: 0
-    },
-    
-    updateState: ({state}) => ({
-        moveToPage(targetPage) {
-            return {currentPage: targetPage};
-        }
-    }),
-    
-    render({state, update}) {
-        const
-            doOnChange = event => update.moveToPage(event.targetPage);
 
-        return (
-            dom('div',
-                {className: 'container-fluid'},
-                ...Seq.range(1, 10).map(_ =>
-                    dom('div',
-                        {className: 'row'},
-                        Pagination({
-                            className: 'col-md-3',
-                            pageIndex: state.currentPage,
-                            pageSize: pagination.pageSize,
-                            totalItemCount: pagination.totalItemCount,
-                            onChange: doOnChange
-                        }),
-                        Pager({
-                            className: 'col-md-3',
-                            pageIndex: state.currentPage,
-                            pageSize: pagination.pageSize,
-                            totalItemCount: pagination.totalItemCount,
-                            onChange: doOnChange
-                        })
-                    )))
-        );
+
+class DemoOfPaginationStorage extends Storage {
+    get initialState() {
+        return {
+            currentPage: 0    
+        };
     }
+    
+    getCurrentPage() {
+        return this.state.currentPage;
+    }
+    
+    moveToPage(targetPage) {
+        this.state = Objects.transform(this.state, {
+            currentPage: {$set: targetPage}
+        });
+    }
+}
+
+const DemoOfPagination = Component.createFactory({
+    typeName: 'DemoOfPagination',
+    
+    view: commonView({
+        createStorage() {
+            return new DemoOfPaginationStorage();
+        },
+        
+        render: ({ctrl}) => {
+            const
+                doOnChange = event => ctrl.moveToPage(event.targetPage);
+    
+            return (
+                dom('div',
+                    {className: 'container-fluid'},
+                    ...Seq.range(1, 10).map(_ =>
+                        dom('div',
+                            {className: 'row'},
+                            Pagination({
+                                className: 'col-md-3',
+                                pageIndex: ctrl.getCurrentPage(),
+                                pageSize: pagination.pageSize,
+                                totalItemCount: pagination.totalItemCount,
+                                onChange: doOnChange
+                            }),
+                            Pager({
+                                className: 'col-md-3',
+                                pageIndex: ctrl.getCurrentPage(),
+                                pageSize: pagination.pageSize,
+                                totalItemCount: pagination.totalItemCount,
+                                onChange: doOnChange
+                            })
+                        )))
+            );
+        }
+    })
 });
 /*
 const DemoOfTabs = Component.createFactory({
@@ -271,7 +286,7 @@ const demos = VerticalNavi({
 });
 */
 const demo6 = Component.createFactory({
-    typeId: 'Button',
+    typeName: 'Button',
 
     initialState:
         {counter: 0},
@@ -295,7 +310,7 @@ const demo6 = Component.createFactory({
         }
     }),
 
-    render: ({state, ctrl}) =>
+    view: commonView(({state, ctrl}) =>
         dom('div',
             null,
             dom('button',
@@ -308,7 +323,7 @@ const demo6 = Component.createFactory({
 
             dom('button',
                 {onClick: () => ctrl.increaseCounter()},
-                '+'))
+                '+')))
 });
 
 Component.mount(
