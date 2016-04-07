@@ -1,8 +1,8 @@
 'use strict';
 
-import {Component, Processor, Publisher} from 'js-surface';
+import {Component, Publisher} from 'js-surface';
 import {commonView} from 'js-surface-views';
-import {Objects, Seq, Storage} from 'js-prelude';
+import {Objects, Storage} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
@@ -10,7 +10,7 @@ class ComponentStorage extends Storage {
     get initialState() {
         return {
             counter: 0
-        }
+        };
     }
 
     getCounter() {
@@ -29,7 +29,7 @@ class ComponentStorage extends Storage {
             method: 'increment',
             counter: this.state.counter,
             oldCounter: oldCounter
-        })
+        });
     }
 
     decrementCounter() {
@@ -44,7 +44,7 @@ class ComponentStorage extends Storage {
             method: 'decrement',
             counter: this.state.counter,
             oldCounter: oldCounter
-        })
+        });
     }
 }
 
@@ -74,12 +74,12 @@ const SimpleDemo = Component.createFactory({
             );
         },
 
-        onWillMount() {
+        onWillMount(params) {
             console.log('onWillMount');
             //alert('onWillMount')
         },
 
-        onDidMount() {
+        onDidMount(params) {
             console.log('onDidMount');
             //alert('onDidMount')
         },
@@ -94,12 +94,12 @@ const SimpleDemo = Component.createFactory({
             //alert('onDidMount')
         },
 
-        onWillUpdate() {
+        onWillUpdate(params) {
             console.log('onWillUpdate');
             //alert('onWillUpdate')
         },
 
-        onDidUpdate() {
+        onDidUpdate(params) {
             console.log('onDidUpdate');
             //alert('onDidUpdate')
         }

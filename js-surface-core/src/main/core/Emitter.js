@@ -2,7 +2,7 @@
 
 import Publisher from './Publisher.js';
 
-export default class Processor extends Publisher {
+export default class Emitter extends Publisher {
     constructor() {
         super(subscriber => {
             this.__subscribers.push(subscriber);

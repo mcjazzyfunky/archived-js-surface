@@ -4,7 +4,7 @@ import {
     Config, ConfigError, Storage
 } from 'js-prelude';
 
-import {Publisher, Processor} from 'js-surface';
+import {Emitter, Publisher} from 'js-surface';
 
 export default function commonView(spec) {
     const
@@ -26,11 +26,15 @@ export default function commonView(spec) {
 }
 
 function commonViewFromFunction(renderFunction) {
-    return (behavior, context) => {
+    return (propsPublisher, context) => {
         return new Publisher(subscriber => {
-            return behavior.subscribe({
+            return propsPublisher.subscribe({
                 next(props) {
-                    subscriber.next(renderFunction(new Config(props), context));
+                    subscriber.next(
+                        renderFunction({
+                            props: new Config(props),
+                            context
+                        }));
                 },
 
                 error(err) {
@@ -57,8 +61,7 @@ function commonViewFromObject(spec) {
         onWillUpdate = config.getFunction('onWillUpdate', null),
         onDidUpdate = config.getFunction('onDidUpdate', null);
 
-
-    return (behavior, context) => {
+    return (propsPublisher, contentPublisher, context) => {
         const storage = createStorage ? createStorage() : null;
 
         if (!(storage instanceof Storage)) {
@@ -70,13 +73,14 @@ function commonViewFromObject(spec) {
         let
             index = -1,
             params = null,
-            propsConfig = null;
+            propsConfig = null,
+            node = null;
 
 
-        const contentProcessor = new Processor();
+        const contentEmitter = new Emitter();
 
         const performRendering = () => {
-            const params =
+            params =
                 !storage
 
                     ? {
@@ -90,6 +94,10 @@ function commonViewFromObject(spec) {
                     ctrl: storage.controller,
                     dispatch: storage.dispatcher
                 };
+            
+            if (node !== null) {
+                params.node = node;
+            }
 
             ++index;
             
@@ -99,36 +107,42 @@ function commonViewFromObject(spec) {
                 onWillUpdate(params);
             }
 
-            contentProcessor.next(render(params));
+            contentEmitter.next(render(params));
 
             if (index === 0 && onDidMount) {
-                setTimeout(() => onDidMount(params), 0);
+                setTimeout(() => {
+                    onDidMount(Object.assign(params, {node}));
+                }, 0);
             } else if (index > 0 && onDidUpdate) {
                 setTimeout(() => onDidUpdate(params), 0);
             }
         };
 
-        behavior.subscribe({
+        propsPublisher.subscribe({
             next(props) {
                 propsConfig = new Config(props);
                 performRendering();
             },
 
             error(err) {
-                contentProcessor.error(err);
+                contentEmitter.error(err);
             },
 
             complete() {
                 if (onWillUnmount) {
-                    onWillUnmount(props);
+                    onWillUnmount(params);
                 }
 
-                contentProcessor.complete();
+                contentEmitter.complete();
 
                 if (onDidUnmount) {
-                    onDidUnmount(props);
+                    onDidUnmount(params);
                 }
             }
+        });
+        
+        contentPublisher.subscribe(content => {
+            node = content.node;
         });
 
         storage.modificationEvents.subscribe(_ => {
@@ -139,7 +153,9 @@ function commonViewFromObject(spec) {
             next: notification => {
                 const
                     notificationIsArray = Array.isArray(notification),
-                    notificationIsObject = notification !== null & typeof notification === 'object';
+                    notificationIsObject =
+                        notification !== null
+                        && typeof notification === 'object';
 
                 if (notificationIsArray || notificationIsObject) {
                     const [type, event] =
@@ -148,7 +164,9 @@ function commonViewFromObject(spec) {
                             : [notification.type, notification];
 
                     if (type && typeof type === 'string') {
-                        const callback = propsConfig.getFunction('on' + type[0].toUpperCase() + type.substr(1), null);
+                        const callback = propsConfig.getFunction(
+                            'on' + type[0].toUpperCase()
+                            + type.substr(1), null);
 
                         if (callback) {
                             callback(event);
@@ -164,8 +182,6 @@ function commonViewFromObject(spec) {
             }
         });
 
-        return contentProcessor;
+        return contentEmitter;
     };
 }
-
-

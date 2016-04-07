@@ -34,14 +34,17 @@
                 'rxjs': 'lib/rxjs/Rx.umd.js',
                 'react': 'node_modules/react/dist/react.js',
                 'react-dom': 'node_modules/react-dom/dist/react-dom.js',
-                'js-surface': 'index.js',
+                
+                
+                'js-surface': 'js-surface-core/index.js',
+                'js-surface-react': 'js-surface-react/index.js',
                 'js-surface-views': 'js-surface-views/index.js'
             }
         });
 
         System.import('bootstrap');
         
-        System.import('src/main/adapters/react-adapter.js')
+        System.import('js-surface-react')
                 .then(function() {
                     System.import('js-facekit/demo/performance-demo/performance.js');
                 });

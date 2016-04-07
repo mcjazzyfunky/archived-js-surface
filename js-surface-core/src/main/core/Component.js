@@ -54,28 +54,27 @@ export default class Component {
 
             componentConfig = new ComponentConfig(spec),
 
-            fnBehaviorAndCtxToView = (behavior, context = null) => {
-                if (!(behavior instanceof Publisher)) {
+            view = (propsPublisher, contentPublisher, context = null) => {
+                if (!(propsPublisher instanceof Publisher)) {
                     throw new TypeError(
                         '[Component.createFactory] '
-                        + "First argument 'behavior' of local method "
-                        + "'fnBehaviorAndCtxTowView' must be an instance "
-                        + 'of class Publisher');
+                        + "First argument 'propsPublisher' of local function "
+                        + "'view' must be an instance of class Publisher");
                 } else if (typeof context !== 'object') {
                     throw new TypeError(
                         '[Component.createFactory] '
-                        + "Second argument 'context' of local method "
-                        + "'fnBehaviorAndCtxToView' must be an object");
+                        + "Second argument 'context' of local function 'view' "
+                        + 'must be an object');
                 }
 
-                return componentConfig.getView()(behavior, context);
+                return componentConfig.getView()(propsPublisher, contentPublisher, context);
             };
 
         ret.__componentConfig = componentConfig;
         ret.__propertiesValidator = new PropertiesValidator(componentConfig);
 
         ret.adaptedFactory = activeAdapter.createAdaptedFactory(
-            componentConfig, fnBehaviorAndCtxToView);
+            componentConfig, view);
 
         Object.freeze(ret);
         return ret;

@@ -115,7 +115,15 @@ export default class ComponentConfig {
     }
 
     __readDefaultProps() {
-        return {}; // TODO: implement
+        const
+            ret = {},
+            properties = this.getProperties();
+        
+        for (let propName of this.getPropertyNames()) {
+            ret[propName] = properties[propName].defaultValue;
+        }
+        
+        return ret;
     }
 
     __readViewParam() {

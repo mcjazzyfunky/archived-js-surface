@@ -1,6 +1,6 @@
 'use strict';
 
-import {ComponentAdapter, ComponentConfig, Processor, Publisher} from 'js-surface';
+import {Content, ComponentAdapter, ComponentConfig, Emitter, Publisher} from 'js-surface';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -27,20 +27,20 @@ export default class ReactComponentAdapter extends ComponentAdapter {
         return React.isValidElement(what); // TODO - is this really correct???
     }
 
-    createAdaptedFactory(componentConfig, fnBehaviorAndCtxToView) {
+    createAdaptedFactory(componentConfig, view) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactComponentAdapter.createAdaptedFactory] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
-        } else if (typeof fnBehaviorAndCtxToView !== 'function') {
+        } else if (typeof view !== 'function') {
             throw new TypeError(
                 '[ReactComponentAdapter.createAdapterFactory] '
-                + "Second argument 'fnBehaviorAndCtxToView' must be a function");
+                + "Second argument 'view' must be a function");
         }
 
         const constructor = function (...args) {
-            ReactAdapterComponent.call(this, componentConfig, fnBehaviorAndCtxToView, args);
+            ReactAdapterComponent.call(this, componentConfig, view, args);
         };
 
         constructor.displayName = componentConfig.getTypeName();
@@ -77,34 +77,36 @@ export default class ReactComponentAdapter extends ComponentAdapter {
 
 
 class ReactAdapterComponent extends React.Component {
-    constructor(componentConfig, fnBehaviorAndCtxToView, superArgs) {
+    constructor(componentConfig, view, superArgs) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
-        } else if (typeof fnBehaviorAndCtxToView !== 'function') {
+        } else if (typeof view !== 'function') {
             throw new TypeError(
                 '[ReactAdapterComponent.constructor] '
-                + "Second argument 'fnBehaviorAndCtxToView' must "
-                + 'be a function');
+                + "Second argument 'view' must be a function");
         }
 
         super(...superArgs);
-
+        
         this.__componentConfig = componentConfig;
         this.__contentToRender = null;
-        this.__propsProcessor = new Processor();
+        this.__propsEmitter = new Emitter();
+        this.__contentEmitter = new Emitter();
         this.__viewSubscription = null;
         this.__mounted = false;
 
-        this.__viewPublisher = fnBehaviorAndCtxToView(
-            this.__propsProcessor.asPublisher(), this.context);
+        this.__viewPublisher = view(
+            this.__propsEmitter.asPublisher(),
+            this.__contentEmitter.asPublisher(),
+            this.context);
 
         if (!(this.__viewPublisher instanceof Publisher)) {
             throw new TypeError(
                 '[ReactAdapter.constructor] '
-                + "The invocation of second argument 'fnBehaviorAndCtxToView' "
+                + "The invocation of second argument 'view' "
                 + 'must return an instance of class Publisher');
         }
     }
@@ -122,8 +124,12 @@ class ReactAdapterComponent extends React.Component {
             }
         });
 
-        this.__propsProcessor.next(this.props);
+        this.__propsEmitter.next(this.props);
         this.__mounted = true;
+    }
+    
+    componentDidMount() {
+        this.componentDidUpdate(); 
     }
 
     componentWillUnmount() {
@@ -133,7 +139,13 @@ class ReactAdapterComponent extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__propsProcessor.next(nextProps);
+        this.__propsEmitter.next(nextProps);
+    }
+    
+    componentDidUpdate() {
+        const domNode = ReactDOM.findDOMNode(this);
+        
+        this.__contentEmitter.next(new Content(domNode));
     }
 
     shouldComponentUpdate() {

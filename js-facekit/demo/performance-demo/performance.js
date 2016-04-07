@@ -3,7 +3,8 @@
 /** @jsx dom */
 
 import {Component}  from 'js-surface';
-import {Seq} from 'js-prelude';
+import {commonView} from 'js-surface-views';
+import {Objects, Seq, Storage} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
@@ -12,13 +13,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    {createElement: dom, createEventBinder: binder} = Component,
+    {createElement: dom} = Component,
     number = 100,
     pageSize = 25,
     totalItemCount = 1220;
     
 export const Pagination = Component.createFactory({
-    typeId: 'FKPagination',
+    typeName: 'FKPagination',
    
     properties: {
         className: {
@@ -67,7 +68,7 @@ export const Pagination = Component.createFactory({
         }
     },
 
-    render({props}) {
+    view: commonView(({props}) => {
         const
             pageIndex = props.get('pageIndex'),
 
@@ -91,10 +92,8 @@ export const Pagination = Component.createFactory({
             classNameInner = 'pagination',
 
             moveToPage = targetPage => {
-                const onChange = props.get('onChange', null);
-
-                if (onChange) {
-                    onChange({targetPage: targetPage});
+                if (props.isSomething('onChange')) {
+                    props.get('onChange')({targetPage});
                 }
             },
 
@@ -150,7 +149,7 @@ export const Pagination = Component.createFactory({
                     succeedingEllipsis,
                     lastPageLink))
         );
-    }
+    })
 });
 
             
@@ -166,33 +165,48 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-export const DemoOfPagination = Component.createFactory({
-    typeId: 'DemoOfPagination',
-
-    initialState: {
-        pageIndex: 0
-    },
-
-    updateState: ({state}) => ({
-        moveToPage: pageIndex => {
-            return {pageIndex: pageIndex};
-        }
-    }),
-
-    render({state, update}) {
-        return (
-            dom('div',
-                {className: 'container-fluid'},
-                Seq.range(1, number).map(_ =>
-                    dom('div',
-                        {className: 'row'},
-                        Pagination({
-                            className: "col-md-3",
-                            pageIndex: state.pageIndex,
-                            pageSize: pageSize,
-                            totalItemCount: totalItemCount,
-                            onChange: evt => update.moveToPage(evt.targetPage)})))));
+class PaginationStorage extends Storage {
+    get initialState() {
+        return {
+            pageIndex: 0
+        };
     }
+    
+    getPageIndex() {
+        return this.state.pageIndex;
+    }
+    
+    moveToPage(pageIndex) {
+        this.state = Objects.transform(this.state, {
+            pageIndex: {$set: pageIndex}
+        });
+    }
+}
+
+export const DemoOfPagination = Component.createFactory({
+    typeName: 'DemoOfPagination',
+    
+    view: commonView({
+        createStorage() {
+            return new PaginationStorage();
+        },
+        
+        render({ctrl}) {
+            return (
+                dom('div',
+                    {className: 'container-fluid'},
+                    Seq.range(1, number).map(_ =>
+                        dom('div',
+                            {className: 'row'},
+                            Pagination({
+                                className: "col-md-3",
+                                pageIndex: ctrl.getPageIndex(),
+                                pageSize: pageSize,
+                                totalItemCount: totalItemCount,
+                                onChange: evt => ctrl.moveToPage(evt.targetPage)}))))
+            );
+        }
+    })
 });
 
 // -----------------

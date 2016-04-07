@@ -1,16 +1,16 @@
 'use strict';
 
 export default class Content {
-    constructor(object) {
-        if (object === null || typeof element !== 'object') {
+    constructor(node) {
+        if (node === null || typeof node !== 'object') {
             throw new TypeError('[Node.constructor] '
                 + "First argument 'object' must be an object")
         }
         
-        this.__object = object;
+        this.__node = node;
     }
    
-    get object() {
-        return this.__element; 
+    get node() {
+        return this.__node; 
     }
 }
