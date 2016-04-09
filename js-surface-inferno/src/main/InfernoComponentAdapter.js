@@ -19,10 +19,44 @@ export default class InfernoComponentAdapter extends ComponentAdapter {
                 '[InfernoComponentAdapter.createElement] '
                 + "First argument 'tag' must not be undefined or null");
         }
-
+        
+        let ret;
+        
+        if (tag && tag.adaptedFactory) {
+            const mappedChildren = [];
+            
+            for (let child of children) {
+                if (child !== null && typeof child === 'object' && typeof child[Symbol.iterator] === 'function') {
+                    for (let item of child) {
+                        mappedChildren.push(item);            
+                    }                  
+                } else {
+                    mappedChildren.push(child);
+                }
+            }
+            
+            ret = tag.adaptedFactory(props, mappedChildren);  
+        } else {
+            const args = [tag, props];
+            
+            for (let child of children) {
+                if (child !== null && typeof child === 'object' && typeof child[Symbol.iterator] === 'function') {
+                    for (let item of child) {
+                        args.push(item);
+                    } 
+                } else {
+                    args.push(child);
+                }
+            }
+            
+            ret = Inferno.createElement.apply(Inferno, args);
+        }
+        
+        return ret; 
+/*
         return (tag && tag.adaptedFactory)
             ? tag.adaptedFactory(props, children)
-            : Inferno.createElement(tag, props, ...children);
+            : Inferno.createElement(tag, props, ...children);*/
     }
 
     isElement(what) {
@@ -47,7 +81,7 @@ export default class InfernoComponentAdapter extends ComponentAdapter {
 
         constructor.prototype = Object.create(InfernoAdapterComponent.prototype);
 
-        return (props, ...children) => Inferno.createElement(constructor, props, ...children)
+        return (props, ...children) => this.createElement(constructor, props, children)
     }
 
     mount(content, targetNode) {
