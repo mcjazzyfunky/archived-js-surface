@@ -123,8 +123,10 @@ class InfernoAdapterComponent extends InfernoComponent {
             }
         });
 
-        this.__propsEmitter.next(this.props);
-    this.__mounted = true;
+        const props = Object.assign({}, this.__componentConfig.getDefaultProps(), this.props);
+        
+        this.__propsEmitter.next(props);
+        this.__mounted = true;
     }
     
     componentDidMount() {
@@ -138,12 +140,13 @@ class InfernoAdapterComponent extends InfernoComponent {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__propsEmitter.next(nextProps);
+        const props = Object.assign({}, this.__componentConfig.getDefaultProps(), nextProps);
+        this.__propsEmitter.next(props);
     }
     
-    componentDidUpdate(params) {
-        //const domNode = InfernoDOM.findDOMNode(this);
-       const domNode = {}; 
+    componentDidUpdate() {
+        const domNode = this._lastNode.dom;
+        
         this.__contentEmitter.next(new Content(domNode));
     }
 
@@ -158,8 +161,11 @@ class InfernoAdapterComponent extends InfernoComponent {
         }
 
         const ret = this.__contentToRender;
-        this.__contentToRender = null;
-
+    
+        setTimeout(() => {
+            this.__contentToRender = null;
+        },  0);
+        
         return ret;
     }
 

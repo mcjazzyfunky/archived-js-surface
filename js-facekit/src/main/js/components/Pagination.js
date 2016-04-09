@@ -147,7 +147,7 @@ function renderPagination({props}) {
                    index + 1,
                    index === pageIndex,
                    bindMoveToPage(index)));
-
+    
     return (
         dom('div',
             {className: classNameOuter},

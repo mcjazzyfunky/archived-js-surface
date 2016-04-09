@@ -63,7 +63,7 @@ function commonViewFromObject(spec) {
 
     return (propsPublisher, contentPublisher, context) => {
         const storage = createStorage ? createStorage() : null;
-
+        
         if (!(storage instanceof Storage)) {
             throw new ConfigError(
                 "[commonView] Configured function 'getStorage' must "
@@ -98,7 +98,6 @@ function commonViewFromObject(spec) {
             if (node !== null) {
                 params.node = node;
             }
-
             ++index;
             
             if (index === 0 && onWillMount) {
@@ -145,10 +144,15 @@ function commonViewFromObject(spec) {
             node = content.node;
         });
 
+        
         storage.modificationEvents.subscribe(_ => {
+          try {
             performRendering();
+          } catch (err) {
+              console.error(err)
+          }
         });
-
+        
         storage.notificationEvents.subscribe({
             next: notification => {
                 const

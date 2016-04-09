@@ -173,6 +173,10 @@ const DemoOfButtonGroups = Component.createFactory({
 
 
 class DemoOfPaginationStorage extends Storage {
+    constructor() {
+        super();
+    }
+    
     get initialState() {
         return {
             currentPage: 0    
@@ -209,12 +213,13 @@ const DemoOfPagination = Component.createFactory({
                         dom('div',
                             {className: 'row'},
                             Pagination({
-                                className: 'col-md-3',
+                                className: 'col-md-3 ',
                                 pageIndex: ctrl.getCurrentPage(),
                                 pageSize: pagination.pageSize,
                                 totalItemCount: pagination.totalItemCount,
                                 onChange: doOnChange
-                            }),
+                            })
+                            /*,
                             Pager({
                                 className: 'col-md-3',
                                 pageIndex: ctrl.getCurrentPage(),
@@ -222,6 +227,7 @@ const DemoOfPagination = Component.createFactory({
                                 totalItemCount: pagination.totalItemCount,
                                 onChange: doOnChange
                             })
+                            */
                         )))
             );
         }
@@ -285,46 +291,6 @@ const demos = VerticalNavi({
     }
 });
 */
-const demo6 = Component.createFactory({
-    typeName: 'Button',
-
-    initialState:
-        {counter: 0},
-
-    updateState: ({state}) => ({
-        increaseCounter() {
-            return {counter: state.counter + 1}
-        },
-
-        decreaseCounter() {
-            return {counter: state.counter - 1}
-        }
-    }),
-
-    control: ({update}) => ({
-        increaseCounter() {
-            update.increaseCounter();
-        },
-        decreaseCounter() {
-            update.decreaseCounter();
-        }
-    }),
-
-    view: commonView(({state, ctrl}) =>
-        dom('div',
-            null,
-            dom('button',
-                {onClick: () => ctrl.decreaseCounter()},
-                '-'),
-
-            dom('span',
-                null,
-                state.counter),
-
-            dom('button',
-                {onClick: () => ctrl.increaseCounter()},
-                '+')))
-});
 
 Component.mount(
     DemoOfPagination,

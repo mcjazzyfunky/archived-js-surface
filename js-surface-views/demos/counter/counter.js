@@ -75,32 +75,32 @@ const SimpleDemo = Component.createFactory({
         },
 
         onWillMount(params) {
-            console.log('onWillMount');
+            console.log('onWillMount', params);
             //alert('onWillMount')
         },
 
         onDidMount(params) {
-            console.log('onDidMount');
+            console.log('onDidMount', params, params.node, params.node.innerHTML);
             //alert('onDidMount')
         },
 
-        onWillUnmount() {
-            console.log('onWillUnmount');
+        onWillUnmount(params) {
+            console.log('onWillUnmount', params, params.node);
             //alert('onWillMount')
         },
 
-        onDidUnmount() {
-            console.log('onDidUnmount');
+        onDidUnmount(params) {
+            console.log('onDidUnmount', params, params.node);
             //alert('onDidMount')
         },
 
         onWillUpdate(params) {
-            console.log('onWillUpdate');
+            console.log('onWillUpdate', params, params.node.innerHTML);
             //alert('onWillUpdate')
         },
 
         onDidUpdate(params) {
-            console.log('onDidUpdate');
+            console.log('onDidUpdate', params, params.node.innerHTML);
             //alert('onDidUpdate')
         }
     })
@@ -131,5 +131,5 @@ const SimpleDemo = Component.createFactory({
 });
 
 Component.mount(
-    SimpleDemo({onUpdate: event => console.log(event)}, 'juhu'),
+    SimpleDemo({onUpdate: event => console.log(event)}),
     'main-content');
