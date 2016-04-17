@@ -1,5 +1,6 @@
 'use strict';
 
+import TextField from '../../src/main/js/components/TextField.js';
 import Button from '../../src/main/js/components/Button.js';
 import ButtonGroup from '../../src/main/js/components/ButtonGroup.js';
 import Pager from '../../src/main/js/components/Pager.js';
@@ -13,8 +14,8 @@ import TextField from '../src/main/js/components/TextField.js';
 */
 
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
-import {Objects, Seq, Storage} from 'js-prelude';
+import {commonView, Storage} from 'js-surface-views';
+import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
@@ -233,6 +234,61 @@ const DemoOfPagination = Component.createFactory({
         }
     })
 });
+
+
+class DemoOfInputFieldsStorage extends Storage {
+    get initialState() {
+        return {
+            firstName: '',
+            lastName: ''
+        };
+    }
+    
+    getFirstName() {
+        return this.state.firstName;
+    }
+    
+    setFirstName(value) {
+        this.state = Objects.transform(this.state, {
+            firstName: {$set: value}
+        });
+    }
+    
+    getLastName() {
+        return this.lastName;
+    }
+    
+    setLastName(value) {
+        this.state = Objects.transform(this.state, {
+            lastName: {$set: value}
+        });
+    }
+}
+
+const DemoOfInputFields = Component.createFactory({
+    typeName: 'DemoOfInputFields',
+    
+    view: commonView({
+        createStorage() {
+            return new DemoOfInputFieldsStorage();
+        },
+        
+        render({ctrl}) {
+            return (
+                dom('div',
+                    null,
+                    TextField({
+                        value: ctrl.getFirstName(),
+                        placeholder: 'Enter first name',
+                        label: 'First name:',
+                        onChange: event => ctrl.setFirstName(event.value)
+                    }),
+                    dom('div', null, 'Hello ' + ctrl.getFirstName()))
+            );
+        }
+    })
+});
+
 /*
 const DemoOfTabs = Component.createFactory({
     typeId: 'DemoOfTabs',
@@ -293,5 +349,5 @@ const demos = VerticalNavi({
 */
 
 Component.mount(
-    DemoOfPagination,
+    DemoOfInputFields,
     'main-content');

@@ -2,13 +2,37 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
-import {EventSubject} from 'js-prelude';
+import {Objects} from 'js-prelude';
 import {Component} from 'js-surface';
+import {Storage, commonView} from 'js-surface-views';
 
-const {createElement: dom, createEventBinder: binder} = Component;
+const {createElement: dom} = Component;
+
+class TextFieldStorage extends Storage {
+    get initialState() {
+        return {
+            value: ''
+        };       
+    }
+    
+    setValue(value) {
+        console.log("Old state", this.state)
+        
+        this.state = Objects.transform(this.state, {
+            value: {$set: value}
+        });
+        
+        console.log("New state", this.state)
+    }
+    
+    getValue() {console.log("state", this.state)
+        return this.state.value;
+    }
+}
+
 
 export default Component.createFactory({
-    typeId: 'FKTextField',
+    typeName: 'FKTextField',
 
     properties: {
         className: {
@@ -62,68 +86,65 @@ export default Component.createFactory({
         }
     },
 
-    initialState: props => {
-        console.log(444444, props);
-
-        return {
-            value: props.get('value')
-        };
-    },
-
-    updateState: (action, state) => {
-        return state;
-    },
-
-    render: (props, state) => {
-        const
-            value = props.get('value'),
-            placeholder = props.get('placeholder'),
-            maxLength = props.getInteger('maxLength', null),
-            disabled = props.get('disabled') ? 'disabled' : null,
-            visible = props.get('visible'),
-            readOnly = props.get('readOnly') ? 'readonly' : null,
-            label = props.get('label'),
-            labelElem = label === null ? null : dom('label', {className: 'fk-label'}, label),
-
-            className =
-                ComponentHelper.buildCssClass(
-                    'fk-text-field',
-                    props.get('className')),
-
-            actions = new EventSubject(),
-
-            changeEvents = !visible ? null : new EventSubject(),
-            onChange = binder(changeEvents, event => EventMappers.mapChangeEvent(event))(),
-
-            inputEvents = !visible ? null : new EventSubject(),
-            onInput = binder(inputEvents, event => EventMappers.mapInputEvent(event))(),
-
-            content =
-                !visible
-                ? dom('span')
-                : dom('div', {
-                        className
-                    },
-                    labelElem,
-                    dom('input', {
-                        type: 'text',
-                        value,
-                        placeholder,
-                        maxLength,
-                        disabled,
-                        readOnly,
-                        onInput,
-                        onChange
-                    }));
-
-        return {
-            content,
-            actions,
-            events: {
-                input: inputEvents,
-                change: changeEvents
+    view: commonView({
+        createStorage() {
+            return new TextFieldStorage();    
+        },
+        
+        render: ({props, ctrl}) => {
+            const
+                value = ctrl.getValue(),
+                placeholder = props.get('placeholder'),
+                maxLength = props.getInteger('maxLength', null),
+                disabled = props.get('disabled') ? 'disabled' : null,
+                visible = props.get('visible'),
+                readOnly = props.get('readOnly') ? 'readonly' : null,
+                label = props.get('label'),
+                labelElem = label === null ? null : dom('label', {className: 'fk-label'}, label),
+    
+                className =
+                    ComponentHelper.buildCssClass(
+                        'fk-text-field',
+                        props.get('className')),
+                        
+                doOnChange = props.getMappedFunction('onChange',
+                    event => ({
+                        type: 'change',
+                        value: event.target.value
+                    }),
+                    null),
+    
+                content =
+                    !visible
+                    ? dom('span')
+                    : dom('div', {
+                            className
+                        },
+                        labelElem,
+                        dom('input', {
+                            type: 'text',
+                            value,
+                            placeholder,
+                            maxLength,
+                            disabled,
+                            readOnly,
+                            onChange: doOnChange
+                        }));
+    
+           return content;
+        },
+        
+        onWillMount({props, ctrl}) {console.log(props.__data);
+            if (props.isSomething('defaultValue')) {
+                ctrl.setValue(props.getString('defaultValue'));
+            }    
+        },
+        
+        onWillUpdate({props, ctrl}) {
+            if (props.isSomething('value')) {
+                ctrl.setValue(props.getString('value'));
             }
         }
-    }
+    })
 });
 

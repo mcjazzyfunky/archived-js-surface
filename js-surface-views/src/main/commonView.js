@@ -1,9 +1,7 @@
 'use strict';
 
-import {
-    Config, ConfigError, Storage
-} from 'js-prelude';
-
+import Storage from './Storage.js';
+import {Config, ConfigError} from 'js-prelude';
 import {Emitter, Publisher} from 'js-surface';
 
 export default function commonView(spec) {
@@ -74,12 +72,19 @@ function commonViewFromObject(spec) {
             index = -1,
             params = null,
             propsConfig = null,
-            node = null;
+            node = null,
+            preventRendering = false;
 
 
         const contentEmitter = new Emitter();
 
         const performRendering = () => {
+            if (preventRendering) {console.log('go away')
+                return;
+            } else {
+                "come in"
+            }
+            
             params =
                 !storage
 
@@ -99,13 +104,17 @@ function commonViewFromObject(spec) {
                 params.node = node;
             }
             ++index;
+            console.log('Prevent rendering')
+            preventRendering = true;
             
             if (index === 0 && onWillMount) {
                 onWillMount(params);
             } else if (index > 0 && onWillUpdate) {
                 onWillUpdate(params);
             }
-
+            
+            preventRendering = false;
+            console.log('Allow rendering')
             contentEmitter.next(render(params));
 
             if (index === 0 && onDidMount) {
@@ -146,8 +155,9 @@ function commonViewFromObject(spec) {
 
         
         storage.modificationEvents.subscribe(_ => {
-          try {
-            performRendering();
+          try {console.log("calling perform Rendering")
+          if (!preventRendering)
+              performRendering();
           } catch (err) {
               console.error(err)
           }
