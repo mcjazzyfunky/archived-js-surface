@@ -1,26 +1,28 @@
 'use strict';
 
-import Storage from './Storage.js';
+import Model from './Model.js';
 import {Config, ConfigError} from 'js-prelude';
 import {Emitter, Publisher} from 'js-surface';
 
-export default function commonView(spec) {
-    const
-        typeOfSpec = typeof spec,
-        specIsFunction = typeOfSpec === 'function',
-        specIsObject = spec !== null && typeOfSpec === 'object';
-
-    if (!specIsFunction && !specIsObject) {
-        throw new TypeError(
-            '[commonView] '
-            + "First argument 'spec' must either be an object or a function");
+export default class View {
+    static define(spec) {
+        const
+            typeOfSpec = typeof spec,
+            specIsFunction = typeOfSpec === 'function',
+            specIsObject = spec !== null && typeOfSpec === 'object';
+    
+        if (!specIsFunction && !specIsObject) {
+            throw new TypeError(
+                '[CommonView.create] '
+                + "First argument 'spec' must either be an object or a function");
+        }
+    
+        return (
+            specIsFunction
+            ? commonViewFromFunction(spec)
+            : commonViewFromObject(spec)
+        );
     }
-
-    return (
-        specIsFunction
-        ? commonViewFromFunction(spec)
-        : commonViewFromObject(spec)
-    );
 }
 
 function commonViewFromFunction(renderFunction) {
@@ -50,7 +52,7 @@ function commonViewFromFunction(renderFunction) {
 function commonViewFromObject(spec) {
     const
         config = new Config(spec),
-        createStorage = config.getFunction('createStorage', null),
+        getModel = config.getFunction('getModel', null),
         render = config.getFunction('render'),
         onWillMount = config.getFunction('onWillMount', null),
         onDidMount = config.getFunction('onDidMount', null),
@@ -60,12 +62,12 @@ function commonViewFromObject(spec) {
         onDidUpdate = config.getFunction('onDidUpdate', null);
 
     return (propsPublisher, contentPublisher, context) => {
-        const storage = createStorage ? createStorage() : null;
+        const model = getModel ? getModel() : null;
         
-        if (!(storage instanceof Storage)) {
+        if (!(model instanceof Model)) {
             throw new ConfigError(
-                "[commonView] Configured function 'getStorage' must "
-                + 'return an instance of class Storage');
+                "[commonView] Configured function 'getModel' must "
+                + 'return an instance of class Model');
         }
 
         let
@@ -86,7 +88,7 @@ function commonViewFromObject(spec) {
             }
             
             params =
-                !storage
+                !model
 
                     ? {
                     props: propsConfig
@@ -95,9 +97,9 @@ function commonViewFromObject(spec) {
                 : {
                     props: propsConfig,
                     context,
-                    store: storage.store,
-                    ctrl: storage.controller,
-                    dispatch: storage.dispatcher
+                    store: model.store,
+                    ctrl: model.controller,
+                    dispatch: model.dispatcher
                 };
             
             if (node !== null) {
@@ -154,7 +156,7 @@ function commonViewFromObject(spec) {
         });
 
         
-        storage.modificationEvents.subscribe(_ => {
+        model.modificationEvents.subscribe(_ => {
           try {console.log("calling perform Rendering")
           if (!preventRendering)
               performRendering();
@@ -163,7 +165,7 @@ function commonViewFromObject(spec) {
           }
         });
         
-        storage.notificationEvents.subscribe({
+        model.notificationEvents.subscribe({
             next: notification => {
                 const
                     notificationIsArray = Array.isArray(notification),

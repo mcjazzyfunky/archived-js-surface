@@ -3,12 +3,12 @@
 import Store from './Store.js';
 import {Functions, EventSubject, Types} from 'js-prelude';
 
-const storageMeta = new WeakMap();
+const modelMeta = new WeakMap();
 const GETTER_NAME_REGEX = /^(get|find)[A-Z]|^[a-z]*s[A-Z]/;
 
-export default class Storage {
+export default class Model {
     constructor(params = null) {
-        this.__meta = determineStorageMeta(Object.getPrototypeOf(this).constructor);
+        this.__meta = determineModelMeta(Object.getPrototypeOf(this).constructor);
         this.__params = params === undefined ? null : params;
 
         this.__modificationSubject = new EventSubject();
@@ -39,7 +39,7 @@ export default class Storage {
     set state(newState) {
         if (newState === undefined) {
             throw new TypeError(
-                "[Storage#set-state] First argument 'newState' must not be  undefined");
+                "[Model#set-state] First argument 'newState' must not be  undefined");
         }
 
         this.__state = newState;
@@ -91,33 +91,33 @@ export default class Storage {
     }
 }
 
-Object.defineProperty(Storage, 'storeClass', {
+Object.defineProperty(Model, 'storeClass', {
     get() {
-        let meta = storageMeta.get(this);
+        let meta = modelMeta.get(this);
 
         if (!meta) {
-            meta = determineStorageMeta(this);
-            storageMeta.set(this, meta);
+            meta = determineModelMeta(this);
+            modelMeta.set(this, meta);
         }
 
         return meta.storeClass;
     }
 });
 
-function determineStorageMeta(storageClass) {
+function determineModelMeta(modelClass) {
     const
         getterNames = new Set(),
         actionNames = new Set();
 
-    let prototype = storageClass.prototype;
+    let prototype = modelClass.prototype;
 
-    while (prototype !== Storage.prototype) {
+    while (prototype !== Model.prototype) {
         for (let propName of Object.getOwnPropertyNames(prototype)) {
             if (typeof propName === 'string'
                 && propName !== 'constructor'
                 && propName[0] !== '_'
                 && typeof prototype[propName] === 'function'
-                && Storage[propName] === undefined) {
+                && Model[propName] === undefined) {
 
                 if (propName.match(GETTER_NAME_REGEX)) {
                     getterNames.add(propName);
@@ -131,8 +131,8 @@ function determineStorageMeta(storageClass) {
     }
 
     const
-        storeClass = createStoreClass(storageClass, getterNames),
-        controllerClass = createControllerClass(storageClass, storeClass, actionNames);
+        storeClass = createStoreClass(modelClass, getterNames),
+        controllerClass = createControllerClass(modelClass, storeClass, actionNames);
 
     return {
         getterNames,
@@ -142,11 +142,11 @@ function determineStorageMeta(storageClass) {
     };
 }
 
-function createStoreClass(storageClass, getterNames) {
+function createStoreClass(modelClass, getterNames) {
     const
-        storeClass = function (storage) {
-            Store.call(this, storage);
-        this.__storage = storage;
+        storeClass = function (model) {
+            Store.call(this, model);
+        this.__model = model;
         },
 
         proto = Object.create(Store.prototype);
@@ -155,18 +155,18 @@ function createStoreClass(storageClass, getterNames) {
 
     for (let getterName of getterNames) {
         proto[getterName] = function (...args) {
-           return storageClass.prototype[getterName].apply(this.__storage, args);
+           return modelClass.prototype[getterName].apply(this.__model, args);
         };
     }
 
     return storeClass;
 }
 
-function createControllerClass(storageClass, storeClass, actionNames) {
+function createControllerClass(modelClass, storeClass, actionNames) {
     const
-        controllerClass = function (storage) {
-             storeClass.call(this, storage);
-             this.__storage = storage;
+        controllerClass = function (model) {
+             storeClass.call(this, model);
+             this.__model = model;
         },
 
         proto = Object.create(storeClass.prototype);
@@ -175,7 +175,7 @@ function createControllerClass(storageClass, storeClass, actionNames) {
 
     for (let actionName of actionNames) {
         let method = buildControllerActionMethod(
-            storageClass.prototype[actionName]
+            modelClass.prototype[actionName]
         );
 
         proto[actionName] = method;
@@ -184,13 +184,13 @@ function createControllerClass(storageClass, storeClass, actionNames) {
     return controllerClass;
 }
 
-function createDispatcher(storage) {
+function createDispatcher(model) {
     return (actionName, payload) => {
         if (typeof actionName !== 'string' || actionName === '') {
-            throw new TypeError(`[Storage#dispatch] First argument 'actionName' must be a non-empty string`);
+            throw new TypeError(`[Model#dispatch] First argument 'actionName' must be a non-empty string`);
         }
 
-        const actionNames = storage.__meta.actionNames;
+        const actionNames = model.__meta.actionNames;
 
         let methodName = null;
 
@@ -211,13 +211,13 @@ function createDispatcher(storage) {
             throw new Error(`Illegal action name '${actionName}'`);
         }
 
-        storage.controller[methodName]();
+        model.controller[methodName]();
 
         return;
     };
 }
 
-function createDisposer(storage) {
+function createDisposer(model) {
     return () => {
         // TODO: implement
     };
@@ -231,7 +231,7 @@ function buildControllerActionMethod(fn) {
             let ret2;
 
             const
-                result = fn.apply(this.__storage, args);
+                result = fn.apply(this.__model, args);
 
             if (result instanceof Promise) {
                 ret2 = new Promise(function (resolve, reject) {

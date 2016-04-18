@@ -1,12 +1,12 @@
 'use strict';
 
-import {Component, Publisher} from 'js-surface';
-import {commonView, Storage} from 'js-surface-views';
+import {Component} from 'js-surface';
+import {Model, View} from 'js-surface-mvc';
 import {Objects} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
-class ComponentStorage extends Storage {
+class CounterModel extends Model {
     constructor() {
         super(null);
         
@@ -50,12 +50,12 @@ class ComponentStorage extends Storage {
     }
 }
 
-const SimpleDemo = Component.createFactory({
-    typeName: 'SimpleDemo',
+const CounterDemo = Component.createFactory({
+    typeName: 'CounterDemo',
 
-    view: commonView({
-        createStorage() {
-            return new ComponentStorage();
+    view: View.define({
+        getModel() {
+            return new CounterModel();
         },
 
         render({props, ctrl}) {
@@ -106,32 +106,8 @@ const SimpleDemo = Component.createFactory({
             //alert('onDidUpdate')
         }
     })
-
- //   view: behavior => {
-        /*
-        const contentPublisher = new Publisher(subscriber => {
-            subscriber.next(dom('div', null, 'Juhuuuuuu'));
-            return () => {};
-        });
-        */
-/*
-        const
-            contentPublisher = new Publisher(subscriber => {
-                subscriber.next(dom('span', null, 'Starting...'));
-
-                const intervalId = setInterval(() => {
-                    subscriber.next(dom('div', null, '' + new Date));
-                }, 1000);
-
-                return () => clearInterval(intervalId);
-            });
-
-
-        return contentPublisher;
-    }
- */
 });
 
 Component.mount(
-    SimpleDemo({onUpdate: event => console.log(event)}),
+    CounterDemo({onUpdate: event => console.log(event)}),
     'main-content');

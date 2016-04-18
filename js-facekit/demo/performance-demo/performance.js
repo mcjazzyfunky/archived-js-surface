@@ -3,8 +3,8 @@
 /** @jsx dom */
 
 import {Component}  from 'js-surface';
-import {commonView} from 'js-surface-views';
-import {Objects, Seq, Storage} from 'js-prelude';
+import {Model, View} from 'js-surface-mvc';
+import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
 import ComponentHelper from '../../src/main/js/helpers/ComponentHelper.js';
@@ -68,7 +68,7 @@ export const Pagination = Component.createFactory({
         }
     },
 
-    view: commonView(({props}) => {
+    view: View.define(({props}) => {
         const
             pageIndex = props.get('pageIndex'),
 
@@ -165,9 +165,11 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-class PaginationStorage extends Storage {
-    get initialState() {
-        return {
+class PaginationModel extends Model {
+    constructor() {
+        super(null);
+        
+        this.state = {
             pageIndex: 0
         };
     }
@@ -186,9 +188,9 @@ class PaginationStorage extends Storage {
 export const DemoOfPagination = Component.createFactory({
     typeName: 'DemoOfPagination',
     
-    view: commonView({
-        createStorage() {
-            return new PaginationStorage();
+    view: View.define({
+        getModel() {
+            return new PaginationModel();
         },
         
         render({ctrl}) {
