@@ -14,7 +14,7 @@ import TextField from '../src/main/js/components/TextField.js';
 */
 
 import {Component} from 'js-surface';
-import {commonView, Storage} from 'js-surface-views';
+import {Model, View} from 'js-surface-mvc';
 import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
@@ -40,7 +40,7 @@ const
 const DemoOfButtons = Component.createFactory({
     typeName: 'DemoOfButtons',
 
-    view: commonView(({props}) => {
+    view: View.define(({props}) => {
         return (
             dom('div',
                 {className: 'container-fluid'},
@@ -146,7 +146,7 @@ const DemoOfButtonGroups = Component.createFactory({
     typeName: 'DemoOfButtonGroups',
     
     view:
-        commonView(({props}) =>
+        View.define(({props}) =>
             dom('div',
                 {className: 'container-fluid'},
                 dom('div',
@@ -173,7 +173,7 @@ const DemoOfButtonGroups = Component.createFactory({
 
 
 
-class DemoOfPaginationStorage extends Storage {
+class DemoOfPaginationModel extends Model {
     constructor() {
         super();
     }
@@ -198,9 +198,9 @@ class DemoOfPaginationStorage extends Storage {
 const DemoOfPagination = Component.createFactory({
     typeName: 'DemoOfPagination',
     
-    view: commonView({
-        createStorage() {
-            return new DemoOfPaginationStorage();
+    view: View.define({
+        getModel() {
+            return new DemoOfPaginationModel();
         },
         
         render: ({ctrl}) => {
@@ -236,9 +236,11 @@ const DemoOfPagination = Component.createFactory({
 });
 
 
-class DemoOfInputFieldsStorage extends Storage {
-    get initialState() {
-        return {
+class DemoOfInputFieldsModel extends Model {
+    constructor() {
+        super(null);
+        
+        this.state = {
             firstName: '',
             lastName: ''
         };
@@ -268,9 +270,9 @@ class DemoOfInputFieldsStorage extends Storage {
 const DemoOfInputFields = Component.createFactory({
     typeName: 'DemoOfInputFields',
     
-    view: commonView({
-        createStorage() {
-            return new DemoOfInputFieldsStorage();
+    view: View.define({
+        getModel() {
+            return new DemoOfInputFieldsModel();
         },
         
         render({ctrl}) {

@@ -2,7 +2,7 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
+import {View} from 'js-surface-mvc';
 
 const dom = Component.createElement;
 
@@ -22,7 +22,7 @@ export default Component.createFactory({
     },
 
     view:
-        commonView(renderButtonGroup)
+        View.define(renderButtonGroup)
 });
 
 function renderButtonGroup({props}) {

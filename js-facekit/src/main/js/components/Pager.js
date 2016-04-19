@@ -6,7 +6,7 @@ import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
+import {View} from 'js-surface-mvc';
 
 const {createElement: dom} = Component;
 
@@ -76,7 +76,7 @@ export default Component.createFactory({
     },
 
     view:
-        commonView(renderPager)
+        View.define(renderPager)
 });
 
 function renderPager({props}) {

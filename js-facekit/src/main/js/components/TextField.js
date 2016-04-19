@@ -4,13 +4,15 @@ import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
 import {Objects} from 'js-prelude';
 import {Component} from 'js-surface';
-import {Storage, commonView} from 'js-surface-views';
+import {Model, View} from 'js-surface-mvc';
 
 const {createElement: dom} = Component;
 
-class TextFieldStorage extends Storage {
-    get initialState() {
-        return {
+class TextFieldModel extends Model {
+    constructor() {
+        super(null);
+        
+        this.state = {
             value: ''
         };       
     }
@@ -30,6 +32,66 @@ class TextFieldStorage extends Storage {
     }
 }
 
+const view = View.define({
+    getModel() {
+        return new TextFieldModel();    
+    },
+    
+    render: ({props, ctrl}) => {
+        const
+            value = ctrl.getValue(),
+            placeholder = props.get('placeholder'),
+            maxLength = props.getInteger('maxLength', null),
+            disabled = props.get('disabled') ? 'disabled' : null,
+            visible = props.get('visible'),
+            readOnly = props.get('readOnly') ? 'readonly' : null,
+            label = props.get('label'),
+            labelElem = label === null ? null : dom('label', {className: 'fk-label'}, label),
+
+            className =
+                ComponentHelper.buildCssClass(
+                    'fk-text-field',
+                    props.get('className')),
+                    
+            doOnChange = props.getMappedFunction('onChange',
+                event => ({
+                    type: 'change',
+                    value: event.target.value
+                }),
+                null),
+
+            content =
+                !visible
+                ? dom('span')
+                : dom('div', {
+                        className
+                    },
+                    labelElem,
+                    dom('input', {
+                        type: 'text',
+                        value,
+                        placeholder,
+                        maxLength,
+                        disabled,
+                        readOnly,
+                        onChange: doOnChange
+                    }));
+
+       return content;
+    },
+    
+    onWillMount({props, ctrl}) {console.log(props.__data);
+        if (props.isSomething('defaultValue')) {
+            ctrl.setValue(props.getString('defaultValue'));
+        }    
+    },
+    
+    onWillUpdate({props, ctrl}) {
+        if (props.isSomething('value')) {
+            ctrl.setValue(props.getString('value'));
+        }
+    }
+});
 
 export default Component.createFactory({
     typeName: 'FKTextField',
@@ -85,66 +147,6 @@ export default Component.createFactory({
             defaultValue: null
         }
     },
-
-    view: commonView({
-        createStorage() {
-            return new TextFieldStorage();    
-        },
-        
-        render: ({props, ctrl}) => {
-            const
-                value = ctrl.getValue(),
-                placeholder = props.get('placeholder'),
-                maxLength = props.getInteger('maxLength', null),
-                disabled = props.get('disabled') ? 'disabled' : null,
-                visible = props.get('visible'),
-                readOnly = props.get('readOnly') ? 'readonly' : null,
-                label = props.get('label'),
-                labelElem = label === null ? null : dom('label', {className: 'fk-label'}, label),
     
-                className =
-                    ComponentHelper.buildCssClass(
-                        'fk-text-field',
-                        props.get('className')),
-                        
-                doOnChange = props.getMappedFunction('onChange',
-                    event => ({
-                        type: 'change',
-                        value: event.target.value
-                    }),
-                    null),
-    
-                content =
-                    !visible
-                    ? dom('span')
-                    : dom('div', {
-                            className
-                        },
-                        labelElem,
-                        dom('input', {
-                            type: 'text',
-                            value,
-                            placeholder,
-                            maxLength,
-                            disabled,
-                            readOnly,
-                            onChange: doOnChange
-                        }));
-    
-           return content;
-        },
-        
-        onWillMount({props, ctrl}) {console.log(props.__data);
-            if (props.isSomething('defaultValue')) {
-                ctrl.setValue(props.getString('defaultValue'));
-            }    
-        },
-        
-        onWillUpdate({props, ctrl}) {
-            if (props.isSomething('value')) {
-                ctrl.setValue(props.getString('value'));
-            }
-        }
-    })
+    view
 });
-

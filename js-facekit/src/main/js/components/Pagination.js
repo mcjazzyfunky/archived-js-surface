@@ -3,7 +3,7 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
+import {View} from 'js-surface-mvc';
 import {Seq} from 'js-prelude';
 
 const {createElement: dom} = Component;
@@ -60,7 +60,7 @@ export default Component.createFactory({
     },
 
     view:
-        commonView(renderPagination)
+        View.define(renderPagination)
 });
             
 function renderPagination({props}) {

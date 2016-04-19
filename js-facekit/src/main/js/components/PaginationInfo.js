@@ -4,7 +4,7 @@ import {Config, Objects, Seq} from 'js-prelude';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
+import {View} from 'js-surface-mvc';
 
 const dom = Component.createElement;
 
@@ -39,7 +39,7 @@ export default Component.createFactory({
         }
     },
 
-    view: commonView(({props}) => {
+    view: View.define(({props}) => {
         const
             metrics = PaginationHelper.calcPaginationMetrics(
                 props.get('pageIndex'),

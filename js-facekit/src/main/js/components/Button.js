@@ -3,7 +3,7 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
 import {Component} from 'js-surface';
-import {commonView} from 'js-surface-views';
+import {View} from 'js-surface-mvc';
 import {Objects, Strings, Arrays, Seq} from 'js-prelude';
 
 
@@ -67,7 +67,7 @@ export default Component.createFactory({
         }
     },
 
-    view: commonView(renderButton)
+    view: View.define(renderButton)
 });
 
 function renderButton({props}) {
