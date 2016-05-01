@@ -54,35 +54,40 @@ const CounterDemo = ExtComponent.createFactory({
                 '+')))
         );
     },
+    
+    onNextProps(params) {
+        console.log('onNextProps', params);
+        // alert('onNextProps');
+    },
 
     onWillMount(params) {
         console.log('onWillMount', params);
-        //alert('onWillMount')
+        // alert('onWillMount')
     },
 
     onDidMount(params) {
-        console.log('onDidMount', params, params.node, params.node.innerHTML);
-        //alert('onDidMount')
+        console.log('onDidMount', params, params.node, params.content);
+        // alert('onDidMount')
     },
 
     onWillUnmount(params) {
-        console.log('onWillUnmount', params, params.node);
-        //alert('onWillMount')
+        console.log('onWillUnmount', params, params.content);
+        // alert('onWillMount')
     },
 
     onDidUnmount(params) {
-        console.log('onDidUnmount', params, params.node);
-        //alert('onDidMount')
+        console.log('onDidUnmount', params, params.content);
+        // alert('onDidUnMount')
     },
 
     onWillUpdate(params) {
-        console.log('onWillUpdate', params, params.node.innerHTML);
-        //alert('onWillUpdate')
+        console.log('onWillUpdate', params, params.content);
+        // alert('onWillUpdate')
     },
 
     onDidUpdate(params) {
-        console.log('onDidUpdate', params, params.node.innerHTML);
-        //alert('onDidUpdate')
+        console.log('onDidUpdate', params, params.content);
+        // alert('onDidUpdate')
     }
 });
 
