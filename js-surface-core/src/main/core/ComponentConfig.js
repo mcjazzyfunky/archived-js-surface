@@ -95,7 +95,7 @@ export default class ComponentConfig {
         const
             propertiesParam = this.__spec.properties,
             typeOfPropertiesParam = typeof propertiesParam,
-            propertiesParamIsObject = typeOfPropertiesParam === 'object',
+            propertiesParamIsObject = propertiesParam !== null && typeOfPropertiesParam === 'object',
             propertiesParamIsBoolean = typeOfPropertiesParam === 'boolean';
 
         if (propertiesParam !== undefined
@@ -108,7 +108,7 @@ export default class ComponentConfig {
         }
 
         return (
-            propertiesParam === undefined || propertiesParamIsBoolean
+            propertiesParam === undefined || propertiesParam === null || propertiesParamIsBoolean
             ? {}
             : propertiesParam
         );
