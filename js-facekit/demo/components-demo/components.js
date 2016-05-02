@@ -1,11 +1,12 @@
 'use strict';
 
-import TextField from '../../src/main/js/components/TextField.js';
+// import TextField from '../../src/main/js/components/TextField.js';
 import Button from '../../src/main/js/components/Button.js';
 import ButtonGroup from '../../src/main/js/components/ButtonGroup.js';
 import Pager from '../../src/main/js/components/Pager.js';
 import Pagination from '../../src/main/js/components/Pagination.js';
 import PaginationInfo from '../../src/main/js/components/PaginationInfo.js';
+
 /*
 import Tabs from '../src/main/js/components/Tabs.js';
 import Tab from '../src/main/js/components/Tab.js';
@@ -14,7 +15,7 @@ import TextField from '../src/main/js/components/TextField.js';
 */
 
 import {Component} from 'js-surface';
-import {Model, View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
@@ -37,10 +38,10 @@ const
     iconPositions = ['left', 'top', 'right', 'bottom'];
 
 
-const DemoOfButtons = Component.createFactory({
+const DemoOfButtons = ExtComponent.createFactory({
     typeName: 'DemoOfButtons',
 
-    view: View.define(({props}) => {
+    render(props) {
         return (
             dom('div',
                 {className: 'container-fluid'},
@@ -139,14 +140,14 @@ const DemoOfButtons = Component.createFactory({
                         menu: [{text: 'Item 1'}]
                     })))
         );
-    })
+    }
 });
 
-const DemoOfButtonGroups = Component.createFactory({
+const DemoOfButtonGroups = ExtComponent.createFactory({
     typeName: 'DemoOfButtonGroups',
     
-    view:
-        View.define(({props}) =>
+    render({props}) {
+        return (
             dom('div',
                 {className: 'container-fluid'},
                 dom('div',
@@ -167,75 +168,59 @@ const DemoOfButtonGroups = Component.createFactory({
                     ),
                     ButtonGroup(
                         {className: 'col-md-3'},
-                        Button({text: 'Single Button', type: 'default'})))))
+                        Button({text: 'Single Button', type: 'default'})))));
+    }
 });
 
 
 
 
-class DemoOfPaginationModel extends Model {
-    constructor() {
-        super();
-    }
-    
-    get initialState() {
-        return {
-            currentPage: 0    
-        };
-    }
-    
-    getCurrentPage() {
-        return this.state.currentPage;
-    }
-    
-    moveToPage(targetPage) {
-        this.state = Objects.transform(this.state, {
-            currentPage: {$set: targetPage}
-        });
-    }
-}
-
-const DemoOfPagination = Component.createFactory({
+const DemoOfPagination = ExtComponent.createFactory({
     typeName: 'DemoOfPagination',
+   
+    initialState: {
+        currentPage: 0    
+    },
     
-    view: View.define({
-        getModel() {
-            return new DemoOfPaginationModel();
-        },
-        
-        render: ({ctrl}) => {
-            const
-                doOnChange = event => ctrl.moveToPage(event.targetPage);
+    stateTransitions: {
+        moveToPage(targetPage) {
+            return state => Objects.transform(state, {
+                currentPage: {$set: targetPage}
+            });
+        }
+    },
+ 
+   render({state, ctrl}) {
+        const
+            doOnChange = event => ctrl.moveToPage(event.targetPage);
     
-            return (
-                dom('div',
-                    {className: 'container-fluid'},
-                    ...Seq.range(1, 10).map(_ =>
+        return (
+            dom('div',
+                {className: 'container-fluid'},
+                ...Seq.range(1, 10).map(_ =>
                         dom('div',
                             {className: 'row'},
                             Pagination({
                                 className: 'col-md-3 ',
-                                pageIndex: ctrl.getCurrentPage(),
+                                pageIndex: state.currentPage,
                                 pageSize: pagination.pageSize,
                                 totalItemCount: pagination.totalItemCount,
                                 onChange: doOnChange
                             })
-                            /*,
-                            Pager({
-                                className: 'col-md-3',
-                                pageIndex: ctrl.getCurrentPage(),
-                                pageSize: pagination.pageSize,
-                                totalItemCount: pagination.totalItemCount,
-                                onChange: doOnChange
-                            })
-                            */
+                        //    ,
+                        //    Pager({
+                        //        className: 'col-md-3',
+                        //    pageIndex: ctrl.getCurrentPage(),
+                        //        pageSize: pagination.pageSize,
+                        //        totalItemCount: pagination.totalItemCount,
+                        //        onChange: doOnChange
+                        //    })
                         )))
             );
-        }
-    })
+    }
 });
 
-
+/*
 class DemoOfInputFieldsModel extends Model {
     constructor() {
         super(null);
@@ -291,7 +276,7 @@ const DemoOfInputFields = Component.createFactory({
     })
 });
 
-/*
+
 const DemoOfTabs = Component.createFactory({
     typeId: 'DemoOfTabs',
 
@@ -351,5 +336,5 @@ const demos = VerticalNavi({
 */
 
 Component.mount(
-    DemoOfInputFields,
+    DemoOfPagination,
     'main-content');

@@ -1,6 +1,6 @@
 'use strict';
 
-import {Config, ConfigError} from 'js-prelude';
+import {Config, ConfigError, Functions} from 'js-prelude';
 import {Component, Emitter} from 'js-surface';
 
 export default class ExtComponent {
@@ -19,7 +19,7 @@ export default class ExtComponent {
         const
             config = new Config(spec),
             typeName = config.getString('typeName'),
-            properties = config.getString('properties', null),
+            properties = config.getObject('properties', null),
             view = buildView(config);
         
         return Component.createFactory({
@@ -56,7 +56,11 @@ function buildView(config) {
             
             doRendering = forced => {
                 if (!forced && !isFirstRendering && shouldUpdate) {
-                    if (!shouldUpdate(currentProps, prevProps, currentState, prevState)) {
+                    if (!shouldUpdate({
+                            props: currentProps,
+                            prevProps,
+                            state: currentState,
+                            prevState})) {
                         return;
                     }
                 } 
@@ -73,6 +77,9 @@ function buildView(config) {
                     vTreeEmitter,
                     render,
                     currentProps,
+                    prevProps,
+                    currentState,
+                    prevState,
                     ctrl,
                     ctx);
                 
@@ -81,16 +88,21 @@ function buildView(config) {
                         onDidMount({
                             type: 'didMount',
                             props: currentProps,
+                            prevProps,
+                            state: currentState,
+                            prevState,
                             content: currentContent,
                             ctrl,
-                            ctx,
-                            forceUpdate
+                            ctx
                         }), 0);
                 } else if (!isFirstRendering && onDidUpdate) {
                     setTimeout(() =>
                         onDidUpdate({
                             type: 'didUpdate',
                             props: currentProps,
+                            prevProps,
+                            state: currentState,
+                            prevState,
                             content: currentContent,
                             ctrl,
                             ctx
@@ -100,10 +112,13 @@ function buildView(config) {
                 isFirstRendering = false;
             },
             
-            onUpdate = _ => {
-                prevState = currentState;
-                currentState = ctrl.state;
-                doRendering();
+            onUpdate = forced => {
+                if (!forced) {
+                    prevState = currentState;
+                    currentState = ctrl.getState();
+                }
+                
+                doRendering(forced);
             },
             
             onNotification = event => {
@@ -115,16 +130,16 @@ function buildView(config) {
                     onWillUnmount({
                         type: 'willUnmount', 
                         props: currentProps,
+                        prevProps,
+                        state: currentState,
+                        prevState,
                         content: currentContent,
                         ctrl,
                         ctx
                     });
                 }
-            },
-            
-            forceUpdate = () => {
-                doRendering(true);
             };
+            
             
         propsPublisher.subscribe({
             next(props) {
@@ -142,7 +157,7 @@ function buildView(config) {
                 
                 if (ctrl === null) {
                     ctrl = new Controller(currentProps, ctx, onUpdate, onNotification);
-                    currentState = ctrl.state;
+                    currentState = ctrl.getState();
                 }
                 
                 doRendering();
@@ -184,16 +199,18 @@ function createControllerClass(config) {
         this.__ctx = ctx;
         this.__onUpdate = onUpdate;
         this.__onNotification = onNotification;
-        
-        Object.defineProperty(this, 'state', {
-            get() {
-                return this.__state;    
-            }
-        });
+    };
+    
+    ret.prototype.getState = function () {
+        return this.__state;
     };
     
     ret.prototype.notify = function (notification) {
         this.__onNotification(notification);
+    };
+    
+    ret.prototype.forceUpdate = function () {
+        this.__onUpdate(true);
     };
 
     if (transitionsConfig) {
@@ -202,7 +219,7 @@ function createControllerClass(config) {
             
             ret.prototype[transitionName] = function(...args) {
                 this.__state = transition(...args)(this.__state);
-                this.__onUpdate(this.__state);
+                this.__onUpdate(false);
             };
         }
     }
@@ -213,7 +230,56 @@ function createControllerClass(config) {
             const task = tasksConfig.getFunction(taskName);
             
             ret.prototype[taskName] = function(...args) {
-                return task(...args)(this, this.__ctx);    
+                let ret2;
+                
+                const fn = task(...args);
+                
+                if (typeof fn !== 'function') {
+                    throw new TypeError('Task does not return a function');
+                }
+                
+                if (!Functions.isGeneratorFunction(fn)) {
+                    try {
+                        ret2 = fn(this, this.__ctx);
+    
+                        if (!(ret2 instanceof Promise)) {
+                            ret2 = Promise.resolve(ret2);
+                        }
+                    } catch (error) {
+                        ret2 = Promise.reject(error);
+                    }                
+                } else {
+                    const
+                        handleNext = (generator, seed, resolve, reject) => {
+                            try {
+                                const
+                                    {value, done} = generator.next(seed),
+                                    valueIsPromise = value instanceof Promise;
+        
+                                if (done) {
+                                    if (valueIsPromise) {
+                                        value.then(resolve, reject);
+                                    } else {
+                                        resolve(value);
+                                    }
+                                } else {
+                                    if (valueIsPromise) {
+                                        value.then(result => handleNext(generator, result, resolve, reject), reject);
+                                    } else {
+                                        handleNext(generator, value, resolve, reject);
+                                    }
+                                }
+                            } catch (err) {
+                                generator.return();
+                                reject(err);
+                            }
+                        };
+        
+                    return new Promise((resolve, reject) =>
+                        handleNext(fn(this, this.__ctx), undefined, resolve, reject));
+                }
+                
+                return ret2;
             };
         }
     }
@@ -222,8 +288,8 @@ function createControllerClass(config) {
 }
 
 
-function performRendering(vTreeEmitter, render, currentProps, ctrl, ctx) { 
-    vTreeEmitter.next(render(currentProps, ctrl, ctx));    
+function performRendering(vTreeEmitter, render, props, prevProps, state, prevState, ctrl, ctx) { 
+    vTreeEmitter.next(render({props, prevProps, state, prevState, ctrl, ctx}));    
 }
 
 function performNotification(event, props) {

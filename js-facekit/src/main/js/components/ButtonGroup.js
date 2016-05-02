@@ -2,11 +2,11 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
-import {View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 
 const dom = Component.createElement;
 
-export default Component.createFactory({
+export default ExtComponent.createFactory({
     typeName: 'FKButtonGroup',
     
     properties: {
@@ -21,8 +21,7 @@ export default Component.createFactory({
         }
     },
 
-    view:
-        View.define(renderButtonGroup)
+    render: renderButtonGroup
 });
 
 function renderButtonGroup({props}) {

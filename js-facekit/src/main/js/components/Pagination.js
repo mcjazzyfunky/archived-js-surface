@@ -3,12 +3,12 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-surface';
-import {View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 import {Seq} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
-export default Component.createFactory({
+export default ExtComponent.createFactory({
     typeName:
         'FKPagination',
     
@@ -59,8 +59,8 @@ export default Component.createFactory({
         }
     },
 
-    view:
-        View.define(renderPagination)
+    render:
+        renderPagination 
 });
             
 function renderPagination({props}) {

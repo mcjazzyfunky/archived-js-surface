@@ -3,13 +3,12 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import EventMappers from '../helpers/EventMappers.js';
 import {Component} from 'js-surface';
-import {View} from 'js-surface-mvc';
-import {Objects, Strings, Arrays, Seq} from 'js-prelude';
-
+import {ExtComponent} from 'js-surface-ext';
+import {Arrays, Seq, Strings} from 'js-prelude';
 
 const {createElement: dom} = Component;
 
-export default Component.createFactory({
+export default ExtComponent.createFactory({
     typeName: 'FKButton',
 
     properties: {
@@ -67,7 +66,7 @@ export default Component.createFactory({
         }
     },
 
-    view: View.define(renderButton)
+    render: renderButton
 });
 
 function renderButton({props}) {

@@ -4,11 +4,11 @@ import {Config, Objects, Seq} from 'js-prelude';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import {Component} from 'js-surface';
-import {View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 
 const dom = Component.createElement;
 
-export default Component.createFactory({
+export default ExtComponent.createFactory({
     typeName: 'FKPaginationInfo',
     
     properties: {
@@ -39,7 +39,7 @@ export default Component.createFactory({
         }
     },
 
-    view: View.define(({props}) => {
+    render({props}) {
         const
             metrics = PaginationHelper.calcPaginationMetrics(
                 props.get('pageIndex'),
@@ -53,7 +53,7 @@ export default Component.createFactory({
                     ? getPageInfo(metrics)
                     : getItemsInfo(metrics))
         );
-    })
+    }
 });
 
 function getPageInfo(metrics) {

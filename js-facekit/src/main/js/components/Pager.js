@@ -6,11 +6,11 @@ import PaginationInfo from '../components/PaginationInfo.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Component} from 'js-surface';
-import {View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 
 const {createElement: dom} = Component;
 
-export default Component.createFactory({
+export default ExtComponent.createFactory({
     typeName: 'FKPager',
     
     properties: {
@@ -75,8 +75,8 @@ export default Component.createFactory({
         }
     },
 
-    view:
-        View.define(renderPager)
+    render:
+        renderPager
 });
 
 function renderPager({props}) {
@@ -158,6 +158,3 @@ function renderPager({props}) {
                 })))
     );
 }
-
-                
-            

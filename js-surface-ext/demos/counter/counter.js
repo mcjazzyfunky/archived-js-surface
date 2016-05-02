@@ -24,20 +24,20 @@ const CounterDemo = ExtComponent.createFactory({
     tasks: {
         increaseCounter(delta) {
             return (ctrl, ctx) => {
-                const prevCounter = ctrl.state.counter;
+                const prevCounter = ctrl.getState().counter;
                 
                 ctrl.updateCounter(n => n + delta);
                         
                 ctrl.notify({
                     type: 'update',
-                    counter: ctrl.state.counter,
+                    counter: ctrl.getState().counter,
                     prevCounter: prevCounter
                 });
             };
         }
     },
 
-    render(props, ctrl, ctx) {
+    render({props, state, ctrl}) {
         return (
             dom('div',
                 null,
@@ -47,7 +47,7 @@ const CounterDemo = ExtComponent.createFactory({
                 '-'),
                 dom('label',
                     null,
-                    ctrl.state.counter,
+                    state.counter,
                 dom('button', {
                     onClick: _ => ctrl.increaseCounter(1) 
                 },
@@ -60,11 +60,6 @@ const CounterDemo = ExtComponent.createFactory({
         // alert('onNextProps');
     },
 
-    onWillMount(params) {
-        console.log('onWillMount', params);
-        // alert('onWillMount')
-    },
-
     onDidMount(params) {
         console.log('onDidMount', params, params.node, params.content);
         // alert('onDidMount')
@@ -73,11 +68,6 @@ const CounterDemo = ExtComponent.createFactory({
     onWillUnmount(params) {
         console.log('onWillUnmount', params, params.content);
         // alert('onWillMount')
-    },
-
-    onDidUnmount(params) {
-        console.log('onDidUnmount', params, params.content);
-        // alert('onDidUnMount')
     },
 
     onWillUpdate(params) {

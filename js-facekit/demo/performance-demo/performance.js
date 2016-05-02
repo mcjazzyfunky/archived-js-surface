@@ -1,9 +1,7 @@
 'use strict';
 
-/** @jsx dom */
-
 import {Component}  from 'js-surface';
-import {Model, View} from 'js-surface-mvc';
+import {ExtComponent} from 'js-surface-ext';
 import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
@@ -18,7 +16,7 @@ const
     pageSize = 25,
     totalItemCount = 1220;
     
-export const Pagination = Component.createFactory({
+export const Pagination = ExtComponent.createFactory({
     typeName: 'FKPagination',
    
     properties: {
@@ -68,7 +66,7 @@ export const Pagination = Component.createFactory({
         }
     },
 
-    view: View.define(({props}) => {
+    render({props}) {
         const
             pageIndex = props.get('pageIndex'),
 
@@ -149,7 +147,7 @@ export const Pagination = Component.createFactory({
                     succeedingEllipsis,
                     lastPageLink))
         );
-    })
+    }
 });
 
             
@@ -165,50 +163,36 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-class PaginationModel extends Model {
-    constructor() {
-        super(null);
-        
-        this.state = {
-            pageIndex: 0
-        };
-    }
-    
-    getPageIndex() {
-        return this.state.pageIndex;
-    }
-    
-    moveToPage(pageIndex) {
-        this.state = Objects.transform(this.state, {
-            pageIndex: {$set: pageIndex}
-        });
-    }
-}
-
-export const DemoOfPagination = Component.createFactory({
+export const DemoOfPagination = ExtComponent.createFactory({
     typeName: 'DemoOfPagination',
     
-    view: View.define({
-        getModel() {
-            return new PaginationModel();
-        },
-        
-        render({ctrl}) {
-            return (
-                dom('div',
-                    {className: 'container-fluid'},
-                    Seq.range(1, number).map(_ =>
-                        dom('div',
-                            {className: 'row'},
-                            Pagination({
-                                className: "col-md-3",
-                                pageIndex: ctrl.getPageIndex(),
-                                pageSize: pageSize,
-                                totalItemCount: totalItemCount,
-                                onChange: evt => ctrl.moveToPage(evt.targetPage)}))))
-            );
+    initialState: {
+        pageIndex: 0
+    },
+    
+    stateTransitions: {
+        moveToPage(pageIndex) {
+            return state => Objects.transform(state, {
+                pageIndex: {$set: pageIndex}
+            });
         }
-    })
+    },
+
+    render({state, ctrl}) {
+        return (
+            dom('div',
+                {className: 'container-fluid'},
+                Seq.range(1, number).map(_ =>
+                   dom('div',
+                        {className: 'row'},
+                        Pagination({
+                            className: "col-md-3",
+                            pageIndex: state.pageIndex,
+                            pageSize: pageSize,
+                            totalItemCount: totalItemCount,
+                            onChange: evt => ctrl.moveToPage(evt.targetPage)}))))
+            );
+    }
 });
 
 // -----------------
