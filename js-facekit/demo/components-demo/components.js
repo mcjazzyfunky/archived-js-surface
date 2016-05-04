@@ -247,7 +247,7 @@ const DemoOfInputFields = ExtComponent.createFactory({
             dom('div',
                 null,
                 TextField({
-                    value: state.firstName,
+                    defaultValue: "Default value", //state.firstName,
                     placeholder: 'Enter first name',
                     label: 'First name:',
                     onChange: event => ctrl.setFirstName(event.value)

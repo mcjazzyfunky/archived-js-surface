@@ -34,6 +34,7 @@ function buildView(config) {
     const
         render = config.getFunction('render'),
         shouldUpdate = config.getFunction('shouldUpdate', null),
+        onWillMount = config.getFunction('onWillMount', null),
         onDidMount = config.getFunction('onDidMount', null),
         onWillUpdate = config.getFunction('onWillUpdate', null),
         onDidUpdate = config.getFunction('onDidUpdate', null),
@@ -70,7 +71,16 @@ function buildView(config) {
               
                 forceRendering = false;
                 
-                if (!isFirstRendering && onWillUpdate) {
+                if (isFirstRendering && onWillMount) {
+                    onWillMount({
+                        type: 'willMount',
+                        props: currentProps,
+                        prevProps,
+                        state: currentState,
+                        prevState,
+                        ctrl
+                    });
+                } else if (!isFirstRendering && onWillUpdate) {
                     onWillUpdate({
                         type: 'willUpdate',
                         props: currentProps,
@@ -165,6 +175,9 @@ function buildView(config) {
                     onNextProps({
                         type: 'nextProps',
                         props: currentProps,
+                        prevProps: prevProps,
+                        state: currentState,
+                        prevState: prevState,
                         ctrl,
                         ctx
                     });
@@ -233,9 +246,7 @@ function createControllerClass(config) {
             const transition = transitionsConfig.getFunction(transitionName);
             
             ret.prototype[transitionName] = function(...args) {
-                console.log('__oldState', this.__state)
                 this.__state = transition(...args)(this.__state);
-                console.log('__newState', this.__state)
                 this.__onUpdate(false);
             };
         }

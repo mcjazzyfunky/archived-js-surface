@@ -21,6 +21,11 @@ export default ExtComponent.createFactory({
             type: 'boolean',
             defaultValue: false
         },
+        
+        defaultValue: {
+            type: 'string',
+            defaultValue: null
+        },
 
         label: {
             type: 'string',
@@ -44,7 +49,7 @@ export default ExtComponent.createFactory({
 
         value: {
             type: 'String',
-            defaultValue: ''
+            defaultValue: null
         },
 
         visible: {
@@ -53,11 +58,6 @@ export default ExtComponent.createFactory({
         },
 
         onChange: {
-            type: 'function',
-            defaultValue: null
-        },
-
-        onInput: {
             type: 'function',
             defaultValue: null
         }
@@ -69,20 +69,13 @@ export default ExtComponent.createFactory({
     
     stateTransitions: { 
         setValue(value) {
-            return state => {
-                console.log('oldState:', state, value, Objects.transform({value: 'x'}, {value: {$set: 'x'}}))
-                
-                const ret = Objects.transform(state, {
-                    value: {$set: value}
-                });
-            
-                console.log('newState:', ret);
-                return ret;
-            }; 
+            return state => Objects.transform(state, {
+                value: {$set: value}
+            }); 
         }
     },
     
-    render: ({props, state, ctrl}) => {console.log('state1', state)
+    render: ({props, state, ctrl}) => {
         const
             value = state.value,
             placeholder = props.get('placeholder'),
@@ -98,14 +91,21 @@ export default ExtComponent.createFactory({
                     'fk-text-field',
                     props.get('className')),
                     
-            doOnChange = props.getMappedFunction('onChange',
-                event => ({
-                    type: 'change',
-                    value: event.target.value
-                }),
-                null),
-
-            content =
+            doOnChange = event => {
+                const value = event.target.value;
+                
+                ctrl.setValue(value);
+                
+                props.getMappedFunction(
+                    'onChange',
+                        event => ({
+                        type: 'change',
+                        value: event.target.value
+                    }),
+                    null)(event);
+            },
+            
+            ret =
                 !visible
                 ? dom('span')
                 : dom('div', {
@@ -122,18 +122,24 @@ export default ExtComponent.createFactory({
                         onChange: doOnChange
                     }));
 
-       return content;
+console.log('value', value)
+       return ret;
     },
     
-    onWillMount({props, ctrl}) {console.log(props.__data);
+    onWillMount({props, ctrl}) {
         if (props.isSomething('defaultValue')) {
             ctrl.setValue(props.getString('defaultValue'));
+            console.log("onWillMount - state:", ctrl.getState())
         }    
     },
     
-    onWillUpdate({props, ctrl}) {console.log('ctrl', ctrl)
+    onNextProps({props, state, ctrl}) {
         if (props.isSomething('value')) {
-            ctrl.setValue(props.getString('value'));
+            const newValue = props.getString('value');
+            console.log('dooo', props.__data)
+            if (newValue !== state.value) {
+                ctrl.setValue(newValue);
+            }
         }
     }
 });
