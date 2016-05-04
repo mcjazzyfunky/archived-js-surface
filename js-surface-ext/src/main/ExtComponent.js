@@ -49,13 +49,16 @@ function buildView(config) {
             prevState = null,
             currentState = null,
             currentContent = null,
-            isFirstRendering = true;
+            isFirstRendering = true,
+            forceRendering = false,
+            isDoingSomething = false;
 
         const
             vTreeEmitter = new Emitter(),
             
-            doRendering = forced => {
-                if (!forced && !isFirstRendering && shouldUpdate) {
+            doRendering = () => {
+                
+                if (!forceRendering && !isFirstRendering && shouldUpdate) {
                     if (!shouldUpdate({
                             props: currentProps,
                             prevProps,
@@ -64,11 +67,17 @@ function buildView(config) {
                         return;
                     }
                 } 
+              
+                forceRendering = false;
                 
                 if (!isFirstRendering && onWillUpdate) {
                     onWillUpdate({
                         type: 'willUpdate',
                         props: currentProps,
+                        prevProps,
+                        state: currentState,
+                        prevState,
+                        ctrl,
                         content: currentContent
                     });
                 } 
@@ -109,6 +118,7 @@ function buildView(config) {
                         }), 0);
                 }
                 
+                isDoingSomething = false;
                 isFirstRendering = false;
             },
             
@@ -118,7 +128,11 @@ function buildView(config) {
                     currentState = ctrl.getState();
                 }
                 
-                doRendering(forced);
+                forceRendering = forceRendering || forced;
+                
+                if (!isDoingSomething) {
+                    doRendering();
+                }
             },
             
             onNotification = event => {
@@ -145,6 +159,7 @@ function buildView(config) {
             next(props) {
                 prevProps = currentProps;
                 currentProps = new Config(props);
+                isDoingSomething = true;
                 
                 if (!isFirstRendering && onNextProps) {
                     onNextProps({
@@ -218,7 +233,9 @@ function createControllerClass(config) {
             const transition = transitionsConfig.getFunction(transitionName);
             
             ret.prototype[transitionName] = function(...args) {
+                console.log('__oldState', this.__state)
                 this.__state = transition(...args)(this.__state);
+                console.log('__newState', this.__state)
                 this.__onUpdate(false);
             };
         }

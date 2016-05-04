@@ -6,12 +6,12 @@ import ButtonGroup from '../../src/main/js/components/ButtonGroup.js';
 import Pager from '../../src/main/js/components/Pager.js';
 import Pagination from '../../src/main/js/components/Pagination.js';
 import PaginationInfo from '../../src/main/js/components/PaginationInfo.js';
+import TextField from '../../src/main/js/components/TextField.js';
 
 /*
 import Tabs from '../src/main/js/components/Tabs.js';
 import Tab from '../src/main/js/components/Tab.js';
 import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
-import TextField from '../src/main/js/components/TextField.js';
 */
 
 import {Component} from 'js-surface';
@@ -220,63 +220,44 @@ const DemoOfPagination = ExtComponent.createFactory({
     }
 });
 
-/*
-class DemoOfInputFieldsModel extends Model {
-    constructor() {
-        super(null);
-        
-        this.state = {
-            firstName: '',
-            lastName: ''
-        };
-    }
-    
-    getFirstName() {
-        return this.state.firstName;
-    }
-    
-    setFirstName(value) {
-        this.state = Objects.transform(this.state, {
-            firstName: {$set: value}
-        });
-    }
-    
-    getLastName() {
-        return this.lastName;
-    }
-    
-    setLastName(value) {
-        this.state = Objects.transform(this.state, {
-            lastName: {$set: value}
-        });
-    }
-}
-
-const DemoOfInputFields = Component.createFactory({
+const DemoOfInputFields = ExtComponent.createFactory({
     typeName: 'DemoOfInputFields',
     
-    view: View.define({
-        getModel() {
-            return new DemoOfInputFieldsModel();
+    initialState: {
+        firstName: '',
+        lastName: ''
+    },
+    
+    stateTransitions: {    
+        setFirstName(value) {
+            return state => Objects.transform(state, {
+                firstName: {$set: value}
+            });
         },
-        
-        render({ctrl}) {
-            return (
-                dom('div',
-                    null,
-                    TextField({
-                        value: ctrl.getFirstName(),
-                        placeholder: 'Enter first name',
-                        label: 'First name:',
-                        onChange: event => ctrl.setFirstName(event.value)
-                    }),
-                    dom('div', null, 'Hello ' + ctrl.getFirstName()))
-            );
+    
+        setLastName(value) {
+            return state => Objects.transform(state, {
+                lastName: {$set: value}
+            });
         }
-    })
+    },
+
+    render({state, ctrl}) {console.log('state', state)
+        return (
+            dom('div',
+                null,
+                TextField({
+                    value: state.firstName,
+                    placeholder: 'Enter first name',
+                    label: 'First name:',
+                    onChange: event => ctrl.setFirstName(event.value)
+                }),
+                dom('div', null, 'Hello ' + state.firstName))
+        );
+    }
 });
 
-
+/*
 const DemoOfTabs = Component.createFactory({
     typeId: 'DemoOfTabs',
 
@@ -336,5 +317,5 @@ const demos = VerticalNavi({
 */
 
 Component.mount(
-    DemoOfPagination,
+    DemoOfInputFields,
     'main-content');

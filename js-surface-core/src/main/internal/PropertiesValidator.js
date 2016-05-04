@@ -25,22 +25,12 @@ export default class PropertiesValidator {
                 propConfig = config.getConfig(['properties', propName]),
                 defaultValue = propConfig.isDefined('defaultValue') ? propConfig.get('defaultValue') : undefined,
                 type = validatePropertyTypeConfiguration(propConfig.get('type')),
-                options = validatePropertyOptionsConfiguration(propConfig.getArray('options', null), type),
-                rule = propConfig.getNonBlankString('rule', null),
-                validation = propConfig.getFunction('validation', null);
-    
-            if (rule && !validation) {
-                throw new ConfigError(`Missing 'validation' function for property '${propName}'`);
-            } else if (validation && !rule) {
-                throw new ConfigError(`Missing 'rule' string for property '${propName}'`);
-            }
+                options = validatePropertyOptionsConfiguration(propConfig.getArray('options', null), type);
     
             ret[propName] = {
                 type: type,
                 options: options && options.length > 0 ? options : null,
                 defaultValue: defaultValue,
-                rule: rule,
-                validation: validation
             }
         }
     
