@@ -1,9 +1,9 @@
 'use static';
 
-import {Strings, Seq} from 'js-prelude';
-import {Component} from 'js-surface';
+import {Seq, Strings} from 'js-prelude';
+import {Surface} from 'js-surface';
 
-const dom = Component.createElement;
+const dom = Surface.createElement;
 
 export default class ComponentHelper {
     static buildCssClass(...tokens) {

@@ -1,6 +1,6 @@
 'use strict';
 
-import InfernoComponentAdapter from './src/main/InfernoComponentAdapter.js';
-import {Component} from 'js-surface';
+import InfernoAdapter from './src/main/InfernoAdapter.js';
+import {Surface} from 'js-surface';
 
-Component.loadAdapter(new InfernoComponentAdapter());
+Surface.loadAdapter(new InfernoAdapter());

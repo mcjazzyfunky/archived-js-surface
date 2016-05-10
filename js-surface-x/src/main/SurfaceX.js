@@ -1,19 +1,19 @@
 'use strict';
 
 import {Config, ConfigError, Functions} from 'js-prelude';
-import {Component, Emitter} from 'js-surface';
+import {Surface, Emitter} from 'js-surface';
 
-export default class ExtComponent {
+export default class SurfaceX {
     constructor() {
         throw new TypeError(
-            '[ExtComponent.constructor] Class is not instantiable '
+            '[SurfaceX.constructor] Class is not instantiable '
             + '- use createFactory instead');
     }
     
     static createFactory(spec) {
         if (spec === null || typeof spec !== 'object') {
             throw new TypeError(
-                "[ExtComponent] First argument 'spec' must be an object");
+                "[SurfaceX.createFactory] First argument 'spec' must be an object");
         }
         
         const
@@ -22,7 +22,7 @@ export default class ExtComponent {
             properties = config.getObject('properties', null),
             view = buildView(config);
         
-        return Component.createFactory({
+        return Surface.createFactory({
             typeName,
             properties,
             view

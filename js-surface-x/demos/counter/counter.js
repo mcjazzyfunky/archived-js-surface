@@ -1,12 +1,12 @@
 'use strict';
 
-import {Component} from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 import {Objects} from 'js-prelude';
 
-const {createElement: dom} = Component;
+const {createElement: dom} = Surface;
 
-const CounterDemo = ExtComponent.createFactory({
+const CounterDemo = SurfaceX.createFactory({
     typeName: 'CounterDemo',
     
     initialState: {
@@ -81,6 +81,6 @@ const CounterDemo = ExtComponent.createFactory({
     }
 });
 
-Component.mount(
+Surface.mount(
     CounterDemo({onUpdate: event => console.log(event)}),
     'main-content');

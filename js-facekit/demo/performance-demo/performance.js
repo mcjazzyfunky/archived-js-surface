@@ -1,7 +1,7 @@
 'use strict';
 
-import {Component}  from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface}  from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
@@ -11,12 +11,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    {createElement: dom} = Component,
+    {createElement: dom} = Surface,
     number = 100,
     pageSize = 25,
     totalItemCount = 1220;
     
-export const Pagination = ExtComponent.createFactory({
+export const Pagination = SurfaceX.createFactory({
     typeName: 'FKPagination',
    
     properties: {
@@ -163,7 +163,7 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-export const DemoOfPagination = ExtComponent.createFactory({
+export const DemoOfPagination = SurfaceX.createFactory({
     typeName: 'DemoOfPagination',
     
     initialState: {
@@ -320,7 +320,7 @@ const
     
 
 if (1) {
-    Component.mount(
+    Surface.mount(
         DemoOfPagination,
         'main-content',
         'React');

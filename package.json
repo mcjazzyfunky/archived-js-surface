@@ -27,6 +27,7 @@
     "js-prelude": "^0.1.33",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
+    "react-lite": "^0.15.10",
     "systemjs": "^0.19.20",
     "systemjs-plugin-babel": "0.0.2"
   }

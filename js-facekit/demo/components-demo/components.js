@@ -14,8 +14,8 @@ import Tab from '../src/main/js/components/Tab.js';
 import VerticalNavi from '../src/main/js/components/VerticalNavi.js';
 */
 
-import {Component} from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 import {Objects, Seq} from 'js-prelude';
 
 import PaginationHelper from '../../src/main/js/helpers/PaginationHelper.js';
@@ -31,15 +31,15 @@ const pagination = {
 
 
 const
-    {createElement: dom} = Component,
+    dom = Surface.createElement,
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
     sizes = ['large', 'normal', 'small', 'tiny'],
     exampleIcons = ['fa-calendar', 'fa-twitter', 'glyphicon-home', 'glyphicon-print'],
     iconPositions = ['left', 'top', 'right', 'bottom'];
 
 
-const DemoOfButtons = ExtComponent.createFactory({
-    typeName: 'DemoOfButtons',
+const DemoOfButtons = SurfaceX.createFactory({
+    typeName: 'DemoOfuttons',
 
     render(props) {
         return (
@@ -143,7 +143,7 @@ const DemoOfButtons = ExtComponent.createFactory({
     }
 });
 
-const DemoOfButtonGroups = ExtComponent.createFactory({
+const DemoOfButtonGroups = SurfaceX.createFactory({
     typeName: 'DemoOfButtonGroups',
     
     render({props}) {
@@ -175,7 +175,7 @@ const DemoOfButtonGroups = ExtComponent.createFactory({
 
 
 
-const DemoOfPagination = ExtComponent.createFactory({
+const DemoOfPagination = SurfaceX.createFactory({
     typeName: 'DemoOfPagination',
    
     initialState: {
@@ -220,7 +220,7 @@ const DemoOfPagination = ExtComponent.createFactory({
     }
 });
 
-const DemoOfInputFields = ExtComponent.createFactory({
+const DemoOfInputFields = SurfaceX.createFactory({
     typeName: 'DemoOfInputFields',
     
     initialState: {
@@ -316,6 +316,6 @@ const demos = VerticalNavi({
 });
 */
 
-Component.mount(
-    DemoOfInputFields,
+Surface.mount(
+    DemoOfButtons,
     'main-content');

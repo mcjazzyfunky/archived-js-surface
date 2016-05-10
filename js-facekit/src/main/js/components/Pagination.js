@@ -2,13 +2,13 @@
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
-import {Component} from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 import {Seq} from 'js-prelude';
 
-const {createElement: dom} = Component;
+const dom = Surface.createElement; 
 
-export default ExtComponent.createFactory({
+export default SurfaceX.createFactory({
     typeName:
         'FKPagination',
     

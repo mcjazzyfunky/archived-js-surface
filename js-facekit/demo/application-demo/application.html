@@ -2,7 +2,6 @@
 
 <html>
 <head>
-    <link rel="stylesheet" type="text/css" href="./components.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/button.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/pager.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/pagination.css"/>
@@ -42,7 +41,7 @@
                 'js-surface': 'js-surface-core/index.js',
                 'js-surface-react': 'js-surface-react/index.js',
                 'js-surface-inferno': 'js-surface-inferno/index.js',
-                'js-surface-x': 'js-surface-x/index.js'
+                'js-surface-ext': 'js-surface-ext/index.js'
             }
         });
 
@@ -50,7 +49,7 @@
         
         System.import('js-surface-react')
                 .then(function() {
-                    System.import('js-facekit/demo/components-demo/components.js');
+                    System.import('js-facekit/demo/application-demo/application.js');
                 });
 
     </script>

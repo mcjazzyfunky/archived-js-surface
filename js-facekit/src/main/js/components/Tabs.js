@@ -1,13 +1,14 @@
 'use strict';
 
-import {Component} from 'js-surface';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface';
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import {Arrays, Seq} from 'js-prelude';
 import $ from 'jquery';
 
-const {createElement: dom, createEventBinder: binder} = Component;
+const dom = Surface.createElement;
 
-export default Component.createFactory({
+export default SurfaceX.createFactory({
     typeId: 'FKTabs',
 
     properties: {

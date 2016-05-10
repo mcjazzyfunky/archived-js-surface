@@ -10,19 +10,19 @@ import Publisher from './Publisher.js';
 
 let activeAdapter = null;
 
-export default class Component {
+export default class Surface {
     /**
      * @ignore
      */
     constructor() {
         throw new Error(
-            "[Component.constructor] Class Component is not instantiable");
+            "[Surface.constructor] Class Surface is not instantiable");
     }
 
     static createElement(tag, props, ...children) {
         if (activeAdapter === null) {
             throw new Error(
-                '[Component.createElement] No component adapter available');
+                '[Surface.createElement] No component adapter available');
         }
 
         return activeAdapter.createElement(tag, props, children);
@@ -31,7 +31,7 @@ export default class Component {
     static isElement(what) {
         if (activeAdapter === null) {
             throw new Error(
-                '[Component.isElement] No component adapter available');
+                '[Surface.isElement] No component adapter available');
         }
 
         return activeAdapter.isElement(what);
@@ -40,11 +40,11 @@ export default class Component {
     static createFactory(spec) {
         if (spec === null || typeof spec !== 'object') {
             throw new TypeError(
-                '[Component.createFactory] '
+                '[Surface.createFactory] '
                 + "First argument 'spec' must be an object");
         } else if (activeAdapter === null) {
             throw new Error(
-                '[Component.createFactory] No component adapter available');
+                '[Surface.createFactory] No component adapter available');
         }
 
         const
@@ -57,12 +57,12 @@ export default class Component {
             view = (propsPublisher, contentPublisher, context = null) => {
                 if (!(propsPublisher instanceof Publisher)) {
                     throw new TypeError(
-                        '[Component.createFactory] '
+                        '[Surface.createFactory] '
                         + "First argument 'propsPublisher' of local function "
                         + "'view' must be an instance of class Publisher");
                 } else if (typeof context !== 'object') {
                     throw new TypeError(
-                        '[Component.createFactory] '
+                        '[Surface.createFactory] '
                         + "Second argument 'context' of local function 'view' "
                         + 'must be an object');
                 }
@@ -89,11 +89,11 @@ export default class Component {
             || typeof document.getElementById !== 'function') {
 
             throw new Error(
-                '[Component.mount] This function is only available '
+                '[Surface.mount] This function is only available '
                 + 'in browser environment');
         } else if (activeAdapter === null) {
             throw new Error(
-                '[Component.mount] No component adapter available');
+                '[Surface.mount] No component adapter available');
         }
 
         let mountNode = null;
@@ -109,7 +109,7 @@ export default class Component {
         }
 
         if (!mountNode) {
-            throw new Error('[Component.mount] Invalid target node'
+            throw new Error('[Surface.mount] Invalid target node'
                 + (typeof targetNode !== 'string' ? '' : ` '${targetNode}'`));
         }
 
@@ -118,18 +118,18 @@ export default class Component {
         }
 
         activeAdapter.mount(
-            Component.isFactory(content) ? content() : content,
+            Surface.isFactory(content) ? content() : content,
             mountNode);
     }
 
     static loadAdapter(adapter) {
         if (!(adapter instanceof ComponentAdapter)) {
             throw new TypeError(
-                "[Component.loadAdapter] First argument 'adapter' must be "
+                "[Surface.loadAdapter] First argument 'adapter' must be "
                 + 'an instance of class ComponentAdapter');
         } else if (activeAdapter !== null) {
             throw new Error(
-                '[Component.loadAdapter] A component adapter has already been loaded. '
+                '[Surface.loadAdapter] A component adapter has already been loaded. '
                 + "It's not allowed to load another one.");
         }
 
@@ -140,7 +140,7 @@ export default class Component {
      * @ignore
      */
     static toString() {
-        return 'Component/class';
+        return 'Surface/class';
     }
 }
 

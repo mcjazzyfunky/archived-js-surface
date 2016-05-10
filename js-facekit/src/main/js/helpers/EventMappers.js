@@ -1,9 +1,5 @@
 'use strict';
 
-import {Component} from 'js-surface';
-
-const {createEventBinder: binder} = Component;
-
 export default class EventMappers {
     /**
      * @ignore

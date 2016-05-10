@@ -19,24 +19,30 @@
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
                     
+                    //'react': 'node_modules/react-lite/dist/react-lite.min.js',
+                    //'react-dom': 'node_modules/react-lite/dist/react-lite.min.js',
+                    
+                    
                     'inferno': 'node_modules/inferno/dist/inferno.min.js',
                     'inferno-dom': 'node_modules/inferno/dist/inferno-dom.min.js',
                     'inferno-component': 'node_modules/inferno/dist/inferno-component.min.js',
                     
                     'js-surface': 'js-surface-core/index.js',
-                    //'js-surface-react': 'js-surface-react/index.js',
+                    'js-surface-react': 'js-surface-react/index.js',
+                    
                     'js-surface-inferno': 'js-surface-inferno/index.js',
-                    'js-surface-ext': 'js-surface-ext/index.js',
+                    'js-surface-x': 'js-surface-x/index.js',
                }
             });
 
-            System.import('js-surface-inferno')
+            System.import('js-surface-react')
                 .then(function() {
                     System.import('./counter.js')
                 });
         </script>
     </head>
     <body>
+        <br/><br/>
         <div id="main-content">
         </div>
     </body>

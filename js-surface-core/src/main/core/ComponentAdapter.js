@@ -1,7 +1,5 @@
 'use strict';
 
-const regexAdapterID = /^[a-z][a-zA-Z0-9]*/;
-
 export default class ComponentAdapter {
     createElement(tag, props, children) {
         throw Error('[ComponentAdapter#createElement] Method not implemented/overridden');

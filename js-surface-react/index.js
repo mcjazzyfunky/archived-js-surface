@@ -1,6 +1,6 @@
 'use strict';
 
-import ReactComponentAdapter from './src/main/ReactComponentAdapter.js';
-import {Component} from 'js-surface';
+import ReactAdapter from './src/main/ReactAdapter.js';
+import {Surface} from 'js-surface';
 
-Component.loadAdapter(new ReactComponentAdapter());
+Surface.loadAdapter(new ReactAdapter());

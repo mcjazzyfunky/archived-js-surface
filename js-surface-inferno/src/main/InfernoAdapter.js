@@ -2,10 +2,12 @@
 
 import {Content, ComponentAdapter, ComponentConfig, Emitter, Publisher} from 'js-surface';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import Inferno from 'inferno';
+import {Component as InfernoComponent} from 'inferno-component';
+import InfernoDOM from 'inferno-dom';
 
-export default class ReactComponentAdapter extends ComponentAdapter {
+
+export default class InfernoAdapter extends ComponentAdapter {
     constructor(id) {
         super(id);
     }
@@ -14,78 +16,109 @@ export default class ReactComponentAdapter extends ComponentAdapter {
         // TODO: For performance reasons
         if (tag === undefined || tag === null) {
             throw new TypeError(
-                '[ReactComponentAdapter.createElement] '
+                '[InfernoAdapter.createElement] '
                 + "First argument 'tag' must not be undefined or null");
         }
-
+        
+        let ret;
+        
+        if (tag && tag.adaptedFactory) {
+            const mappedChildren = [];
+            
+            for (let child of children) {
+                if (child !== null && typeof child === 'object' && typeof child[Symbol.iterator] === 'function') {
+                    for (let item of child) {
+                        mappedChildren.push(item);            
+                    }                  
+                } else {
+                    mappedChildren.push(child);
+                }
+            }
+            
+            ret = tag.adaptedFactory(props, mappedChildren);  
+        } else {
+            const args = [tag, props];
+            
+            for (let child of children) {
+                if (child !== null && typeof child === 'object' && typeof child[Symbol.iterator] === 'function') {
+                    for (let item of child) {
+                        args.push(item);
+                    } 
+                } else {
+                    args.push(child);
+                }
+            }
+            
+            ret = Inferno.createElement.apply(Inferno, args);
+        }
+        
+        return ret; 
+/*
         return (tag && tag.adaptedFactory)
             ? tag.adaptedFactory(props, children)
-            : React.createElement(tag, props, ...children);
+            : Inferno.createElement(tag, props, ...children);*/
     }
 
     isElement(what) {
-        return React.isValidElement(what); // TODO - is this really correct???
+        return what !== undefined && what !== null && what !== false;
     }
 
     createAdaptedFactory(componentConfig, view) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
-                '[ReactComponentAdapter.createAdaptedFactory] '
+                '[InfernoAdapter.createAdaptedFactory] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
         } else if (typeof view !== 'function') {
             throw new TypeError(
-                '[ReactComponentAdapter.createAdapterFactory] '
+                '[InfernoAdapter.createAdapterFactory] '
                 + "Second argument 'view' must be a function");
         }
 
         const constructor = function (...args) {
-            ReactAdapterComponent.call(this, componentConfig, view, args);
+            InfernoAdapterComponent.call(this, componentConfig, view, args);
         };
 
-        constructor.displayName = componentConfig.getTypeName();
-        constructor.defaultProps = componentConfig.getDefaultProps();
-        constructor.prototype = Object.create(ReactAdapterComponent.prototype);
+        constructor.prototype = Object.create(InfernoAdapterComponent.prototype);
 
-        return React.createFactory(constructor);
+        return (props, ...children) => this.createElement(constructor, props, children)
     }
 
     mount(content, targetNode) {
-        if (!React.isValidElement(content)) {
+        if (!this.isElement(content)) {
             throw new TypeError(
-                '[ReactAdapter.mount] '
+                '[InfernoAdapter.mount] '
                 + "First argument 'content' has to be a valid element");
         }
 
-        ReactDOM.render(content, targetNode);
+        InfernoDOM.render(content, targetNode);
     }
 
     /**
      * @ignore
      */
     toString() {
-        return 'ReactAdapter/instance';
+        return 'InfernoAdapter/instance';
     }
 
     /**
      * @ignore
      */
     static toString() {
-        return 'ReactAdapter/class';
+        return 'InfernoAdapter/class';
     }
 }
 
-
-class ReactAdapterComponent extends React.Component {
+class InfernoAdapterComponent extends InfernoComponent {
     constructor(componentConfig, view, superArgs) {
         if (!(componentConfig instanceof ComponentConfig)) {
             throw new TypeError(
-                '[ReactAdapterComponent.constructor] '
+                '[InfernoAdapterComponent.constructor] '
                 + "First argument 'componentConfig' must be an instance "
                 + 'of class ComponentConfig');
         } else if (typeof view !== 'function') {
             throw new TypeError(
-                '[ReactAdapterComponent.constructor] '
+                '[InfernoAdapterComponent.constructor] '
                 + "Second argument 'view' must be a function");
         }
 
@@ -105,26 +138,28 @@ class ReactAdapterComponent extends React.Component {
 
         if (!(this.__viewPublisher instanceof Publisher)) {
             throw new TypeError(
-                '[ReactAdapter.constructor] '
+                '[InfernoAdapter.constructor] '
                 + "The invocation of second argument 'view' "
                 + 'must return an instance of class Publisher');
         }
     }
-
-    componentWillMount() {
+    
+    componentWillMount(params) {
         const self = this;
 
         this.__viewSubscription = this.__viewPublisher.subscribe({
             next(value) {
                 self.__contentToRender = value;
-
+                
                 if (self.__mounted) {
                     self.forceUpdate();
                 }
             }
         });
 
-        this.__propsEmitter.next(this.props);
+        const props = Object.assign({}, this.__componentConfig.getDefaultProps(), this.props);
+        
+        this.__propsEmitter.next(props);
         this.__mounted = true;
     }
     
@@ -139,28 +174,32 @@ class ReactAdapterComponent extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.__propsEmitter.next(nextProps);
+        const props = Object.assign({}, this.__componentConfig.getDefaultProps(), nextProps);
+        this.__propsEmitter.next(props);
     }
     
     componentDidUpdate() {
-        const domNode = ReactDOM.findDOMNode(this);
+        const domNode = this._lastNode.dom;
         
         this.__contentEmitter.next(new Content(domNode));
     }
 
     shouldComponentUpdate() {
-        return false;
+        return this.__contentToRender !== null;
     }
 
     render() {
         if (!this.__contentToRender) {
             throw new Error(
-                '[ReactComponentAdapter#render] Something went wrong - no content to render');
+                '[InfernoAdapter#render] Something went wrong - no content to render');
         }
 
         const ret = this.__contentToRender;
-        this.__contentToRender = null;
-
+    
+        setTimeout(() => {
+            this.__contentToRender = null;
+        },  0);
+        
         return ret;
     }
 
@@ -168,6 +207,6 @@ class ReactAdapterComponent extends React.Component {
      * @ignore
      */
     toString() {
-        return 'ReactAdapterComponent/class';
+        return 'InfernoAdapterComponent/class';
     }
 }

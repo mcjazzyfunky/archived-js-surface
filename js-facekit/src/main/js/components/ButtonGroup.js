@@ -1,12 +1,12 @@
 'use strict';
 
 import ComponentHelper from '../helpers/ComponentHelper.js';
-import {Component} from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 
-const dom = Component.createElement;
+const dom = Surface.createElement; 
 
-export default ExtComponent.createFactory({
+export default SurfaceX.createFactory({
     typeName: 'FKButtonGroup',
     
     properties: {
