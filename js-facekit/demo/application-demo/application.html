@@ -2,17 +2,21 @@
 
 <html>
 <head>
+    <!--
     <link rel="stylesheet" type="text/css" href="../../src/main/css/button.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/pager.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/pagination.css"/>
     <link rel="stylesheet" type="text/css" href="../../src/main/css/pagination-info.css"/>
-
+    -->
+    
+    <link rel="stylesheet/less" type="text/css" href="../../src/main/less/all.less" />
+    
     <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="../../../node_modules/font-awesome/css/font-awesome.min.css"/>
 
     <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
     <script type="text/javascript" src="../../../node_modules/systemjs/dist/system.js"></script>
-
+    <script type="text/javascript" src="../../../node_modules/less/dist/less.min.js"></script>
 
     <script type="text/javascript">
         System.config({
@@ -41,13 +45,13 @@
                 'js-surface': 'js-surface-core/index.js',
                 'js-surface-react': 'js-surface-react/index.js',
                 'js-surface-inferno': 'js-surface-inferno/index.js',
-                'js-surface-ext': 'js-surface-ext/index.js'
+                'js-surface-x': 'js-surface-x/index.js'
             }
         });
 
         System.import('bootstrap');
         
-        System.import('js-surface-react')
+        System.import('js-surface-inferno')
                 .then(function() {
                     System.import('js-facekit/demo/application-demo/application.js');
                 });
@@ -55,7 +59,7 @@
     </script>
 </head>
 <body>
-    <div id="main-content">
+    <div id="main-content" class="facekit">
     </div>
 </body>
 </html>

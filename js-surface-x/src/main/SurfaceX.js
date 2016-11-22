@@ -135,7 +135,7 @@ function buildView(config) {
             onUpdate = forced => {
                 if (!forced) {
                     prevState = currentState;
-                    currentState = ctrl.getState();
+                    currentState = ctrl.state;
                 }
                 
                 forceRendering = forceRendering || forced;
@@ -185,7 +185,7 @@ function buildView(config) {
                 
                 if (ctrl === null) {
                     ctrl = new Controller(currentProps, ctx, onUpdate, onNotification);
-                    currentState = ctrl.getState();
+                    currentState = ctrl.state;
                 }
                 
                 doRendering();
@@ -227,10 +227,10 @@ function createControllerClass(config) {
         this.__ctx = ctx;
         this.__onUpdate = onUpdate;
         this.__onNotification = onNotification;
-    };
-    
-    ret.prototype.getState = function () {
-        return this.__state;
+        
+        Object.defineProperty(this, 'state', {
+            get: () => this.__state
+        });
     };
     
     ret.prototype.notify = function (notification) {

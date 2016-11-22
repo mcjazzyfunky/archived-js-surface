@@ -14,27 +14,25 @@ const CounterDemo = SurfaceX.createFactory({
     },
     
     stateTransitions: {
-        updateCounter(fn) {
+        increaseCounter() {
             return state => Objects.transform(state, {
-                counter: {$update: fn}
+                counter: {$update: n => n + 1}
             });  
         },
+        
+        decreaseCounter() {
+            return state => Objects.transform(state, {
+                counter: {$update: n => n - 1}
+            });
+        }
     },
     
-    tasks: {
-        increaseCounter(delta) {
-            return (ctrl, ctx) => {
-                const prevCounter = ctrl.getState().counter;
-                
-                ctrl.updateCounter(n => n + delta);
-                        
-                ctrl.notify({
-                    type: 'update',
-                    counter: ctrl.getState().counter,
-                    prevCounter: prevCounter
-                });
-            };
-        }
+    onStateUpdate({state, oldState, ctrl}) {
+        ctrl.notify({
+            type: 'update',
+            counter: state.counter,
+            prevCounter: oldState.counter 
+        });
     },
 
     render({props, state, ctrl}) {
@@ -42,14 +40,14 @@ const CounterDemo = SurfaceX.createFactory({
             dom('div',
                 null,
                 dom('button', {
-                    onClick: _ => ctrl.increaseCounter(-1) 
+                    onClick: _ => ctrl.decreaseCounter() 
                 },
                 '-'),
                 dom('label',
                     null,
                     state.counter,
                 dom('button', {
-                    onClick: _ => ctrl.increaseCounter(1) 
+                    onClick: _ => ctrl.increaseCounter() 
                 },
                 '+')))
         );

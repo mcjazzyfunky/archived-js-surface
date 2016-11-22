@@ -2,8 +2,8 @@
 
 import App from './components/App.js';
 
-import {Component} from 'js-surface';
+import {Surface} from 'js-surface';
 
-Component.mount(
+Surface.mount(
     App,
     'main-content');

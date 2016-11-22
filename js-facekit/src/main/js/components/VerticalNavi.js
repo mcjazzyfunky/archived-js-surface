@@ -12,22 +12,65 @@ export default SurfaceX.createFactory({
    
     properties: {
         menu: {
-            type: 'iterable',
-            defaultValue: []
+            type: 'object'
         }        
+    },
+    
+    initialState: {
+        _version_: null,
+        item: []  
+    },
+    
+    stateTransitions: {
+        storeMenuAsState(menu) {
+            return state => {
+                let ret;
+                
+                if (state._version_ === menu.get('_version_')) {
+                    ret = state;
+                } else {
+                    ret = {
+                        _version_: menu.getString('_version_')
+                    };
+                    
+                    const
+                        headline = menu.getString('headline', ''),
+                        sections = menu.getSeq('sections', Seq.empty());
+                    
+                    sections.forEach(section => {
+                        
+                    });
+                    
+                    
+                    //loadMenu(menu, ret);
+                }
+            
+                return ret;
+            }
+        }  
+    },
+    
+    onMount({props, ctrl}) {
+        ctrl.storePropsAsState(props.getConfig('menu'));        
+    },
+    
+    onNextProps({props, ctrl}) {
+        ctrl.storePropsAsState(props.getConfig('menu'));        
     },
 
     render({props}) {
         return (
             dom('div',
-                null,
-                Seq.from(props.menu)
-                    .map(menuProps =>
-                        dom('li',
-                            null,
-                            dom('a',
+                {className: 'vertical-navi'},
+                dom('ul',
+                    null,
+                    Seq.from(props.get(['menu', 'items'], null))
+                        .map(menuProps =>
+                            dom('li',
                                 null,
-                                menuProps.caption))))
+                                dom('a',
+                                    null,
+                                    menuProps.caption)))))
         );
     }
 });

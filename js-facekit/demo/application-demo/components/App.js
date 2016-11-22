@@ -1,34 +1,51 @@
 'use strict';
 
-import {Component} from 'js-surface';
-import {ExtComponent} from 'js-surface-ext';
+import {Surface} from 'js-surface';
+import {SurfaceX} from 'js-surface-x';
 
 import VertNavi from '../../../src/main/js/components/VerticalNavi.js';
 
 
 const
-    dom = Component.createElement,
+    dom = Surface.createElement,
     
-    sideMenu = [{
-            caption: 'Menu-1',
+    sideMenu = {
+        _version_: new Date().toISOString(),
             
-            menu: [{
-                caption: 'Menu-1.1'    
+        headline: 'Main menu',
+        
+        sections: [{
+                headline: 'Section 1',
+                
+                items: [{
+                    caption: 'Item 1.1',
+                    itemId: 11
+                }, {
+                    caption: 'Item 1.2',
+                    itemId: 12
+                }]
             }, {
-                caption: 'Menu-1.2'
+                headline: 'Section 2',
+                
+                items: [{
+                    caption: 'Item 2.1',
+                    itemId: 21
+                }, {
+                    caption: 'Item 2.2',
+                    itemId: 22
+                }]
             }]
-        }, {
-            caption: 'Menu-2'
-        }];
+    };
 
 
 
-export default ExtComponent.createFactory({
+export default SurfaceX.createFactory({
     typeName: 'App',
     
     render() {
         return dom('div',
             null,
+            "Juhu",
             VertNavi({menu: sideMenu}));
     }
 });
