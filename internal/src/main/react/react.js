@@ -37,7 +37,7 @@ function defineComponent(config) {
             }
             
             if (defaultValue !== undefined) {
-                constructor.defaultProps[propName] = defaultValue;
+//                constructor.defaultProps[propName] = defaultValue;
             }
         }
     }

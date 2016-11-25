@@ -16,12 +16,69 @@ export function defineComponent(config) {
     
     const enhancedConfig = Object.assign({}, config);
     
-    // TODO - add some return validation in enhanced init function
-    enhancedConfig.initialize = (inputs) => {
-        return config.initialize(inputs);
+    const defaultValues = {};
+    var hasDefaultValues = false;
+    const typeChecks = [];
+    
+    const properties = config.properties;
+    
+    if (properties) {
+        const propertyNames = Object.getOwnPropertyNames(properties);
+        
+        for (let propertyName of propertyNames) {
+            const type = properties[propertyName].type;
+            const defaultValue = properties[propertyName].defaultValue;
+            
+            if (type !== undefined && type !== null || defaultValue === undefined) {
+                typeChecks.push([propertyName, type, defaultValue === undefined]);
+            }
+            
+            if (defaultValue !== undefined) {
+                hasDefaultValues = true; 
+                defaultValues[propertyName] = defaultValue;
+            }
+        }
+    }
+    
+    
+    // TODO - add some return validation in enhanced initialize function
+    enhancedConfig.initialize = inputs => {
+        const enhancedInputs = !hasDefaultValues && typeChecks.length == 0
+            ? inputs
+            : inputs.map(properties => {
+                let ret = properties;
+                
+                for (let [propertyName, type, required] of typeChecks) {
+                    let err = null;
+                    
+                    if (required && properties[propertyName] === undefined) {
+                        err = new Error(`Missing mandatory property '${propertyName}' for '${config.name}'`);
+                    }
+                    
+                    if (!err && type) {
+                        err = type(properties, propertyName, config.name, 'property');
+                    }
+                    
+                    if (err) {
+                        const msg = ('' + err)
+                            .replace(/^(Error|Warning)\s*(:?)\s*/i, '')
+                            .replace(/(\s|\.)+$/, '');
+                        
+                        console.error('Error: ' + msg)
+                    }
+                }
+                
+                if (hasDefaultValues) {
+                    ret = Object.assign({}, defaultValues, properties);
+                }
+                
+                return ret;
+            });
+    
+        return config.initialize(enhancedInputs);
     };
     
-    return definePlatformComponent(config);
+    return definePlatformComponent(enhancedConfig);
 }
 
 export function createElement(tags, props, ...children) {

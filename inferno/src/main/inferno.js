@@ -81,10 +81,6 @@ function defineComponent(config) {
             if (implicit) {
                 constructor.contextTypes[propName] = constructor.propTypes[propName];
             }
-            
-            if (defaultValue !== undefined) {
-                constructor.defaultProps[propName] = defaultValue;
-            }
         }
     }
 

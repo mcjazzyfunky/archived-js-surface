@@ -1,13 +1,27 @@
 import { defineComponent, mount, createElement as htm } from 'js-surface';
+import Types from '../types/src/main/Types.js';
 import Emitter from '../internal/src/main/util/Emitter.js';
+
+
 
 const Counter = defineComponent({
     name: 'Counter',
     
     properties: {
+        textDecrement: {
+            type: Types.number,
+            defaultValue: '--',
+        },
+        textIncrement: {
+            type: Types.number,
+            defaultValue: '++'
+        },
         style: {
             type: value => null,
             defaultValue: null
+        },
+        dummy: {
+            type: Types.number
         }
     },
     
@@ -34,9 +48,9 @@ const Counter = defineComponent({
         const getContent = () =>
             htm('span',
                 {style: props.style},
-                htm('button', {onClick: () => increase(-1)}, '-'),
+                htm('button', {onClick: () => increase(-1)}, props.textDecrement),
                 htm('div', {style: {width: '30px', display: 'inline-block', textAlign: 'center'}}, ' ' + counterValue + ' '),
-                htm('button', {onClick: () => increase(1)}, '+'));
+                htm('button', {onClick: () => increase(1)}, props.textIncrement));
         
         return {
             views: views,
@@ -62,7 +76,7 @@ const counterCtrlView = props => {
             htm('label', {style: {margin: '0 20px 0 0', width: '100px', float: 'left', textAlign: 'right'}}, props.label),
             htm('button', {onClick: () => elem.reset(0) }, btnText1),
             ' ',
-            Counter({ref: node => elem = node, style: {margin: '0 20px'}}),
+            Counter({ref: node => elem = node, style: {margin: '0 20px'}, textIncrement: 'increment'}),
             ' ',
             htm('button', {onClick: () => elem.reset(100) }, btnText2))
     );

@@ -81,6 +81,15 @@ export default class Publisher {
 
         return { unsubscribe };
     }
+    
+    map(fn) {
+        return new Publisher(subscriber =>
+            this.subscribe({
+                next: event => {console.log(event); subscriber.next(fn(event))},
+                error: err => subscriber.error(err),
+                complete: () => subscriber.complete()
+            }));
+    }
 }
 
 function normalizeSubscriber(subscriber) {
