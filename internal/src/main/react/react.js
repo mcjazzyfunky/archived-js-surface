@@ -17,16 +17,29 @@ function defineComponent(config) {
 
     constructor.prototype = Object.create(ReactComponent.prototype);
     constructor.displayName = config.name;
+    constructor.propTypes = {};
+    constructor.contextTypes = {};
     constructor.defaultProps = {};
-    
-    const propNames = Object.getOwnPropertyNames(config.properties);
-    
-    for (var propName of propNames) {
-        const defaultValue = config.properties[propName].defaultValue;
-       
-        if (defaultValue !== undefined) {
-            constructor.defaultProps[propName] = defaultValue;
-        } 
+
+    if (config.properties) {    
+        const propNames = Object.getOwnPropertyNames(config.properties);
+        
+        for (var propName of propNames) {
+            const
+                type = config.properties[propName].type,
+                defaultValue = config.properties[propName].defaultValue,
+                implicit = !!config.properties[propName].implcit;
+
+            constructor.propTypes[propName] = type || null;
+            
+            if (implicit) {
+                constructor.contextTypes[propName] = constructor.propTypes[propName];
+            }
+            
+            if (defaultValue !== undefined) {
+                constructor.defaultProps[propName] = defaultValue;
+            }
+        }
     }
 
     return React.createFactory(constructor);
@@ -46,6 +59,14 @@ class ReactComponent extends React.Component {
         
         this.__viewsPublisher = result.views;
         this.__viewsSubscription = null;
+        
+        if (result.methods) {
+            for (var methodName in result.methods) {
+                if (result.methods.hasOwnProperty(methodName)) {
+                    this[methodName] = result.methods[methodName];
+                }
+            }
+        }
     }
 
     componentWillMount() {
@@ -53,6 +74,7 @@ class ReactComponent extends React.Component {
         
         var mounted = false;
 
+        
         this.__viewsSubscription = this.__viewsPublisher.subscribe({
             next(value) {
                 self.__contentToRender = value;
@@ -62,7 +84,7 @@ class ReactComponent extends React.Component {
                 }
             }
         });
-
+        
         this.__propsEmitter.next(this.props);
         mounted = true;
     }

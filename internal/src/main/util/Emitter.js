@@ -13,7 +13,7 @@ export default class Emitter extends Publisher {
                 this.__subscribers.slice(index, index + 1);
             };
         });
-
+        
         this.__subscribers = [];
         this.__publisher = null;
     }
