@@ -2,6 +2,7 @@
   "name": "js-surface",
   "version": "0.1.0",
   "homepage": "https://github.com/mcjazzyfunky/js-surface",
+  "main": "core/index.js";
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",
