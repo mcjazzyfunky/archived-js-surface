@@ -1,8 +1,6 @@
 import { defineComponent, mount, createElement as htm } from 'js-surface';
 import Emitter from '../internal/src/main/util/Emitter.js';
 
-
-
 const Counter = defineComponent({
     name: 'Counter',
     
@@ -89,7 +87,7 @@ const CounterCtrl = defineComponent({
     initialize: inputs => {
         const views = new Emitter();
         
-        inputs.subscribe(props => {console.log(props)
+        inputs.subscribe(props => {
             views.next(counterCtrlView(props));
         });
         

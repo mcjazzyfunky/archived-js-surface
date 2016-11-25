@@ -2,7 +2,7 @@
   "name": "js-surface",
   "version": "0.1.0",
   "homepage": "https://github.com/mcjazzyfunky/js-surface",
-  "main": "core/index.js";
+  "main": "core/index.js",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",
@@ -21,9 +21,9 @@
     "grunt-contrib-uglify": "^0.11.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-esdoc": "0.0.1",
-    "inferno": "^0.6.4",
-    "inferno-component": "^0.6.4",
-    "inferno-dom": "^0.6.4",
+    "inferno": "^1.0.0-beta15",
+    "inferno-component": "^1.0.0-beta15",
+    "inferno-dom": "^1.0.0-beta15",
     "jquery": "^2.2.1",
     "js-prelude": "^0.1.33",
     "less": "^2.7.1",

@@ -24,7 +24,7 @@ function defineComponent(config) {
     if (config.properties) {    
         const propNames = Object.getOwnPropertyNames(config.properties);
         
-        for (var propName of propNames) {
+        for (let propName of propNames) {
             const
                 type = config.properties[propName].type,
                 defaultValue = config.properties[propName].defaultValue,
@@ -53,15 +53,13 @@ class ReactComponent extends React.Component {
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
 
-        const result = config.initialize(
-            this.__propsEmitter,
-            this.__contextEmitter);
+        const result = config.initialize( this.__propsEmitter);
         
         this.__viewsPublisher = result.views;
         this.__viewsSubscription = null;
         
         if (result.methods) {
-            for (var methodName in result.methods) {
+            for (let methodName in result.methods) {
                 if (result.methods.hasOwnProperty(methodName)) {
                     this[methodName] = result.methods[methodName];
                 }
@@ -93,7 +91,6 @@ class ReactComponent extends React.Component {
     }
 
     componentWillUnmount() {
-        this.__mounted = false;
         this.__viewsSubscription.unsubscribe();
         this.__viewsSubscription = null;
         this.__viewsPublisher = null;
@@ -119,9 +116,6 @@ class ReactComponent extends React.Component {
         return ret;
     }
 
-    /**
-     * @ignore
-     */
     toString() {
         return 'ReactComponent/class';
     }

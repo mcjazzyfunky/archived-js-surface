@@ -1,7 +1,3 @@
-/* global document */
-
-'use strict';
-
 import {
     defineComponent as definePlatformComponent,
     createElement as createPlatformElement,
@@ -62,7 +58,7 @@ function validateConfig(config, errMsgPrefix = null) {
         errMsg = "Configuration parameter 'inititialize' must be a function";
     }
     
-    for (var paramName of ['properties', 'contributions']) {
+    for (let paramName of ['properties', 'contributions']) {
         if (config[paramName] !== undefined
             && (config[paramName] === null || typeof config[paramName] !== 'object')) {
         
@@ -73,7 +69,7 @@ function validateConfig(config, errMsgPrefix = null) {
                 subConfig = config[paramName] || {},
                 propNames = Object.getOwnPropertyNames(subConfig);
             
-            for (var propName of propNames) {
+            for (let propName of propNames) {
                 const
                     propValue = subConfig[propName],
                     typeOfPropValue = typeof propValue;

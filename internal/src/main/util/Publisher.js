@@ -1,5 +1,3 @@
-'use strict';
-
 export default class Publisher {
     constructor(onSubscribe) {
         if (typeof onSubscribe !== 'function') {
