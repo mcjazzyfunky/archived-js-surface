@@ -70,10 +70,6 @@ const Counter = defineCommonComponent({
                 );
             },
             
-            increment(delta) {
-                ctrl.increase(delta);
-            },
-            
             reset(value) {
                 ctrl.reset(value);
             }

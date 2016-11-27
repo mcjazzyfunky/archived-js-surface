@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    number = 1,
+    number = 100,
     pageSize = 25,
     totalItemCount = 1220;
     
@@ -155,7 +155,7 @@ function buildLinkListItem(text, isActive, moveToPage) {
             },
             htm('a',
                 {onClick: moveToPage},
-                text + " " + isActive))
+                text))
     );
 }
 
@@ -166,15 +166,15 @@ export const DemoOfPagination = defineCommonComponent({
         return { pageIndex: 0 };
     },
     
-    tasks: {
+    commands: {
         moveToPage(pageIndex) {
-            return state => Objects.transform(state, {
+            return state => {console.log('state', state); return Objects.transform(state, {
                 pageIndex: {$set: pageIndex}
-            });
+            })};
         }
     },
 
-    render({ state, tasks }) {
+    render({ state, ctrl }) {
         return (
             htm('div',
                 { className: 'container-fluid' },
@@ -186,7 +186,7 @@ export const DemoOfPagination = defineCommonComponent({
                             pageIndex: state.pageIndex,
                             pageSize: pageSize,
                             totalItemCount: totalItemCount,
-                            onChange: evt => tasks.moveToPage(evt.targetPage)}))).toArray())
+                            onChange: evt => ctrl.moveToPage(evt.targetPage)}))).toArray())
             );
     }
 });

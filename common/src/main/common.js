@@ -8,21 +8,7 @@ export {
     mount,
     Types
 };
-/*
-const p1 = new Emitter();
-const p2 = new Emitter();
 
-let n1 = 1;
-let n2 = 1000;
-
-setInterval(() => p1.next(n1++), 1000);
-setInterval(() => p2.next(n2++), 2000)
-
-
-const p3 = p1.combineLatest(p2.startWith(11111111), (v1, v2) => [v1, v2]);
-p3.subscribe(value => console.log(1111, value));
-p3.subscribe(value => console.log(222, value));
-*/
 function defineCommonComponent(config) {
     const coreConfig = {};
     
@@ -39,45 +25,26 @@ function defineCommonComponent(config) {
            
             const
                 stateEmitter = new Emitter(),
-                controller = createController(
+                ctrl = createController(
                     config.commands,
                     () => state,
-                    newState => {//console.log('newstate', newState)
+                    newState => {
                         state = newState;
                         stateEmitter.next(state);
                     });
                 
-            stateEmitter.subscribe({next(value) {
-                console.log('-------------- state ---', value);
-            }})
-                
-            inputs.subscribe({next(value) {
-                console.log('-------------- inputs --', value);
-            }})
-                
             const views = inputs.combineLatest(stateEmitter.startWith({pageIndex: 0}), (nextProps, nextState)  => {
-                
-                /*
-                    if (!mounted) {console.log(44444444444)
+                    if (!mounted) {
                         if (config.prepareState) {
                             nextState = state = config.prepareState(nextProps);
                         }
       
                         mounted = true;
                     }
-                  */  
+                   
                     
-                   // console.log('next:::', nextProps, nextState)
-                    return config.render({ props: nextProps, state: nextState, controller });
+                    return config.render({ props: nextProps, state: nextState, ctrl });
                 });
-                
-            /*    
-            views.subscribe({
-                next(value) {
-                    console.log('-------------- views --');
-                }
-            })*/
-              // const views2 = inputs.combineLatest(stateEmitter.startWith(0),(props, state) => config.render({props, state, commands}));
                 
             return { views };
         };   
@@ -168,11 +135,11 @@ function createController(commands, getState, setState) {
                 mapper = commands[commandName],
                 currentState = getState(),
                 nextState = mapper(...args)(currentState);
-            
+
             setState(nextState);
         };
     }
-    
+
     return ret;
 }
 
