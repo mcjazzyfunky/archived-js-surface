@@ -1,4 +1,4 @@
-import Emitter from '../../../../util/src/main/Emitter.js';
+import Emitter from '../../../util/src/main/Emitter.js';
 import React from 'react';
 
 export {
@@ -77,12 +77,15 @@ class ReactComponent extends React.Component {
     constructor(config, args) {
         super(...args);
 
+        this.__config = config;
         this.__contentToRender = null;
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
         this.__viewsPublisher = null;
         this.__viewsSubscription = null;
-
+if (config.name ==='FKPaginationInfo') {
+    console.log(config)
+}
         if (config.render) {
             this.__viewsPublisher =
                     this.__propsEmitter.map(props => config.render(props));
@@ -142,7 +145,8 @@ class ReactComponent extends React.Component {
     render() {
         if (!this.__contentToRender) {
             throw new Error(
-                '[ReactComponent#render] Something went wrong - no content to render');
+                '[ReactComponent#render] Something went wrong - '
+                + `no content to render for component '${this.__config.name}'`);
         }
 
         const ret = this.__contentToRender;

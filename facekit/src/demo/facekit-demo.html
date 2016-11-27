@@ -4,8 +4,11 @@
     <head>
         <script type="text/javascript" src="../../../node_modules/systemjs/dist/system.js"></script>
         <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="./performance-demo.css">
+        <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <script type="text/javascript" src="https://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../../../node_modules/kendo-ui-core/css/web/kendo.common.core.min.css">
+        <link rel="stylesheet" type="text/css" href="../../../node_modules/kendo-ui-core/css/web/kendo.silver.min.css">
+        
 
         <script type="text/javascript">
             System.config({
@@ -14,13 +17,13 @@
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-                    'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.js',
                     
-                    //'react': 'node_modules/react/dist/react.js',
-                    //'react-dom': 'node_modules/react-dom/dist/react-dom.js',
                     
-                    'react': 'node_modules/react-lite/dist/react-lite.min.js',
-                    'react-dom': 'node_modules/react-lite/dist/react-lite.min.js',
+                    'react': 'node_modules/react/dist/react.js',
+                    'react-dom': 'node_modules/react-dom/dist/react-dom.js',
+                    
+                    //'react': 'node_modules/react-lite/dist/react-lite.min.js',
+                    //'react-dom': 'node_modules/react-lite/dist/react-lite.min.js',
                     
                     
                     'inferno': 'node_modules/inferno/dist/inferno.min.js',
@@ -30,15 +33,15 @@
                     'js-surface/core': 'core/src/main/core.js',
                     'js-surface/common': 'common/src/main/common.js',
                     'js-surface/util': 'util/src/main/util.js',
-                    //'js-surface/platform': 'react-dom/src/main/react-dom.js'
+                    'js-surface/platform': 'react-dom/src/main/react-dom.js',
                 
-                    'js-surface/platform': 'inferno/src/main/inferno.js'
+                    //'js-surface/platform': 'inferno/src/main/inferno.js'
                     
-                    
+                    'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.min.js'
                }
             });
             
-            System.import('./performance-demo.js');
+            System.import('./facekit-demo.js');
         </script>
     </head>
     <body>

@@ -1,4 +1,4 @@
-import { defineCommonComponent, mount, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface/common';
 
 const commands = {
     increase(delta) {
@@ -10,7 +10,21 @@ const commands = {
     }
 };
 
-const Counter = defineCommonComponent({
+const CounterLabel = defineComponent({
+    name: 'CounterLabel',
+    
+    properties: {
+        value: {
+            type: Types.number
+        }
+    },
+    
+    render({props}) {
+        return htm('label', null, htm('b', null, props.value));
+    }
+});
+
+const Counter = defineComponent({
     name: 'Counter',
    
     commands,
@@ -62,7 +76,7 @@ const Counter = defineCommonComponent({
                         
                         htm('div',
                             { style: {width: '30px', display: 'inline-block', textAlign: 'center' }},
-                            ' ' + state.counterValue + ' '),
+                            CounterLabel({value: state.counterValue})),
                             
                         htm('button',
                             { onClick: () => ctrl.increase(1) } ,
@@ -77,7 +91,7 @@ const Counter = defineCommonComponent({
     }
 });
 
-const CounterCtrl = defineCommonComponent({
+const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
     
     initiate() {

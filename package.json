@@ -26,6 +26,7 @@
     "inferno-dom": "^1.0.0-beta15",
     "jquery": "^2.2.1",
     "js-prelude": "^0.1.33",
+    "kendo-ui-core": "^2016.3.1118",
     "less": "^2.7.1",
     "preact": "^6.4.0",
     "react": "^15.4.1",

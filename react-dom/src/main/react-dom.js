@@ -1,4 +1,4 @@
-import { createElement, defineComponent, isElement } from '../../../internal/src/main/react/react.js';
+import { createElement, defineComponent, isElement } from '../../../react-shared/src/main/react-shared.js';
 
 import ReactDOM from 'react-dom';
 

@@ -1,13 +1,20 @@
 import {
     defineComponent as definePlatformComponent,
-    createElement as createPlatformElement,
-    isElement as isPlatformElement,
-    mount as mountPlatformElement
+    createElement,
+    isElement,
+    mount
 } from 'js-surface/platform';
+
+export {
+    defineComponent,
+    createElement,
+    isElement,
+    mount
+};
 
 const componentNameRegex = /^[A-Z][a-zA-Z0-9]*$/;
 
-export function defineComponent(config) {
+function defineComponent(config) {
     const validationError = validateConfig(config, '[defineComponent] ');
     
     if (validationError) {
@@ -15,7 +22,7 @@ export function defineComponent(config) {
     }
     
     const enhancedConfig = Object.assign({}, config);
-    
+console.log(enhancedConfig, config)    
     const defaultValues = {};
     var hasDefaultValues = false;
     const typeChecks = [];
@@ -58,6 +65,8 @@ export function defineComponent(config) {
                 
                 return config.render(props);
             };
+        } else {
+            
         }
     } else {
         // TODO - add some return validation in enhanced initialize function
@@ -86,18 +95,6 @@ export function defineComponent(config) {
     }
 
     return definePlatformComponent(enhancedConfig);
-}
-
-export function createElement(tags, props, ...children) {
-    return createPlatformElement(tags, props, ...children);
-}
-
-export function isElement(what) {
-    return isPlatformElement(what);
-}
-
-export function mount(element, targetNode) {
-    mountPlatformElement(element, targetNode);
 }
 
 function validateConfig(config, errMsgPrefix = null) {

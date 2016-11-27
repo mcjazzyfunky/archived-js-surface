@@ -1,4 +1,4 @@
-import { defineCommonComponent, mount, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface/common';
 
 import PaginationHelper from './PaginationHelper.js';
 import ComponentHelper from './ComponentHelper.js';
@@ -12,7 +12,7 @@ const
     pageSize = 25,
     totalItemCount = 1220;
     
-export const Pagination = defineCommonComponent({
+export const Pagination = defineComponent({
     name: 'FKPagination',
    
     properties: {
@@ -159,7 +159,7 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-export const DemoOfPagination = defineCommonComponent({
+export const DemoOfPagination = defineComponent({
     name: 'DemoOfPagination',
     
     prepareState() {

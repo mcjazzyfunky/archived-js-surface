@@ -1,9 +1,12 @@
-import { createElement, defineComponent, isElement, mount } from 'js-surface/core';
-import { Emitter, Publisher, Types } from 'js-surface/util';
+import { defineComponent, isElement, mount } from '../../../core/src/main/core.js';
+import Emitter from '../../../util/src/main/Emitter.js';
+import Types from '../../../util/src/main/Types.js';
+import createElement from '../../../util/src/main/hiccup.js';
 
 export {
     createElement,
-    defineCommonComponent,
+    defineCommonComponent as defineComponent,
+    createElement,
     isElement,
     mount,
     Types

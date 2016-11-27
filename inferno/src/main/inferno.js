@@ -1,7 +1,7 @@
 import Emitter from '../../../util/src/main/Emitter.js';
 
 import Inferno from 'inferno';
-import createInfernoElement from 'inferno-create-element';
+import createElement from 'inferno-create-element';
 import Component from 'inferno-component';
 
 export {
@@ -27,31 +27,6 @@ function mount(content, targetNode) {
     }
 
     Inferno.render(content, targetNode);
-}
-
-
-function createElement(tag, props, ...children) {
-    // TODO: For performance reasons
-    if (tag === undefined || tag === null) {
-        throw new TypeError(
-            '[createElement] '
-            + "First argument 'tag' must not be undefined or null");
-    }
-    
-    const
-        args = [tag, props];
-    
-    for (let child of children) {
-        if (child !== null && typeof child === 'object' && typeof child[Symbol.iterator] === 'function') {
-            for (let item of child) {
-                args.push(item);
-            } 
-        } else {
-            args.push(child);
-        }
-    }
-        
-    return createInfernoElement(...args);
 }
 
 
@@ -105,6 +80,7 @@ class InfernoComponent extends Component {
     constructor(config, args) {
         super(...args);
 
+        this.__config = config;
         this.__contentToRender = null;
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
@@ -170,7 +146,8 @@ class InfernoComponent extends Component {
     render() {
         if (!this.__contentToRender) {
             throw new Error(
-                '[InfernoComponent#render] Something went wrong - no content to render');
+                '[InfernoComponent#render] Something went wrong - '
+                + `no content to render for component '${this.__config.name}'`);
         }
 
         const ret = this.__contentToRender;
