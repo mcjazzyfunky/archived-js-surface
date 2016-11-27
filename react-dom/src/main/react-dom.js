@@ -1,8 +1,5 @@
-'use strict';
+import { createElement, defineComponent, isElement } from '../../../internal/src/main/react/react.js';
 
-import { defineComponent, isElement } from '../../../internal/src/main/react/react.js';
-
-import React from 'react';
 import ReactDOM from 'react-dom';
 
 export {
@@ -12,12 +9,8 @@ export {
     mount
 };
 
-function createElement(tags, props, ...children) {
-    return React.createElement(tags, props, ...children);
-}
-
 function mount(content, targetNode) {
-    if (!React.isValidElement(content)) {
+    if (!isElement(content)) {
         throw new TypeError(
             "[mount] First argument 'content' has to be a valid element");
     }

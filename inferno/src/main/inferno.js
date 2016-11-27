@@ -1,4 +1,4 @@
-import Emitter from '../../../internal/src/main/util/Emitter.js';
+import Emitter from '../../../util/src/main/Emitter.js';
 
 import Inferno from 'inferno';
 import createInfernoElement from 'inferno-create-element';
@@ -39,7 +39,6 @@ function createElement(tag, props, ...children) {
     }
     
     const
-        mappedChildren = [],
         args = [tag, props];
     
     for (let child of children) {
@@ -57,34 +56,48 @@ function createElement(tag, props, ...children) {
 
 
 function defineComponent(config) {
-    const constructor = function (...args) {
-        InfernoComponent.call(this, config, args);
-    };
+    let ret = null;
+    
+    const propNames = config.properties
+        ? Object.getOwnPropertyNames(config.properties)
+        : [];
 
-    constructor.prototype = Object.create(InfernoComponent.prototype);
-    constructor.displayName = config.name;
-    constructor.propTypes = {};
-    constructor.contextTypes = {};
-    constructor.defaultProps = {};
-
-    if (config.properties) {    
-        const propNames = Object.getOwnPropertyNames(config.properties);
+    if (config.render) {
+        let hasInjectedProps = config.properties
+            && !propNames.every(propName => !config.properties[propName].inject);
         
-        for (let propName of propNames) {
-            const
-                type = config.properties[propName].type,
-                defaultValue = config.properties[propName].defaultValue,
-                implicit = !!config.properties[propName].implcit;
-
-            constructor.propTypes[propName] = type || null;
+        if (false && !hasInjectedProps) {
+            ret = props => {
+                return config.render(props);
+            }; 
             
-            if (implicit) {
-                constructor.contextTypes[propName] = constructor.propTypes[propName];
-            }
+            ret.displayName = config.name;
         }
     }
+    
+    if (!ret) {
+        const constructor = function (...args) {
+            InfernoComponent.call(this, config, args);
+        };
+    
+        constructor.prototype = Object.create(InfernoComponent.prototype);
+        constructor.displayName = config.name;
+        constructor.contextTypes = {};
 
-    return (props, ...children) => createElement(constructor, props, ...children);
+        if (config.properties) {    
+            for (let propName of propNames) {
+                const inject = !!config.properties[propName].inject;
+    
+                if (inject) {
+                    constructor.contextTypes[propName] = constructor.propTypes[propName];
+                }
+            }
+        }
+    
+        ret = (props, ...children) => createElement(constructor, props, ...children);
+    }
+    
+    return ret;
 } 
 
 
@@ -95,16 +108,22 @@ class InfernoComponent extends Component {
         this.__contentToRender = null;
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
-
-        const result = config.initialize(this.__propsEmitter);
-        
-        this.__viewsPublisher = result.views;
+        this.__viewsPublisher = null;
         this.__viewsSubscription = null;
-        
-        if (result.methods) {
-            for (let methodName in result.methods) {
-                if (result.methods.hasOwnProperty(methodName)) {
-                    this[methodName] = result.methods[methodName];
+
+        if (config.render) {
+            this.__viewsPublisher =
+                this.__propsEmitter.map(props => config.render(props));
+        } else {
+            const { views, methods} = config.initialize(this.__propsEmitter);
+            
+            this.__viewsPublisher = views;
+
+            if (methods) {
+                for (let methodName in methods) {
+                    if (methods.hasOwnProperty(methodName)) {
+                        this[methodName] = methods[methodName];
+                    }
                 }
             }
         }
@@ -145,7 +164,7 @@ class InfernoComponent extends Component {
     }
     
     shouldComponentUpdate() {
-        return false;
+        return !!this.__contentToRender;
     }
 
     render() {

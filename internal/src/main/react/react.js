@@ -1,48 +1,76 @@
-import Emitter from '../../../../internal/src/main/util/Emitter.js';
+import Emitter from '../../../../util/src/main/Emitter.js';
 import React from 'react';
 
 export {
+    createElement,
     defineComponent,
     isElement
-}
+};
+
+// Support both: React and Preact
+const
+    createElement = React.createElement || React.h,
+    
+    //createReactFactory = React.createFactory || (constructor =>
+    //    (props, ...children) => createElement(constructor, props, ...children)),
+
+    createReactFactory = React.createFactory
+        || (type => createElement.bind(null, type)),
+
+    VNode  = !React.h ? null : React.h('').constructor,
+
+    isValidReactElement = React.isValidElement
+        || (what => what  && (what instanceof React.Component || what instanceof VNode));
+
 
 function isElement(what)  {
-    return React.isValidElement(what);
+    return isValidReactElement(what);
 } 
 
 function defineComponent(config) {
-    const constructor = function (...args) {
-        ReactComponent.call(this, config, args);
-    };
+    let ret = null,
+    
+        propNames = config.properties
+            ? Object.getOwnPropertyNames(config.properties)
+            : [];
 
-    constructor.prototype = Object.create(ReactComponent.prototype);
-    constructor.displayName = config.name;
-    constructor.propTypes = {};
-    constructor.contextTypes = {};
-    constructor.defaultProps = {};
-
-    if (config.properties) {    
-        const propNames = Object.getOwnPropertyNames(config.properties);
-        
-        for (let propName of propNames) {
-            const
-                type = config.properties[propName].type,
-                defaultValue = config.properties[propName].defaultValue,
-                implicit = !!config.properties[propName].implcit;
-
-            constructor.propTypes[propName] = type || null;
+    if (config.render) {
+        if (config.properties) {
+            const hasInjectedProps = !propNames.every(
+                propName => !config.properties[propName].inject);
             
-            if (implicit) {
-                constructor.contextTypes[propName] = constructor.propTypes[propName];
+            if (false && !hasInjectedProps) {
+                ret = props => {
+                    return config.render(props);
+                }; 
+                
+                ret.displayName = config.name;
             }
-            
-            if (defaultValue !== undefined) {
-//                constructor.defaultProps[propName] = defaultValue;
+        }  
+    }
+    
+    if (!ret) {
+        const constructor = function (...args) {
+            ReactComponent.call(this, config, args);
+        };
+    
+        constructor.prototype = Object.create(ReactComponent.prototype);
+        constructor.displayName = config.name;
+    
+        if (config.properties) {    
+            for (let propName of propNames) {
+                const inject = !!config.properties[propName].inject;
+                    
+                if (inject) {
+                    constructor.contextTypes[propName] = constructor.propTypes[propName];
+                }
             }
         }
-    }
 
-    return React.createFactory(constructor);
+        ret = createReactFactory(constructor);
+    }
+    
+    return ret;
 } 
 
 class ReactComponent extends React.Component {
@@ -52,16 +80,22 @@ class ReactComponent extends React.Component {
         this.__contentToRender = null;
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
-
-        const result = config.initialize( this.__propsEmitter);
-        
-        this.__viewsPublisher = result.views;
+        this.__viewsPublisher = null;
         this.__viewsSubscription = null;
-        
-        if (result.methods) {
-            for (let methodName in result.methods) {
-                if (result.methods.hasOwnProperty(methodName)) {
-                    this[methodName] = result.methods[methodName];
+
+        if (config.render) {
+            this.__viewsPublisher =
+                    this.__propsEmitter.map(props => config.render(props));
+        } else {
+            const result = config.initialize(this.__propsEmitter);
+
+            this.__viewsPublisher = result.views;
+            
+            if (result.methods) {
+                for (let methodName in result.methods) {
+                    if (result.methods.hasOwnProperty(methodName)) {
+                        this[methodName] = result.methods[methodName];
+                    }
                 }
             }
         }
@@ -76,7 +110,7 @@ class ReactComponent extends React.Component {
         this.__viewsSubscription = this.__viewsPublisher.subscribe({
             next(value) {
                 self.__contentToRender = value;
-
+                
                 if (mounted) {
                     self.forceUpdate(); 
                 }
@@ -91,6 +125,7 @@ class ReactComponent extends React.Component {
     }
 
     componentWillUnmount() {
+        this.__propsEmitter.complete();
         this.__viewsSubscription.unsubscribe();
         this.__viewsSubscription = null;
         this.__viewsPublisher = null;
@@ -101,7 +136,7 @@ class ReactComponent extends React.Component {
     }
     
     shouldComponentUpdate() {
-        return false;
+        return !!this.__contentToRender;
     }
 
     render() {
@@ -112,7 +147,7 @@ class ReactComponent extends React.Component {
 
         const ret = this.__contentToRender;
         this.__contentToRender = null;
-
+        
         return ret;
     }
 

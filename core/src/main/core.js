@@ -40,44 +40,51 @@ export function defineComponent(config) {
         }
     }
     
-    
-    // TODO - add some return validation in enhanced initialize function
-    enhancedConfig.initialize = inputs => {
-        const enhancedInputs = !hasDefaultValues && typeChecks.length == 0
-            ? inputs
-            : inputs.map(properties => {
-                let ret = properties;
-                
-                for (let [propertyName, type, required] of typeChecks) {
-                    let err = null;
-                    
-                    if (required && properties[propertyName] === undefined) {
-                        err = new Error(`Missing mandatory property '${propertyName}' for '${config.name}'`);
-                    }
-                    
-                    if (!err && type) {
-                        err = type(properties, propertyName, config.name, 'property');
-                    }
+    if (config.render) {
+        if (typeChecks.length > 0 || hasDefaultValues) {
+            enhancedConfig.render = properties => {
+                if (typeChecks.length > 0) {
+                    const err = checkTypes(properties, typeChecks,
+                            config.name, 'properties');
                     
                     if (err) {
-                        const msg = ('' + err)
-                            .replace(/^(Error|Warning)\s*(:?)\s*/i, '')
-                            .replace(/(\s|\.)+$/, '');
-                        
-                        console.error('Error: ' + msg)
+                        console.error('Error: ' + err.message);
                     }
-                }
+                }   
+
+                const props =  hasDefaultValues
+                    ? Object.assign({}, defaultValues, properties)
+                    : properties;
                 
-                if (hasDefaultValues) {
-                    ret = Object.assign({}, defaultValues, properties);
-                }
-                
-                return ret;
-            });
-    
-        return config.initialize(enhancedInputs);
-    };
-    
+                return config.render(props);
+            };
+        }
+    } else {
+        // TODO - add some return validation in enhanced initialize function
+        enhancedConfig.initialize = inputs => {
+            const enhancedInputs = !hasDefaultValues && typeChecks.length == 0
+                ? inputs
+                : inputs.map(properties => {
+                    let ret = properties;
+                    
+                    const err = checkTypes(properties, typeChecks,
+                            config.name, 'properties');
+                    
+                    if (err) {
+                        console.error('Error: ' + err.message);
+                    }
+                    
+                    if (hasDefaultValues) {
+                        ret = Object.assign({}, defaultValues, properties);
+                    }
+                    
+                    return ret;
+                });
+        
+            return config.initialize(enhancedInputs);
+        };
+    }
+
     return definePlatformComponent(enhancedConfig);
 }
 
@@ -108,10 +115,16 @@ function validateConfig(config, errMsgPrefix = null) {
         errMsg = "Configuration parameter 'name' must be a string";
     } else if (!config.name.match(componentNameRegex)) {
         errMsg = "Configuration parameter 'name' must match with regex "
-                + componentNameRegex + ` (given '${config.name}')`; 
-    } else if (config.initialize === undefined || config.initialize === null) {
-        errMsg = "Configuration parameter 'initialize' is missing";
-    } else if (typeof config.initialize !== 'function') {
+            + componentNameRegex + ` (given '${config.name}')`;
+    } else if (config.render === undefined && config.initialize === undefined) {
+        errMsg = "Either configuration parameter 'render' "
+            + "or parameter 'initialize' must be set";
+    } else if (config.render !== undefined && config.initialize !== undefined) {
+        errMsg = "Configuration parameters 'render' and 'initialize' must not "
+            + 'be set both';
+    } else if (config.render !== undefined && typeof config.render !== 'function') {
+        errMsg = "Configuration parameter 'render' must be a function";
+    } else if (config.initialize !== undefined && typeof config.initialize !== 'function') {
         errMsg = "Configuration parameter 'inititialize' must be a function";
     }
     
@@ -139,10 +152,13 @@ function validateConfig(config, errMsgPrefix = null) {
                         + 'must no be null';
                 } else if (typeOfPropValue !== 'object') {
                     errMsg = `Configuration parameter '${paramName}.${propName} `
-                            + 'must be a an object'; 
+                        + 'must be a an object'; 
                 } else if (typeof propValue.type !== 'function') {
                     errMsg = `Configuration parameter '${paramName}.${propName}.type' `
-                            + ' must be a function';
+                        + ' must be a function';
+                } else if (propValue.inject !== undefined && typeof propValue.inject !== 'boolean') {
+                    errMsg = `Configuration parameter '${paramName}.${propName}.inject' `
+                        + ' must be boolean';
                 }
                 
                 if (errMsg) {
@@ -176,4 +192,33 @@ function validateConfig(config, errMsgPrefix = null) {
     }
     
     return ret;
+}
+
+function checkTypes(properties, typeChecks, componentName, propsKind) {
+   let err = null; 
+    
+    for (let [propertyName, type, required] of typeChecks) {
+        let err = null;
+        
+        if (required && properties[propertyName] === undefined) {
+            err = new Error(`Missing mandatory property '${propertyName}' for '${componentName}'`);
+        }
+        
+        if (!err && type) {
+            err = type(properties, propertyName, componentName, propsKind);
+        }
+        
+        if (err) {
+            const msg = ('' + err)
+                .replace(/^\s*(Error|Warning)\s*(:?)\s*/i, '')
+                .replace(/(\s|\.)+$/, '')
+                .replace(/`/g, "'")
+                .replace(/^./, first => first.toUpperCase())
+                .trim();
+            
+            console.error('Error: ' + msg);
+        }
+    }
+    
+    return err;
 }
