@@ -24,7 +24,7 @@ const
 
 
 function isElement(what)  {
-    return isValidReactElement(what);
+    return what !== undefined && what !== null && isValidReactElement(what);
 } 
 
 function defineComponent(config) {

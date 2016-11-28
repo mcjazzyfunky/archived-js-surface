@@ -1,12 +1,11 @@
 import { defineComponent, isElement, mount } from '../../../core/src/main/core.js';
 import Emitter from '../../../util/src/main/Emitter.js';
 import Types from '../../../util/src/main/Types.js';
-import createElement from '../../../util/src/main/hiccup.js';
+import createElement from '../../../util/src/main/hyperscript.js';
 
 export {
     createElement,
     defineCommonComponent as defineComponent,
-    createElement,
     isElement,
     mount,
     Types

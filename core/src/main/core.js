@@ -22,7 +22,6 @@ function defineComponent(config) {
     }
     
     const enhancedConfig = Object.assign({}, config);
-console.log(enhancedConfig, config)    
     const defaultValues = {};
     var hasDefaultValues = false;
     const typeChecks = [];
@@ -148,8 +147,8 @@ function validateConfig(config, errMsgPrefix = null) {
                     errMsg = `Configuration parameter '${paramName}.${propName}' ` 
                         + 'must no be null';
                 } else if (typeOfPropValue !== 'object') {
-                    errMsg = `Configuration parameter '${paramName}.${propName} `
-                        + 'must be a an object'; 
+                    errMsg = `Configuration parameter '${paramName}.${propName}' `
+                        + 'must be an object'; 
                 } else if (typeof propValue.type !== 'function') {
                     errMsg = `Configuration parameter '${paramName}.${propName}.type' `
                         + ' must be a function';

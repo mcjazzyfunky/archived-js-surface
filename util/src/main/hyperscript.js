@@ -1,4 +1,14 @@
-import { createElement } from '../../../core/src/main/core.js';
+import { createElement, isElement } from '../../../core/src/main/core.js';
+
+export default hyperscript2;
+//export default createElement;
+
+// Just for testing purposes
+export {
+    treatAsAttrs,
+    pushMany,
+    applyCreateElement
+};
 
 const
     tagPattern = '[a-zA-Z][a-zA-Z0-9_-]*',
@@ -11,9 +21,8 @@ const
     tagCache = {},
     tagIsSimpleSymbol = Symbol('tagIsSimple');
 
-export default hiccup;
 
-function hiccup(/* tag, ...rest */) {
+function hyperscript(/* tag, ...rest */) {
     let ret = null;
     
     const
@@ -26,12 +35,12 @@ function hiccup(/* tag, ...rest */) {
     }
     
     if (!tagIsString) {
-        ret = createElement.apply(null, arguments);
+        ret = applyCreateElement(arguments);
     } else {
         let result = tagCache[tag];
         
         if (result === tagIsSimpleSymbol) {
-            ret = createElement.apply(null, arguments);
+            ret = applyCreateElement(arguments);
         } else if (!result || !tagCache.hasOwnProperty(tag)) {
             const tagIsSimple =
                 tag.indexOf('.') === -1
@@ -41,11 +50,10 @@ function hiccup(/* tag, ...rest */) {
             if (tagIsSimple) {
                 tagCache[tag] = tagIsSimpleSymbol;
                 
-                ret = createElement.apply(null, arguments);
+                ret = applyCreateElement(arguments);
             } else if (!tag.match(hiccupRegex)) {
                 throw new Error('[createElement] First argument tag is not a proper hiccup string');
             } else {
-            
                 const parts = tag.split('/');
                 
                 result = [];
@@ -71,7 +79,7 @@ function hiccup(/* tag, ...rest */) {
                 lastId = lastTriple[1],
                 lastAttrs = lastId ? { id: lastId } : {},
                 secondArg = arguments[2],
-                secondArgHasAttrs = secondArg && secondArg.constructor === Object,
+                secondArgHasAttrs = treatAsAttrs(secondArg),
                 newArgs = [lastTag];
             
             if (secondArgHasAttrs) {
@@ -123,4 +131,38 @@ function hiccup(/* tag, ...rest */) {
     return ret;
 }
 
+function treatAsAttrs(what) {
+    return what === undefined || what === null || typeof what === 'object' && !isElement(what);
+}
 
+function pushMany(arr, items, start = 0, end = null) {
+    for (let i = start; end === null && i < items.length || i < end; ++i) {
+        arr.push(items[i]);
+    }
+}
+
+function applyCreateElement(args) {
+    let ret;
+    
+    if (treatAsAttrs(args[1])) {
+        ret = createElement.apply(null, args);
+    } else {
+        const newArguments = [args[0], null];
+        
+        pushMany(newArguments, args, 1);
+        ret = createElement.apply(null, newArguments);
+    }
+    
+    return ret;
+}
+
+// Just temporary
+function hyperscript2(...args) {
+    try {
+        const ret = hyperscript(...args);
+        return ret;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
+}

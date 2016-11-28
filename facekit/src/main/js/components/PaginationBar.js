@@ -88,7 +88,7 @@ export default defineComponent({
             buttons =
                 htm('ul',
                     { className: 'k-pager-numbers k-reset' },
-                    Seq.range(
+                    ...Seq.range(
                         paginationInfo.firstButtonIndex ,
                         paginationInfo.lastButtonIndex + 1)
                     .map(
@@ -121,7 +121,7 @@ export default defineComponent({
                     },
                     htm('span',
                         { className: 'k-icon k-i-seek-e' }));
-                    
+                    console.log(buttons)
         return (
             htm('div',
                 { className: 'k-pager-wrap k-grid-pager k-widget k-floatwrap',
@@ -130,7 +130,7 @@ export default defineComponent({
                 firstPageLink,
                 previousPageLink,
                 precedingEllipsisLink,
-                buttons,
+                buttons, 
                 succeedingEllipsisLink,
                 nextPageLink,
                 lastPageLink
