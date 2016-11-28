@@ -83,9 +83,7 @@ class ReactComponent extends React.Component {
         this.__contextEmitter = new Emitter();
         this.__viewsPublisher = null;
         this.__viewsSubscription = null;
-if (config.name ==='FKPaginationInfo') {
-    console.log(config)
-}
+        
         if (config.render) {
             this.__viewsPublisher =
                     this.__propsEmitter.map(props => config.render(props));

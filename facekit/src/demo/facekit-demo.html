@@ -6,9 +6,13 @@
         <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
         <script type="text/javascript" src="https://kendo.cdn.telerik.com/2016.3.1028/js/kendo.all.min.js"></script>
+        
+        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.common.min.css" />
+        <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2016.3.1028/styles/kendo.silver.min.css" />
+        <!--
         <link rel="stylesheet" type="text/css" href="../../../node_modules/kendo-ui-core/css/web/kendo.common.core.min.css">
         <link rel="stylesheet" type="text/css" href="../../../node_modules/kendo-ui-core/css/web/kendo.silver.min.css">
-        
+        -->
 
         <script type="text/javascript">
             System.config({
@@ -25,14 +29,15 @@
                     //'react': 'node_modules/react-lite/dist/react-lite.min.js',
                     //'react-dom': 'node_modules/react-lite/dist/react-lite.min.js',
                     
+                        
+                    //'react': 'node_modules/preact/dist/preact.js',
+                    //'react-dom': 'node_modules/preact/dist/preact.js',
                     
                     'inferno': 'node_modules/inferno/dist/inferno.min.js',
                     'inferno-component': 'node_modules/inferno/dist/inferno-component.min.js',
                     'inferno-create-element': 'node_modules/inferno/dist/inferno-create-element.min.js',
                     
-                    'js-surface/core': 'core/src/main/core.js',
-                    'js-surface/common': 'common/src/main/common.js',
-                    'js-surface/util': 'util/src/main/util.js',
+                    'js-surface': 'common/src/main/common.js',
                     'js-surface/platform': 'react-dom/src/main/react-dom.js',
                 
                     //'js-surface/platform': 'inferno/src/main/inferno.js',

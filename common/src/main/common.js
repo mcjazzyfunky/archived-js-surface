@@ -84,37 +84,61 @@ function defineCommonComponent(config) {
                     }   
                 }
             }
-        
+
+
+            let newInputs = inputs;
+            
+            if (features.onNextProps) {
+                newInputs = inputs.scan((props, nextProps, idx) => {
+                    if (idx > 0) {
+                        features.onNextProps({ props, nextProps });
+                    }
+                    
+                    return props;
+                });
+            }
+            
+            let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
+                (props, state) => [props, state]);
+    
+            if (features.needsUpdate) {
+                propsAndStateStream = propsAndStateStream.filter(([props, state], idx) => {
+                    return idx === 0 || !!features.needsUpdate({ props, state }); 
+                });
+            } 
+    
+            const views = propsAndStateStream.map(([nextProps, nextState])  => {
+                if (!mounted) {
+                    if (config.prepareState) {
+                        const stateResult = config.prepareState(nextProps);
+                        nextState = state = stateResult;
+                    }
+                    
+                    if (features.onWillMount) {
+                        features.onWillMount({ nextProps });
+                    }
+                    
+                    if (features.onDidMount) {
+                        defer(() => features.onDidMount({ props: nextProps }));
+                    }
+  
+                    mounted = true;
+                } else {
+                    if (features.onWillUpdate) {
+                        features.onWillUpdate({});
+                    }
+                    
+                    if (features.onDidUpdate) {
+                        defer(() => features.onDidUpdate());
+                    }
+                 }
+                
+                return features.render({ props: nextProps, state: nextState });
+            });
+                
             const ret = {
                 methods,
-                views: inputs.combineLatest(stateEmitter.startWith(null), (nextProps, nextState)  => {
-                    if (!mounted) {
-                        if (config.prepareState) {
-                            const stateResult = config.prepareState(nextProps);
-                            nextState = state = stateResult;
-                        }
-                        
-                        if (features.onWillMount) {
-                            features.onWillMount();
-                        }
-                        
-                        if (features.onDidMount) {
-                            defer(() => features.onDidMount());
-                        }
-      
-                        mounted = true;
-                    } else {
-                        if (features.onWillUpdate) {
-                            features.onWillUpdate();
-                        }
-                        
-                        if (features.onDidUpdate) {
-                            defer(() => features.onDidUpdate());
-                        }
-                     }
-                    
-                    return features.render({ props: nextProps, state: nextState });
-                })
+                views
             };
             
             return ret;

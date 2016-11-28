@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
 
 const commands = {
     increase(delta) {
@@ -46,24 +46,30 @@ const Counter = defineComponent({
     
     initiate({ ctrl }) {
         return {
-            onWillMount() {
-                console.log('will mount Counter');
+            needsUpdate(params) {
+                console.log('check wheter update needed - params:', params);
+                
+                return true;
             },
             
-            onDidMount() {
-                console.log('did mount Counter');  
+            onWillMount(params) {
+                console.log('will mount Counter - params:', params);
             },
             
-            onWillUpdate() {
-                console.log('will update Counter');
+            onDidMount(params) {
+                console.log('did mount Counter - params:', params);  
             },
             
-            onDidUpdate() {
-                console.log('did update Counter');
+            onWillUpdate(params) {
+                console.log('will update Counter - params:', params);
             },
             
-            onWillUnmount() {
-                console.log('will unmount Counter');
+            onDidUpdate(params) {
+                console.log('did update Counter - params:', params);
+            },
+            
+            onWillUnmount(params) {
+                console.log('will unmount Counter - params:', params);
             },
             
             render({ props, state }) {

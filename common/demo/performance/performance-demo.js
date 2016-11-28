@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
 
 import PaginationHelper from './PaginationHelper.js';
 import ComponentHelper from './ComponentHelper.js';

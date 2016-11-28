@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types, isElement } from 'js-surface/common';
+import { defineComponent, mount, createElement as htm, Types, isElement } from 'js-surface';
 
 import { Seq } from 'js-prelude';
 

@@ -1,7 +1,7 @@
 import ComponentHelper from '../helpers/ComponentHelper.js';
 import PaginationHelper from '../helpers/PaginationHelper.js';
 
-import { defineComponent, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, createElement as htm, Types } from 'js-surface';
 import { Seq } from 'js-prelude';
 
 export default defineComponent({
@@ -73,7 +73,8 @@ export default defineComponent({
             
             previousPageLink =
                 htm('a',
-                    { onClick: createClickHandler(() => moveToPage()),
+                    { className: 'k-link',
+                      onClick: createClickHandler(() => moveToPage()),
                       ariaLabel: textGoToPreviousPage,
                       text: textGoToPreviousPage
                     },
@@ -82,31 +83,40 @@ export default defineComponent({
             
             precedingEllipsisLink =
                 htm('a',
-                    { onClick: createClickHandler(() => moveToPage(1)) },
+                    { className: 'k-link',
+                      onClick: createClickHandler(() => moveToPage(1))
+                    },
                     '...'),
                     
             buttons =
                 htm('ul',
                     { className: 'k-pager-numbers k-reset' },
-                    ...Seq.range(
+                    Seq.range(
                         paginationInfo.firstButtonIndex ,
                         paginationInfo.lastButtonIndex + 1)
                     .map(
                         index =>
                             htm('li',
-                                null,
+                                { key: index },
                                 htm('a',
-                                    { onClick: createClickHandler(() => moveToPage(index)) },
+                                    { className: index === props.pageIndex ? 'k-state-selected' : 'k-link',
+                                      onClick: createClickHandler(() => moveToPage(index)),
+                                      tabIndex: -1,
+                                      dataPage: index + 1
+                                    },
                                     index + 1)))),
                             
             succeedingEllipsisLink =
                 htm('a',
-                    { onClick: createClickHandler(() => moveToPage(1)) },
+                    { className: 'k-link',
+                      onClick: createClickHandler(() => moveToPage(1))
+                    },
                     '...'),
             
             nextPageLink = 
                 htm('a',
-                    { onClick: createClickHandler(() => moveToPage(222)),
+                    { className: 'k-link',
+                      onClick: createClickHandler(() => moveToPage(222)),
                       ariaLabel: textGoToNextPage,
                       title: textGoToNextPage
                     },
@@ -115,7 +125,8 @@ export default defineComponent({
 
             lastPageLink =
                 htm('a',
-                    { onClick: createClickHandler(() => moveToPage(222)),
+                    { className: 'k-link',
+                      onClick: createClickHandler(() => moveToPage(222)),
                       ariaLabel: textGoToLastPage,
                       title: textGoToLastPage
                     },

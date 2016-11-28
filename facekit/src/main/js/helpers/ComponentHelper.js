@@ -1,6 +1,6 @@
 'use static';
 import { Seq, Strings } from 'js-prelude';
-import { createElement as htm } from 'js-surface/common';
+import { createElement as htm } from 'js-surface';
 
 export default class ComponentHelper {
     static buildCssClass(...tokens) {

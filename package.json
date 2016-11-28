@@ -29,6 +29,7 @@
     "kendo-ui-core": "^2016.3.1118",
     "less": "^2.7.1",
     "preact": "^6.4.0",
+    "preact-compat": "^3.9.2",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-lite": "^0.15.28",

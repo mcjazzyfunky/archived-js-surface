@@ -1,4 +1,4 @@
-import { defineComponent, createElement as htm, Types } from 'js-surface/common';
+import { defineComponent, createElement as htm, Types } from 'js-surface';
 
 export default defineComponent({
     name: 'Button',
