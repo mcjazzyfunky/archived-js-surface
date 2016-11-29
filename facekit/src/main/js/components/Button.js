@@ -62,7 +62,7 @@ const properties = {
 };
 
 
-function defineBehavior() {
+function initBehavior() {
     let elem = null;
     
     return {
@@ -206,5 +206,5 @@ function defineBehavior() {
 export default defineComponent({
     name,
     properties,
-    defineBehavior
+    initBehavior
 });

@@ -37,8 +37,8 @@ function defineCommonComponent(config) {
                 
             const views = inputs.combineLatest(stateEmitter.startWith({pageIndex: 0}), (nextProps, nextState)  => {
                     if (!mounted) {
-                        if (config.prepareState) {
-                            nextState = state = config.prepareState(nextProps);
+                        if (config.initState) {
+                            nextState = state = config.initState(nextProps);
                         }
       
                         mounted = true;
@@ -66,7 +66,7 @@ function defineCommonComponent(config) {
                         stateEmitter.next(state);
                     }),
         
-                features = config.defineBehavior( ctrl ),
+                features = config.initBehavior( ctrl ),
                 methods = {};
                 
             if (features) {
@@ -109,8 +109,8 @@ function defineCommonComponent(config) {
     
             const views = propsAndStateStream.map(([nextProps, nextState])  => {
                 if (!mounted) {
-                    if (config.prepareState) {
-                        const stateResult = config.prepareState(nextProps);
+                    if (config.initState) {
+                        const stateResult = config.initState(nextProps);
                         nextState = state = stateResult;
                     }
                     

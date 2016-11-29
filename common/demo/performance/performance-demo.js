@@ -162,7 +162,7 @@ function buildLinkListItem(text, isActive, moveToPage) {
 export const DemoOfPagination = defineComponent({
     name: 'DemoOfPagination',
     
-    prepareState() {
+    initState() {
         return { pageIndex: 0 };
     },
     

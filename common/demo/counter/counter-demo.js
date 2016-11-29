@@ -40,11 +40,11 @@ const Counter = defineComponent({
         }
     },
     
-    prepareState(props) {
+    initState(props) {
         return { counterValue: props.initValue };
     },
     
-    defineBehavior({ increase, reset }) {
+    initBehavior({ increase, reset }) {
         return {
             needsUpdate(params) {
                 console.log('check wheter update needed - params:', params);
@@ -100,7 +100,7 @@ const Counter = defineComponent({
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
     
-    defineBehavior() {
+    initBehavior() {
         let counter = null;
  
         return {
