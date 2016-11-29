@@ -33,7 +33,7 @@ const pagination = {
 const
     dom = Surface.createElement,
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
-    sizes = ['large', 'normal', 'small', 'tiny'],
+    sizes = ['large', 'normal', 'small'],
     exampleIcons = ['fa-calendar', 'fa-twitter', 'glyphicon-home', 'glyphicon-print'],
     iconPositions = ['left', 'top', 'right', 'bottom'];
 

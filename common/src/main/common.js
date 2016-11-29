@@ -28,7 +28,7 @@ function defineCommonComponent(config) {
             const
                 stateEmitter = new Emitter(),
                 ctrl = createController(
-                    config.commands,
+                    config.stateTransitions,
                     () => state,
                     newState => {
                         state = newState;
@@ -45,7 +45,7 @@ function defineCommonComponent(config) {
                     }
                    
                     
-                    return config.render({ props: nextProps, state: nextState, ctrl });
+                    return config.render({ props: nextProps, state: nextState }, ctrl);
                 });
                 
             return { views };
@@ -54,19 +54,19 @@ function defineCommonComponent(config) {
         coreConfig.initialize = inputs => {
             let state = null,
                 mounted = false;
-           
+            
             const
                 stateEmitter = new Emitter(),
         
                 ctrl = createController(
-                    config.commands,
+                    config.stateTransitions,
                     () => state,
                     newState => {
                         state = newState;
                         stateEmitter.next(state);
                     }),
         
-                features = config.initiate({ ctrl }),
+                features = config.defineBehavior( ctrl ),
                 methods = {};
                 
             if (features) {
@@ -150,15 +150,15 @@ function defineCommonComponent(config) {
 }
 
 
-function createController(commands, getState, setState) {
+function createController(stateTransitions, getState, setState) {
     const
         ret = {},
-        commandNames = commands ? Object.getOwnPropertyNames(commands) : [];
+        commandNames = stateTransitions ? Object.getOwnPropertyNames(stateTransitions) : [];
     
     for (let commandName of commandNames) {
         ret[commandName] = (...args) => {
             const
-                mapper = commands[commandName],
+                mapper = stateTransitions[commandName],
                 currentState = getState(),
                 nextState = mapper(...args)(currentState);
 

@@ -57,7 +57,7 @@ function defineComponent(config) {
                         console.error('Error: ' + err.message);
                     }
                 }   
-
+                
                 const props =  hasDefaultValues
                     ? Object.assign({}, defaultValues, properties)
                     : properties;
@@ -70,7 +70,7 @@ function defineComponent(config) {
     } else {
         // TODO - add some return validation in enhanced initialize function
         enhancedConfig.initialize = inputs => {
-            const enhancedInputs = !hasDefaultValues && typeChecks.length == 0
+            const enhancedInputs = !hasDefaultValues && typeChecks.length === 0
                 ? inputs
                 : inputs.map(properties => {
                     let ret = properties;

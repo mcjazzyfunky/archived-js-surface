@@ -166,7 +166,7 @@ export const DemoOfPagination = defineComponent({
         return { pageIndex: 0 };
     },
     
-    commands: {
+    stateTransitions: {
         moveToPage(pageIndex) {
             return state => {console.log('state', state); return Objects.transform(state, {
                 pageIndex: {$set: pageIndex}
@@ -174,7 +174,7 @@ export const DemoOfPagination = defineComponent({
         }
     },
 
-    render({ state, ctrl }) {
+    render({ state }, ctrl) {
         return (
             htm('div',
                 { className: 'container-fluid' },

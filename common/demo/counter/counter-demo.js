@@ -1,6 +1,6 @@
 import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
 
-const commands = {
+const stateTransitions = {
     increase(delta) {
         return state => ({ counterValue: state.counterValue + delta });
     },
@@ -27,7 +27,7 @@ const CounterLabel = defineComponent({
 const Counter = defineComponent({
     name: 'Counter',
    
-    commands,
+    stateTransitions,
     
     properties: {
         initValue: {
@@ -44,7 +44,7 @@ const Counter = defineComponent({
         return { counterValue: props.initValue };
     },
     
-    initiate({ ctrl }) {
+    defineBehavior({ increase, reset }) {
         return {
             needsUpdate(params) {
                 console.log('check wheter update needed - params:', params);
@@ -77,7 +77,7 @@ const Counter = defineComponent({
                     htm('span',
                         {style: props.style},
                         htm('button',
-                            { onClick: () => ctrl.increase(-1) },
+                            { onClick: () => increase(-1) },
                             '-'),
                         
                         htm('div',
@@ -85,13 +85,13 @@ const Counter = defineComponent({
                             CounterLabel({value: state.counterValue})),
                             
                         htm('button',
-                            { onClick: () => ctrl.increase(1) } ,
+                            { onClick: () => increase(1) } ,
                             '+'))
                 );
             },
             
             reset(value) {
-                ctrl.reset(value);
+                reset(value);
             }
         };
     }
@@ -100,7 +100,7 @@ const Counter = defineComponent({
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
     
-    initiate() {
+    defineBehavior() {
         let counter = null;
  
         return {
