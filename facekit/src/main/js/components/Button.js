@@ -62,7 +62,7 @@ const properties = {
 };
 
 
-function initiate() {
+function defineBehavior() {
     let elem = null;
     
     return {
@@ -206,5 +206,5 @@ function initiate() {
 export default defineComponent({
     name,
     properties,
-    initiate
+    defineBehavior
 });
