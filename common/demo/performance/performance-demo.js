@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
+import { defineComponent, defineIntents, mount, createElement as htm, Types } from 'js-surface';
 
 import PaginationHelper from './PaginationHelper.js';
 import ComponentHelper from './ComponentHelper.js';
@@ -159,6 +159,10 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
+const Intents = defineIntents({
+    moveToPage: true
+});
+
 export const DemoOfPagination = defineComponent({
     name: 'DemoOfPagination',
     
@@ -168,13 +172,13 @@ export const DemoOfPagination = defineComponent({
     
     stateTransitions: {
         moveToPage(pageIndex) {
-            return state => {console.log('state', state); return Objects.transform(state, {
+            return state => Objects.transform(state, {
                 pageIndex: {$set: pageIndex}
-            })};
+            });
         }
     },
 
-    render({ state }, ctrl) {
+    render({ state, send }) {
         return (
             htm('div',
                 { className: 'container-fluid' },
@@ -186,7 +190,8 @@ export const DemoOfPagination = defineComponent({
                             pageIndex: state.pageIndex,
                             pageSize: pageSize,
                             totalItemCount: totalItemCount,
-                            onChange: evt => ctrl.moveToPage(evt.targetPage)}))).toArray())
+                            onChange: evt => send(Intents.moveToPage(evt.targetPage))
+                        }))).toArray())
             );
     }
 });

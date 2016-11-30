@@ -6,10 +6,38 @@ import createElement from '../../../util/src/main/hyperscript.js';
 export {
     createElement,
     defineCommonComponent as defineComponent,
+    defineIntents,
     isElement,
     mount,
     Types
 };
+
+function defineIntents(config) {
+    const ret = {};
+    
+    for (let type in config) {
+        if (config.hasOwnProperty(type)) {
+            ret[type] = createIntent(type,  config[type]);
+        }
+    }
+    
+    return ret;
+}
+
+function createIntent(type, hasArgs) {
+    let ret; 
+
+    if (!hasArgs) {
+        ret = { type };
+    } else {
+        ret = (...args) => ({
+            type,
+            payload: args
+        });
+    }
+
+    return ret;
+}
 
 function defineCommonComponent(config) {
     const coreConfig = {};
@@ -20,153 +48,120 @@ function defineCommonComponent(config) {
         coreConfig.properties = config.properties;
     }
     
-    if (config.render !== undefined) {
-        coreConfig.initialize = inputs => {
-            let state = null,
-                mounted = false;
+    coreConfig.initialize = inputs => {
+        let state = null,
+            mounted = false;
+        
+        const
+            stateEmitter = new Emitter(),
+            effectHandler = config.initEffectHandler
+                ? config.initEffectHandler({ send })
+                : null,
+
+            send = createSendFunc(
+                config.stateTransitions,
+                () => state,
+                newState => {
+                    state = newState;
+                    stateEmitter.next(state);
+                },
+                effectHandler),
+    
+            methods = {};
+
+        let newInputs = inputs;
+        
+        if (config.onNextProps) {
+            newInputs = inputs.scan((props, nextProps, idx) => {
+                if (idx > 0) {
+                    config.onNextProps({ props, nextProps });
+                }
+                
+                return props;
+            });
+        }
+        
+        let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
+            (props, state) => [props, state]);
+
+        if (config.needsUpdate) {
+            propsAndStateStream = propsAndStateStream.filter(([props, state], idx) => {
+                return idx === 0 || !!config.needsUpdate({ props, state }); 
+            });
+        } 
+
+        const views = propsAndStateStream.map(([nextProps, nextState])  => {
+            if (!mounted) {
+                if (config.initState) {
+                    const stateResult = config.initState(nextProps);
+                    nextState = state = stateResult;
+                }
+                
+                if (config.onWillMount) {
+                    config.onWillMount({ nextProps, send  });
+                }
+                
+                if (config.onDidMount) {
+                defer(() => config.onDidMount({ props: nextProps }));
+                }
+
+                mounted = true;
+            } else {
+                if (config.onWillUpdate) {
+                    config.onWillUpdate({ send });
+                }
+                
+                if (config.onDidUpdate) {
+                    defer(() => config.onDidUpdate({ send }));
+                }
+             }
            
-            const
-                stateEmitter = new Emitter(),
-                ctrl = createController(
-                    config.stateTransitions,
-                    () => state,
-                    newState => {
-                        state = newState;
-                        stateEmitter.next(state);
-                    });
-                
-            const views = inputs.combineLatest(stateEmitter.startWith({pageIndex: 0}), (nextProps, nextState)  => {
-                    if (!mounted) {
-                        if (config.initState) {
-                            nextState = state = config.initState(nextProps);
-                        }
-      
-                        mounted = true;
-                    }
-                   
-                    
-                    return config.render({ props: nextProps, state: nextState }, ctrl);
-                });
-                
-            return { views };
-        };   
-    } else {
-        coreConfig.initialize = inputs => {
-            let state = null,
-                mounted = false;
-            
-            const
-                stateEmitter = new Emitter(),
+            // TODO 
+            try {
+                let r =config.render({ props: nextProps, state: nextState, send  });
+                return r;
+            } catch(e) {
+                console.error(e);
+                throw e;
+            }
+        });
         
-                ctrl = createController(
-                    config.stateTransitions,
-                    () => state,
-                    newState => {
-                        state = newState;
-                        stateEmitter.next(state);
-                    }),
-        
-                features = config.initBehavior( ctrl ),
-                methods = {};
-                
-            if (features) {
-                for (let featureName in features) {
-                    if (features.hasOwnProperty(featureName)
-                        && featureName !== 'render'
-                        && featureName !== 'onWillMount'
-                        && featureName !== 'onDidMount'
-                        && featureName !== 'onWillUpdate'
-                        && featureName !== 'onDidUpdate'
-                        && featureName !== 'onWillUnmount'
-                        && featureName !== 'onDidUnmount') {
-                        
-                        methods[featureName] = features[featureName];
-                    }   
+        if (config.methods) {
+            for (let methodName in config.methods) {
+                if (config.methods.hasOwnProperty(methodName)) {
+                    methods[methodName] = (...args) => {
+                        config.methods[methodName](...args)({ send });
+                    };
                 }
             }
-
-
-            let newInputs = inputs;
+        }
             
-            if (features.onNextProps) {
-                newInputs = inputs.scan((props, nextProps, idx) => {
-                    if (idx > 0) {
-                        features.onNextProps({ props, nextProps });
-                    }
-                    
-                    return props;
-                });
-            }
-            
-            let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
-                (props, state) => [props, state]);
-    
-            if (features.needsUpdate) {
-                propsAndStateStream = propsAndStateStream.filter(([props, state], idx) => {
-                    return idx === 0 || !!features.needsUpdate({ props, state }); 
-                });
-            } 
-    
-            const views = propsAndStateStream.map(([nextProps, nextState])  => {
-                if (!mounted) {
-                    if (config.initState) {
-                        const stateResult = config.initState(nextProps);
-                        nextState = state = stateResult;
-                    }
-                    
-                    if (features.onWillMount) {
-                        features.onWillMount({ nextProps });
-                    }
-                    
-                    if (features.onDidMount) {
-                        defer(() => features.onDidMount({ props: nextProps }));
-                    }
-  
-                    mounted = true;
-                } else {
-                    if (features.onWillUpdate) {
-                        features.onWillUpdate({});
-                    }
-                    
-                    if (features.onDidUpdate) {
-                        defer(() => features.onDidUpdate());
-                    }
-                 }
-                
-                return features.render({ props: nextProps, state: nextState });
-            });
-                
-            const ret = {
-                methods,
-                views
-            };
-            
-            return ret;
-        };   
-    }
-    
+        const ret = {
+            methods,
+            views
+        };
+        
+        return ret;
+    };   
     
     return defineComponent(coreConfig);
 }
 
 
-function createController(stateTransitions, getState, setState) {
-    const
-        ret = {},
-        commandNames = stateTransitions ? Object.getOwnPropertyNames(stateTransitions) : [];
-    
-    for (let commandName of commandNames) {
-        ret[commandName] = (...args) => {
-            const
-                mapper = stateTransitions[commandName],
-                currentState = getState(),
-                nextState = mapper(...args)(currentState);
-
-            setState(nextState);
-        };
-    }
-
-    return ret;
+function createSendFunc(stateTransitions, getState, setState, handleEffects) {
+    return function send(intent) {
+        if (stateTransitions) {
+            if (stateTransitions.hasOwnProperty(intent.type)) {
+                const
+                    currState = getState(),
+                    payload = intent.payload || [],
+                    nextState = stateTransitions[intent.type](...payload)(currState);
+                    setState(nextState);
+            }
+        } else if (handleEffects) {
+            handleEffects({ intent, send })
+        }
+    };
 }
 
 function defer(fn) {
