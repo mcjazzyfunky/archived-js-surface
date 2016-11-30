@@ -19,5 +19,5 @@ function mount(content, targetNode) {
         targetNode = document.getElementById(targetNode);
     }
 
-    ReactDOM.render(content, targetNode);
+    return ReactDOM.render(content, targetNode);
 }

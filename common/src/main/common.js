@@ -1,4 +1,5 @@
 import { defineComponent, isElement, mount } from '../../../core/src/main/core.js';
+import registerCustomElement from '../../../util/src/main/registerCustomElement.js';
 import Emitter from '../../../util/src/main/Emitter.js';
 import Types from '../../../util/src/main/Types.js';
 import createElement from '../../../util/src/main/hyperscript.js';
@@ -9,6 +10,7 @@ export {
     defineIntents,
     isElement,
     mount,
+    registerCustomElement,
     Types
 };
 
@@ -85,9 +87,11 @@ function defineCommonComponent(config) {
         let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
             (props, state) => [props, state]);
 
+        let prevProps = null, prevState = null;
+        
         if (config.needsUpdate) {
-            propsAndStateStream = propsAndStateStream.filter(([props, state], idx) => {
-                return idx === 0 || !!config.needsUpdate({ props, state }); 
+            propsAndStateStream = propsAndStateStream.filter(([nextProps, nextState], idx) => {
+                return idx === 0 || !!config.needsUpdate({ props: prevProps, nextProps, state: prevState, nextState }); 
             });
         } 
 
@@ -99,27 +103,31 @@ function defineCommonComponent(config) {
                 }
                 
                 if (config.onWillMount) {
-                    config.onWillMount({ nextProps, send  });
+                    config.onWillMount({ props: nextProps, state: nextState, send  });
                 }
                 
                 if (config.onDidMount) {
-                defer(() => config.onDidMount({ props: nextProps }));
+                defer(() => config.onDidMount({ props: nextProps, state: nextState, send }));
                 }
 
                 mounted = true;
             } else {
                 if (config.onWillUpdate) {
-                    config.onWillUpdate({ send });
+                    config.onWillUpdate({ props: prevProps, nextProps, state: prevState, nextState, send });
                 }
                 
                 if (config.onDidUpdate) {
-                    defer(() => config.onDidUpdate({ send }));
+                    defer(() => config.onDidUpdate({ props: nextProps, prevProps, state: nextState, prevState, send }));
                 }
              }
            
             // TODO 
             try {
-                let r =config.render({ props: nextProps, state: nextState, send  });
+                let r =config.render({ props: nextProps, prevProps, state: nextState, prevState, send  });
+
+                prevProps = nextProps,
+                prevState = nextState;
+
                 return r;
             } catch(e) {
                 console.error(e);
@@ -131,7 +139,7 @@ function defineCommonComponent(config) {
             for (let methodName in config.methods) {
                 if (config.methods.hasOwnProperty(methodName)) {
                     methods[methodName] = (...args) => {
-                        config.methods[methodName](...args)({ send });
+                        config.methods[methodName](...args)({ props: prevProps, state: prevState, send });
                     };
                 }
             }

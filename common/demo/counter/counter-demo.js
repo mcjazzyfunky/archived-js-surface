@@ -1,4 +1,6 @@
-import { defineComponent, defineIntents, mount, createElement as htm, Types } from 'js-surface';
+import { defineComponent, defineIntents, mount, createElement as htm, Types, registerCustomElement } from 'js-surface';
+
+
 
 const CounterLabel = defineComponent({
     name: 'CounterLabel',
@@ -34,7 +36,6 @@ const Counter = defineComponent({
         }
     },
 
-    
     properties: {
         initValue: {
             type: Types.number,
@@ -52,7 +53,7 @@ const Counter = defineComponent({
     
     methods: {
         resetCounter(n) {
-            return ({ send }) => {
+            return ({ props, state, send }) => {
                 send(CounterIntents.resetCounter(n));
             };
         }  
@@ -142,3 +143,10 @@ setTimeout(() => {
     mount(htm('div', null, 'done'), 'main-content'); 
 }, 4000);
 */
+
+
+registerCustomElement(
+    'my-counter-label',
+    CounterLabel, props => Object.assign(props, { value: parseInt(props.value) }));
+
+registerCustomElement('my-counter', Counter);
