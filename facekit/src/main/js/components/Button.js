@@ -58,153 +58,146 @@ const properties = {
     onClick: {
         type: Types.func,
         defaultValue: null
-    }
-};
+    },
+};    
 
+function render({ props }) {
+    const
+        key = props.key,
 
-function initBehavior() {
-    let elem = null;
-    
-    return {
-        onDidMount({ data }) {
-            if (elem) {
-             //   jQuery(elem).dropdown();
+        onClick = props.onClick,
+
+        icon = Strings.trimToNull(props.icon),
+
+        iconPosition = props.iconPosition,
+
+        iconElement =
+            ComponentHelper.createIconElement(
+                icon,
+                'fk-button-icon fk-icon fk-' + iconPosition),
+        
+        type = props.type,
+        
+        text = Strings.trimToNull(props.text),
+
+        textElement =
+            text === null
+            ? null
+            : htm('span',
+                {className: 'fk-button-text'},
+                text),
+
+        tooltip = props.tooltip, // TODO
+
+        disabled = props.disabled,
+
+        menu =
+            Seq.from(props.menu)
+                .toArray(),
+
+        hasMenu = menu.length > 0,
+
+        isDropdown = hasMenu && !onClick,
+
+        isSplitButton = hasMenu && onClick,
+
+        caret =
+            hasMenu
+            ? htm('span', {className: 'caret'})
+            : null,
+
+        sizeClass = { large: 'btn-lg', small: 'btn-sm'}[props.size] || null,
+
+        className =
+            ComponentHelper.buildCssClass(
+                'btn btn-' + type,
+                sizeClass,
+                (text === null ? null : 'fk-has-text'),
+                (iconElement === null ? null : 'fk-has-icon'),
+                (!isDropdown ? null : 'dropdown-toggle')),
+
+        doOnClick = event => {
+            const onClick = props.onClick;
+
+            if (onClick) {
+//                onClick(EventMappers.mapClickEvent(event));
             }
         },
-        
-        render({ props }) {try {
-            const
-                key = props.key,
-        
-                onClick = props.onClick,
-        
-                icon = Strings.trimToNull(props.icon),
-        
-                iconPosition = props.iconPosition,
-        
-                iconElement =
-                    ComponentHelper.createIconElement(
-                        icon,
-                        'fk-button-icon fk-icon fk-' + iconPosition),
-                
-                type = props.type,
-                
-                text = Strings.trimToNull(props.text),
-        
-                textElement =
-                    text === null
-                    ? null
-                    : htm('span',
-                        {className: 'fk-button-text'},
-                        text),
-        
-                tooltip = props.tooltip, // TODO
-        
-                disabled = props.disabled,
-        
-                menu =
-                    Seq.from(props.menu)
-                        .toArray(),
-        
-                hasMenu = menu.length > 0,
-        
-                isDropdown = hasMenu && !onClick,
-        
-                isSplitButton = hasMenu && onClick,
-        
-                caret =
-                    hasMenu
-                    ? htm('span', {className: 'caret'})
-                    : null,
-        
-                sizeClass = { large: 'btn-lg', small: 'btn-sm'}[props.size] || null,
-        
-                className =
-                    ComponentHelper.buildCssClass(
-                        'btn btn-' + type,
-                        sizeClass,
-                        (text === null ? null : 'fk-has-text'),
-                        (iconElement === null ? null : 'fk-has-icon'),
-                        (!isDropdown ? null : 'dropdown-toggle')),
-        
-                doOnClick = event => {
-                    const onClick = props.onClick;
-        
-                    if (onClick) {
-        //                onClick(EventMappers.mapClickEvent(event));
-                    }
+
+        button =
+            htm('button',
+                { type: 'button'
+                , className: className
+                , title: tooltip
+                , disabled: disabled
+                , onClick: doOnClick
+                , key: key
+                , 'data-toggle': isDropdown ? 'dropdown' : null
                 },
-        
-                button =
-                    htm('button',
-                        { type: 'button'
-                        , className: className
-                        , title: tooltip
-                        , disabled: disabled
-                        , onClick: doOnClick
-                        , key: key
-                        , 'data-toggle': isDropdown ? 'dropdown' : null
-                        },
-                        (iconPosition === 'left' || iconPosition === 'top'
-                             ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
-                             : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
-                        (isDropdown ? caret : null));
-        
-            let ret;
-        
-            if (isDropdown) {
-                ret =
-                    htm('div.fk-button.btn-group',
-                        { className: props.className
-                        },
-                        button,
-                        htm('ul',
-                            {className: 'dropdown-menu'},
-                            htm('li/a.dropdown-item',
-                                { className: 'dropdown-item', href: '#' },
-                                'Juhu'),
-                            htm('li/a.dropdown-item',
-                                { className: 'dropdown-item', href: '#' },
-                                'Juhu2')))
-        
-            } else if (isSplitButton) {
-                ret =
-                    htm('div',
-                        {className: 'fk-button btn-group dropdown ' + props.className},
-                        button,
-                        htm('button',
-                            { ref: element => elem = element
-                            , className: 'btn dropdown-toggle dropdown-toggle-split btn-' + type
-                            , 'data-toggle': 'dropdown'
-                            , type: 'button'
-                            },
-                            ' ',
-                            caret),
-                        htm('div.dropdown-menu',{className: 'dropdown-menu'},
-                            htm('li/a.dropdown-item',
-                                { className: 'dropdown-item', href: '#' },
-                                'Juhu'),
-                            htm('li/a.dropdown-item',
-                                { className: 'dropdown-item', href: '#' },
-                                'Juhu2')));
-            } else {
-                ret =
-                    htm('div',
-                        { className: 'fk-button btn-group ' + props.className },
-                        button);
-            }
-        
-            return ret;
-        } catch (e) {
-        console.log(e, 'xxx')
-        }
-        }
-    };
+                (iconPosition === 'left' || iconPosition === 'top'
+                     ? [iconElement, (text !== null && icon !== null ? ' ' : null), textElement]
+                     : [textElement, (text !== null && icon !== null ? ' ' : null), iconElement]),
+                (isDropdown ? caret : null));
+
+    let ret;
+
+    if (isDropdown) {
+        ret =
+            htm('div.fk-button.btn-group',
+                { className: props.className
+                },
+                button,
+                htm('ul',
+                    {className: 'dropdown-menu'},
+                    htm('li/a.dropdown-item',
+                        { className: 'dropdown-item', href: '#' },
+                        'Juhu'),
+                    htm('li/a.dropdown-item',
+                        { className: 'dropdown-item', href: '#' },
+                        'Juhu2')))
+
+    } else if (isSplitButton) {
+        ret =
+            htm('div',
+                {className: 'fk-button btn-group dropdown ' + props.className},
+                button,
+                htm('button',
+                    { ref: element => elem = element
+                    , className: 'btn dropdown-toggle dropdown-toggle-split btn-' + type
+                    , 'data-toggle': 'dropdown'
+                    , type: 'button'
+                    },
+                    ' ',
+                    caret),
+                htm('div.dropdown-menu',{className: 'dropdown-menu'},
+                    htm('li/a.dropdown-item',
+                        { className: 'dropdown-item', href: '#' },
+                        'Juhu'),
+                    htm('li/a.dropdown-item',
+                        { className: 'dropdown-item', href: '#' },
+                        'Juhu2')));
+    } else {
+        ret =
+            htm('div',
+                { className: 'fk-button btn-group ' + props.className },
+                button);
+    }
+    
+    return ret;
 }
 
+function onDidMount() {
+    
+}
+
+function onWillUnmount() {
+    
+}
 
 export default defineComponent({
     name,
     properties,
-    initBehavior
+    render,
+    onDidMount,
+    onWillUnmount
 });
