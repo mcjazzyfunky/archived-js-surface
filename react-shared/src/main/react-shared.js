@@ -133,7 +133,12 @@ class ReactComponent extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+    try {
         this.__propsEmitter.next(nextProps);
+    } catch(e) {
+        console.error(e);
+        throw e;
+    }
     }
     
     shouldComponentUpdate() {

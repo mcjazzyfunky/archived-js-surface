@@ -57,8 +57,8 @@ function defineCommonComponent(config) {
         const
             stateEmitter = new Emitter(),
 
-            effectHandler = config.initEffectHandler
-                ? config.initEffectHandler({ send: (it => send(it)) })
+            interactions = config.initInteractions
+                ? config.initInteractions({ send: (it => send(it)) })
                 : null,
 
             send = createSendFunc(
@@ -68,7 +68,7 @@ function defineCommonComponent(config) {
                     state = newState;
                     stateEmitter.next(state);
                 },
-                effectHandler),
+                interactions),
     
             methods = {};
 
@@ -157,7 +157,7 @@ function defineCommonComponent(config) {
 }
 
 
-function createSendFunc(stateTransitions, getState, setState, handleEffects) {
+function createSendFunc(stateTransitions, getState, setState, interactions) {
     return function send(intent) {
         defer(() => {
             if (stateTransitions) {
@@ -168,8 +168,10 @@ function createSendFunc(stateTransitions, getState, setState, handleEffects) {
                         nextState = stateTransitions[intent.type](...payload)(currState);
                         setState(nextState);
                 }
-            } else if (handleEffects) {
-                handleEffects({ intent, send })
+            } else if (typeof interactions === 'function') {
+                interactions(intent, send)
+            } else if (interactions && interactions.hasOwnProperty(intent.type)) {
+                interactions[intent.type](intent);    
             }
         });
     };

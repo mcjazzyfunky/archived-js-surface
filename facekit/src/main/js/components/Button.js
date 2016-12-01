@@ -162,8 +162,7 @@ function render({ props }) {
                 {className: 'fk-button btn-group dropdown ' + props.className},
                 button,
                 htm('button',
-                    { ref: element => elem = element
-                    , className: 'btn dropdown-toggle dropdown-toggle-split btn-' + type
+                    { className: 'btn dropdown-toggle dropdown-toggle-split btn-' + type
                     , 'data-toggle': 'dropdown'
                     , type: 'button'
                     },

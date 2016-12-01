@@ -115,8 +115,8 @@ const CounterCtrlIntents = defineIntents({
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
 
-    initEffectHandler({ send }) {
-          return async function({ intent }) {
+    initInteractions(send) {
+          return async function(intent) {
               const [counterInstance, counterValue] = intent.payload;
               counterInstance.resetCounter(counterValue);
           };
