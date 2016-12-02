@@ -16,18 +16,18 @@ export {
 
 function defineIntents(config) {
     const ret = {};
-    
+
     for (let type in config) {
         if (config.hasOwnProperty(type)) {
             ret[type] = createIntent(type,  config[type]);
         }
     }
-    
+
     return ret;
 }
 
 function createIntent(type, hasArgs) {
-    let ret; 
+    let ret;
 
     if (!hasArgs) {
         ret = { type };
@@ -43,17 +43,17 @@ function createIntent(type, hasArgs) {
 
 function defineCommonComponent(config) {
     const coreConfig = {};
-    
+
     coreConfig.name = config.name;
-    
+
     if (config.properties !== undefined) {
         coreConfig.properties = config.properties;
     }
-    
+
     coreConfig.initialize = inputs => {
         let state = null,
             mounted = false;
-        
+
         const
             stateEmitter = new Emitter(),
 
@@ -69,31 +69,31 @@ function defineCommonComponent(config) {
                     stateEmitter.next(state);
                 },
                 interactions),
-    
+
             methods = {};
 
         let newInputs = inputs;
-        
+
         if (config.onNextProps) {
             newInputs = inputs.scan((props, nextProps, idx) => {
                 if (idx > 0) {
                     config.onNextProps({ props, nextProps });
                 }
-                
+
                 return props;
             });
         }
-        
+
         let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
             (props, state) => [props, state]);
 
         let prevProps = null, prevState = null;
-        
+
         if (config.needsUpdate) {
             propsAndStateStream = propsAndStateStream.filter(([nextProps, nextState], idx) => {
-                return idx === 0 || !!config.needsUpdate({ props: prevProps, nextProps, state: prevState, nextState }); 
+                return idx === 0 || !!config.needsUpdate({ props: prevProps, nextProps, state: prevState, nextState });
             });
-        } 
+        }
 
         const views = propsAndStateStream.map(([nextProps, nextState])  => {
             if (!mounted) {
@@ -101,11 +101,11 @@ function defineCommonComponent(config) {
                     const stateResult = config.initState(nextProps);
                     nextState = state = stateResult;
                 }
-                
+
                 if (config.onWillMount) {
                     config.onWillMount({ props: nextProps, state: nextState, send  });
                 }
-                
+
                 if (config.onDidMount) {
                 defer(() => config.onDidMount({ props: nextProps, state: nextState, send }));
                 }
@@ -115,13 +115,13 @@ function defineCommonComponent(config) {
                 if (config.onWillUpdate) {
                     config.onWillUpdate({ props: prevProps, nextProps, state: prevState, nextState, send });
                 }
-                
+
                 if (config.onDidUpdate) {
                     defer(() => config.onDidUpdate({ props: nextProps, prevProps, state: nextState, prevState, send }));
                 }
              }
-           
-            // TODO 
+
+            // TODO
             try {
                 let r =config.render({ props: nextProps, prevProps, state: nextState, prevState, send  });
 
@@ -134,7 +134,7 @@ function defineCommonComponent(config) {
                 throw e;
             }
         });
-        
+
         if (config.methods) {
             for (let methodName in config.methods) {
                 if (config.methods.hasOwnProperty(methodName)) {
@@ -144,15 +144,15 @@ function defineCommonComponent(config) {
                 }
             }
         }
-            
+
         const ret = {
             methods,
             views
         };
-        
+
         return ret;
-    };   
-    
+    };
+
     return defineComponent(coreConfig);
 }
 
@@ -171,7 +171,7 @@ function createSendFunc(stateTransitions, getState, setState, interactions) {
             } else if (typeof interactions === 'function') {
                 interactions(intent, send)
             } else if (interactions && interactions.hasOwnProperty(intent.type)) {
-                interactions[intent.type](intent);    
+                interactions[intent.type](intent);
             }
         });
     };
