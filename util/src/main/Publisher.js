@@ -89,63 +89,6 @@ export default class Publisher {
         });
     }
 
-    take(n) {
-        if (typeof n !== 'number' || n < 0) {
-            throw new TypeError(
-                "[Publisher#take] First argument 'n' must be a non-negative integer number");
-        }
-
-        return (
-            n === 0
-            ? Publisher.empty()
-            : new Publisher(subscriber => {
-                let idx = 0;
-
-                const ret = this.subscribe({
-                    next: event => {
-                        if (idx < n) {
-                            subscriber.next(event);
-                            ++idx;
-                        } else {
-                           subscriber.complete();
-                        }
-                    },
-
-                    complete: () => subscriber.complete(),
-
-                    error: err => subscriber.error(err)
-                });
-
-                return ret;
-            })
-        );
-    }
-
-    skip(n) {
-        if (typeof n !== 'number' || n < 0) {
-            throw new TypeError(
-                "[Publisher#skip] First argument 'n' must be a non-negative integer number");
-        }
-
-        return new Publisher(subscriber => {
-            let idx = 0;
-
-            return this.subscribe({
-                next: event => {
-                    if (idx === n) {
-                        subscriber.next(event);
-                    } else {
-                        ++idx;
-                    }
-                },
-
-                complete: () => subscriber.complete(),
-
-                error: err => subscriber.error(err)
-            });
-        });
-    }
-
     combineLatest(stream, fn) {
         return new Publisher(subscriber => {
             const
@@ -247,11 +190,11 @@ export default class Publisher {
     startWith(value) {
         return new Publisher(subscriber => {
             subscriber.next(value);
-            
-            return this.subscribe(subscriber); 
+
+            return this.subscribe(subscriber);
         });
     }
-    
+
     endWith(value) {
         return new Publisher(subscriber => {
             return this.subscribe({
@@ -267,45 +210,6 @@ export default class Publisher {
                  }
             });
         });
-    }
-
-    forEach(f) {
-        if (typeof f !== 'function') {
-           throw new TypeError("[Publisher#forEach] First argument 'f' must be a function") ;
-        }
-
-        return new Promise((resolve, reject) => {
-            let counter = -1;
-
-            const subscription = this.subscribe({
-                next(value) {
-                    try {
-                        f(value, ++counter);
-                    } catch (err) {
-                        if (subscription) {
-                            subscription.unsubscribe();
-                        }
-
-                        reject(err);
-                    }
-                },
-
-                error: reject,
-                complete: () => resolve(counter + 1)
-            });
-        });
-    }
-
-    toString() {
-        return "Publisher/instance";
-    }
-
-    static empty() {
-        return emptyPublisher;
-    }
-
-    static toString() {
-        return 'Publisher/class';
     }
 }
 
@@ -371,35 +275,6 @@ function createSubscriberProxy(subscriber, unsubscribe) {
         },
     };
 }
-
-const emptyPublisher = new Publisher(subscriber => {
-   subscriber.complete();
-
-   return () => {};
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -488,7 +363,7 @@ export default class Publisher {
 
         return { unsubscribe };
     }
-    
+
     map(fn) {
         return new Publisher(subscriber =>
             this.subscribe({
@@ -497,7 +372,7 @@ export default class Publisher {
                 complete: () => subscriber.complete()
             }));
     }
-    
+
     filter(fn) {
         return new Publisher(subscriber =>
             this.subscribe({
@@ -510,7 +385,7 @@ export default class Publisher {
                 complete: () => subscriber.complete()
             }));
     }
-    
+
     combineLatest(other, fn) {
         return new Publisher(subscriber => {
             let left = null,
@@ -520,12 +395,12 @@ export default class Publisher {
                 leftSubscription = null,
                 rightSubscription = null;
 
-                
+
             leftSubscription = this.subscribe({
                 next(event) {
                     leftStarted = true;
                     left = event;
-                    
+
                     if (rightStarted) {
                         subscriber.next(fn(left, right));
                     }
@@ -540,12 +415,12 @@ export default class Publisher {
                     subscriber.complete();
                 }
             });
-            
+
             rightSubscription = other.subscribe({
                 next(event) {
                     rightStarted = true;
                     right = event;
-                    
+
                     if (leftStarted) {
                         subscriber.next(fn(left, right));
                     }
@@ -559,7 +434,7 @@ export default class Publisher {
                     subscriber.complete();
                 }
             });
-            
+
             return () => {
                 leftSubscription.unsubscribe();
                 rightSubscription.unsuscribe();

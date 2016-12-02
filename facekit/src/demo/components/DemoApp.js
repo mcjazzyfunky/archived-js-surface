@@ -12,11 +12,12 @@ import Tab from '../../main/js/components/Tab.js';
 // import PaginationBar from '../main/js/compo
 export default defineComponent({
     name: 'DemoApp',
-    
+
     render({ props }) {
         return (
         htm('div',
-            Tabs({ tabIndex: 1 },
+        	null,
+            Tabs({ activeTab: 0 },
                 Tab({ caption: 'Inputs', id: 'inputs' },
                     InputsDemo()),
                 Tab({ caption: 'Buttons', id: 'buttons' },
