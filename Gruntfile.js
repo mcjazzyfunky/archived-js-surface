@@ -63,6 +63,20 @@ module.exports = function (grunt) {
             	},
     	        src: 'build/packages/js-surface-react-native.js',
                 dest: 'dist/react-native.js'
+            },
+            jsSurfaceReactLite: {
+            	options: {
+            		ignore: ['./node_modules/**']
+            	},
+    	        src: 'build/packages/js-surface-react-lite.js',
+                dest: 'dist/react-lite.js'
+            },
+            jsSurfacePreact: {
+            	options: {
+            		ignore: ['./node_modules/**']
+            	},
+    	        src: 'build/packages/js-surface-preact.js',
+                dest: 'dist/preact.js'
             }
         },
         uglify: {
@@ -90,6 +104,14 @@ module.exports = function (grunt) {
             jsSurfaceReactNative: {
                 src: ['dist/react-native.js'],
                 dest: 'dist/react-native.min.js'
+            },
+            jsSurfaceReactLite: {
+                src: ['dist/react-lite.js'],
+                dest: 'dist/react-lite.min.js'
+            },
+            jsSurfacePreact: {
+                src: ['dist/preact.js'],
+                dest: 'dist/preact.min.js'
             }
         },
         compress: {
@@ -118,8 +140,22 @@ module.exports = function (grunt) {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/js-surface-react-native.min.js'],
-                dest: 'dist/js-surface-react-native.min.js.gz'
+                src: ['dist/react-native.min.js'],
+                dest: 'dist/react-native.min.js.gz'
+            },
+            jsSurfaceReactLite: {
+                options: {
+                    mode: 'gzip'
+                },
+                src: ['dist/react-lite.min.js'],
+                dest: 'dist/react-lite.min.js.gz'
+            },
+            jsSurfacePreact: {
+                options: {
+                    mode: 'gzip'
+                },
+                src: ['dist/preact.min.js'],
+                dest: 'dist/preact.min.js.gz'
             },
         },
        asciidoctor: [{
@@ -154,6 +190,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask('compile', ['babel']);
     grunt.registerTask('test', ['babel', 'mochaTest']);
-    grunt.registerTask('dist', ['clean', 'babel', 'webpack', 'browserify', 'uglify', 'compress'/*, 'esdoc'*/]);
+    grunt.registerTask('dist', ['clean', 'babel', 'browserify', 'uglify', 'compress'/*, 'esdoc'*/]);
     grunt.registerTask('default', ['dist']);
 };

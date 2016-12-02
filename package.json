@@ -2,7 +2,7 @@
   "name": "js-surface",
   "version": "0.1.0",
   "homepage": "https://github.com/mcjazzyfunky/js-surface",
-  "main": "core/index.js",
+  "main": "dist/js-surface.min.js",
   "devDependencies": {
     "babel": "^6.5.2",
     "babel-core": "^6.5.2",
@@ -33,6 +33,7 @@
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-lite": "^0.15.28",
+    "react-native": "^0.39.0",
     "systemjs": "^0.19.20",
     "systemjs-plugin-babel": "0.0.2",
     "webpack": "^1.13.3",

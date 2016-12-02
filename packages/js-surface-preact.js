@@ -1,14 +1,21 @@
 import { getExports } from './shared/react/react.js';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import Preact from 'preact';
+
+const
+   createElement = Preact.h,
+   VNode  = Preact.h('').constructor;
 
 const {
-	createElement,
 	defineComponent,
 	defineIntents,
 	isElement,
 	Types
-} = getExports(React);
+} = getExports({
+	Component: Preact.Component,
+	createElement,
+	createFactory,
+	isValidElement
+});
 
 export {
 	createElement,
@@ -18,6 +25,15 @@ export {
 	mount,
 	Types
 };
+
+function createFactory() {
+	return type => createElement.bind(null, type);
+}
+
+function isValidElement(what) {
+	return what !== undefined && what !== null
+		&& (typeof what !== 'object'|| what instanceof VNode);
+}
 
 function mount(content, targetNode) {
     if (!isElement(content)) {
@@ -29,5 +45,5 @@ function mount(content, targetNode) {
         targetNode = document.getElementById(targetNode);
     }
 
-    return ReactDOM.render(content, targetNode);
+    return Preact.render(content, targetNode);
 }
