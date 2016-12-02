@@ -21,12 +21,12 @@
     "grunt-contrib-uglify": "^0.11.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-esdoc": "0.0.1",
+    "grunt-webpack": "^1.0.18",
     "inferno": "^1.0.0-beta15",
     "inferno-component": "^1.0.0-beta15",
     "inferno-dom": "^1.0.0-beta15",
     "jquery": "^2.2.1",
     "js-prelude": "^0.1.33",
-    "kendo-ui-core": "^2016.3.1118",
     "less": "^2.7.1",
     "preact": "^6.4.0",
     "preact-compat": "^3.9.2",
@@ -34,6 +34,8 @@
     "react-dom": "^15.4.1",
     "react-lite": "^0.15.28",
     "systemjs": "^0.19.20",
-    "systemjs-plugin-babel": "0.0.2"
+    "systemjs-plugin-babel": "0.0.2",
+    "webpack": "^1.13.3",
+    "webpack-dev-server": "^1.16.2"
   }
 }

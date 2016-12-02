@@ -1,26 +1,12 @@
-import {
-    defineComponent as definePlatformComponent,
-    createElement,
-    isElement,
-    mount
-} from 'js-surface/platform';
-
 import warn from '../../../util/src/main/warn.js';
-
-export {
-    defineComponent,
-    createElement,
-    isElement,
-    mount
-};
 
 const
     COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/,
-    CONFIG_KEYS = new Set(['name', 'properties', 'initialize', 'render']),
+    CONFIG_KEYS = new Set(['name', 'properties', 'transformInput', 'buildContent']),
     PROPERTY_CONFIG_KEYS = new Set(['type', 'defaultValue']),
-    INITIALIZATION_RESULT_KEYS = new Set(['views', 'methods']);
+    INITIALIZATION_RESULT_KEYS = new Set(['contents', 'methods']);
 
-function defineComponent(config) {
+export default function defineBaseComponent(config, adapter) {
     const err = validateConfig(config);
 
     if (err) {
@@ -34,19 +20,19 @@ function defineComponent(config) {
         { defaultValues, neededValidations } = determinePropertyConstraints(config.properties),
         hasDefaultValues = !neededValidations.every(validation => validation[2]),
         needsSpecialPropertyHandling = neededValidations.length > 0 || hasDefaultValues,
-        improvedConfig = config.initialize || needsSpecialPropertyHandling
+        improvedConfig = config.transformInput || needsSpecialPropertyHandling
         	? Object.assign({}, config)
         	: config;
 
-    if (config.render && needsSpecialPropertyHandling) {
-        improvedConfig.render = properties => {
+    if (config.buildContent && needsSpecialPropertyHandling) {
+        improvedConfig.buildContent = properties => {
         	const props = mapAndValidateProperties(
         		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies');
 
-            return config.render(props);
+            return config.buildContent(props);
         };
-    } else if (config.initialize) {
-        improvedConfig.initialize = inputs => {
+    } else if (config.transformInput) {
+        improvedConfig.transformInput = inputs => {
 	    	const improvedInputs = !needsSpecialPropertyHandling
 	    		? inputs
 	    		: inputs.map(properties =>
@@ -54,7 +40,7 @@ function defineComponent(config) {
 		        		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies'));
 
             const
-            	result = config.initialize(improvedInputs),
+            	result = config.transformInput(improvedInputs),
             	err = validateInitializationResult(result);
 
             if (err) {
@@ -67,7 +53,7 @@ function defineComponent(config) {
         };
 	}
 
-    return definePlatformComponent(improvedConfig);
+    return adapter(improvedConfig);
 }
 
 function validateConfig(config) {
@@ -86,15 +72,15 @@ function validateConfig(config) {
     } else if (!config.name.match(COMPONENT_NAME_REGEX)) {
         errMsg = "Configuration parameter 'name' must match with regex "
             + COMPONENT_NAME_REGEX + ` (given '${config.name}')`;
-    } else if (config.render === undefined && config.initialize === undefined) {
-        errMsg = "Either configuration parameter 'render' "
-            + "or parameter 'initialize' must be set";
-    } else if (config.render !== undefined && config.initialize !== undefined) {
-        errMsg = "Configuration parameters 'render' and 'initialize' must not "
+    } else if (config.buildContent === undefined && config.transformInput === undefined) {
+        errMsg = "Either configuration parameter 'buildContent' "
+            + "or parameter 'transformInput' must be set";
+    } else if (config.buildContent !== undefined && config.transformInput !== undefined) {
+        errMsg = "Configuration parameters 'buildContent' and 'transformInput' must not "
             + 'be set both';
-    } else if (config.render !== undefined && typeof config.render !== 'function') {
-        errMsg = "Configuration parameter 'render' must be a function";
-    } else if (config.initialize !== undefined && typeof config.initialize !== 'function') {
+    } else if (config.buildContent !== undefined && typeof config.buildContent !== 'function') {
+        errMsg = "Configuration parameter 'buildContent' must be a function";
+    } else if (config.transformInput !== undefined && typeof config.transformInput !== 'function') {
         errMsg = "Configuration parameter 'inititialize' must be a function";
     }
 

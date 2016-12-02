@@ -3,7 +3,7 @@ module.exports = function (grunt) {
         pkg: grunt.file.readJSON('package.json'),
         clean: {
             build: {
-                src: ["build/*", "dist/v<%= pkg.version %>"],
+                src: ["build/*", "dist/*"],
             }
         },
         babel: {
@@ -16,13 +16,14 @@ module.exports = function (grunt) {
             dist:  {
                 files: [{
                     expand: true,
-                    cwd: 'src/',
-                    src: ['**/*.js*'],
-                    dest: 'build/src',
+                    cwd: './',
+                    src: ['core/**/*.js*', 'packages/**/*.js*', 'util/**/*.js'],
+                    dest: 'build/',
                     ext: '.js'
                 }]
             }
         },
+        /*
         esdoc : {
             dist : {
                 options: {
@@ -36,12 +37,45 @@ module.exports = function (grunt) {
                 }
             }
         },
+        */
+        webpack: {
+			jsSurface: {
+    			entry: "./build/packages/js-surface.js",
+    			output: {
+        			path: "dist/",
+    				filename: "js-surface.js"
+    			}
+    		},
+			jsSurfaceInferno: {
+    			entry: "./build/packages/js-surface-inferno.js",
+    			output: {
+        			path: "dist/",
+    				filename: "js-surface-inferno.js"
+    			}
+    		},
+			jsSurfaceReactDOM: {
+    			entry: "./build/packages/js-surface-react-dom.js",
+    			output: {
+        			path: "dist/",
+    				filename: "js-surface-react-dom.js"
+    			}
+    		},
+			jsSurfaceReactNative: {
+    			entry: "./build/packages/js-surface-native.js",
+    			output: {
+        			path: "dist/",
+    				filename: "js-surface-react-native.js"
+    			}
+    		}
+    	},
         browserify: {
-            dist: {
-                //extend: true,
-                //src: ['build/src/**/*.js'],
-                src: 'build/src/js-surface.js',
+            jsSurface: {
+                src: 'build/packages/js-surface.js',
                 dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'
+            },
+            jsSurfaceInferno: {
+    	        src: 'build/packages/js-surface-react.js',
+                dest: 'dist/v<%= pkg.version %>/js-surface-react-<%= pkg.version %>.js'
             }
         },
         uglify: {
@@ -54,26 +88,59 @@ module.exports = function (grunt) {
                         + ' Licencse: New BSD License\n'
                         + '*/\n'
             },
-            js: {
-                src: ['dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'],
-                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'
+            jsSurface: {
+                src: ['dist/js-surface.js'],
+                dest: 'dist/js-surface.min.js'
+            },
+            jsSurfaceInferno: {
+                src: ['dist/js-surface-inferno.js'],
+                dest: 'dist/js-surface-inferno.min.js'
+            },
+            jsSurfaceReactDOM: {
+                src: ['dist/js-surface-react-dom.js'],
+                dest: 'dist/js-surface-react-dom.min.js'
+            },
+            jsSurfaceReactNative: {
+                src: ['dist/js-surface-react-dom.js'],
+                dest: 'dist/js-surface-react-native.min.js'
             }
         },
         compress: {
-            main: {
+            jsSurface: {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'],
-                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js.gz'
-            }
+                src: ['dist/js-surface.min.js'],
+                dest: 'dist/js-surface.min.js.gz'
+            },
+            jsSurfaceInferno: {
+                options: {
+                    mode: 'gzip'
+                },
+                src: ['dist/js-surface-inferno.min.js'],
+                dest: 'dist/js-surface-inferno.min.js.gz'
+            },
+            jsSurfaceReactDOM: {
+                options: {
+                    mode: 'gzip'
+                },
+                src: ['dist/js-surface-react-dom.min.js'],
+                dest: 'dist/js-surface-react-dom.min.js.gz'
+            },
+            jsSurfaceReactNative: {
+                options: {
+                    mode: 'gzip'
+                },
+                src: ['dist/js-surface-react-native.min.js'],
+                dest: 'dist/js-surface-react-native.min.js.gz'
+            },
         },
        asciidoctor: [{
            options: {
                cwd: 'doc'
            },
            files: {
-             'dist/v<%= pkg.version %>/docs': ['*.adoc'],
+             'dist/docs': ['*.adoc'],
            },
          }],
         watch: {
@@ -96,9 +163,10 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     //grunt.loadNpmTasks('grunt-asciidoctor');
     grunt.loadNpmTasks('grunt-esdoc');
+    grunt.loadNpmTasks('grunt-webpack');
 
     grunt.registerTask('compile', ['babel']);
     grunt.registerTask('test', ['babel', 'mochaTest']);
-    grunt.registerTask('dist', ['clean', 'babel', 'browserify',  /* 'uglify', 'compress',*/ 'esdoc',]);
+    grunt.registerTask('dist', ['clean', 'babel', 'webpack',  'uglify', 'compress'/*, 'esdoc'*/]);
     grunt.registerTask('default', ['dist']);
 };

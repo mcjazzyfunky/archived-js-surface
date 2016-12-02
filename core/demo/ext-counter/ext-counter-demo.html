@@ -26,14 +26,13 @@
                     'inferno-component': 'node_modules/inferno/dist/inferno-component.min.js',
                     'inferno-create-element': 'node_modules/inferno/dist/inferno-create-element.min.js',
 
-                    'js-surface': 'common/src/main/common.js',
-                   // 'js-surface/platform': 'react-dom/src/main/react-dom.js'
-
-                    'js-surface/platform': 'inferno/src/main/inferno.js'
+                    'js-surface': 'packages/js-surface.js',
+                   // 'js-surface': 'packages/js-surface-react-dom.js',
+                   // 'js-surface': 'packages/js-surface-inferno.js',
                }
             });
 
-            System.import('./counter-demo.js');
+            System.import('./ext-counter-demo.js');
         </script>
     </head>
     <body>

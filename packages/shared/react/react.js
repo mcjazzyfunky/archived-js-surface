@@ -3,14 +3,14 @@ import React from 'react';
 
 export {
     createElement,
-    defineComponent,
+    defineReactComponent,
     isElement
 };
 
 // Support both: React and Preact
 const
     createElement = React.createElement || React.h,
-    
+
     //createReactFactory = React.createFactory || (constructor =>
     //    (props, ...children) => createElement(constructor, props, ...children)),
 
@@ -25,42 +25,42 @@ const
 
 function isElement(what)  {
     return what !== undefined && what !== null && isValidReactElement(what);
-} 
+}
 
-function defineComponent(config) {
+function defineReactComponent(config) {
     let ret = null,
-    
+
         propNames = config.properties
             ? Object.getOwnPropertyNames(config.properties)
             : [];
 
-    if (config.render) {
+    if (config.buildContent) {
         if (config.properties) {
             const hasInjectedProps = !propNames.every(
                 propName => !config.properties[propName].inject);
-            
+
             if (false && !hasInjectedProps) {
                 ret = props => {
-                    return config.render(props);
-                }; 
-                
+                    return config.buildContent(props);
+                };
+
                 ret.displayName = config.name;
             }
-        }  
+        }
     }
-    
+
     if (!ret) {
         const constructor = function (...args) {
             ReactComponent.call(this, config, args);
         };
-    
+
         constructor.prototype = Object.create(ReactComponent.prototype);
         constructor.displayName = config.name;
-    
-        if (config.properties) {    
+
+        if (config.properties) {
             for (let propName of propNames) {
                 const inject = !!config.properties[propName].inject;
-                    
+
                 if (inject) {
                     constructor.contextTypes[propName] = constructor.propTypes[propName];
                 }
@@ -69,9 +69,9 @@ function defineComponent(config) {
 
         ret = createReactFactory(constructor);
     }
-    
+
     return ret;
-} 
+}
 
 class ReactComponent extends React.Component {
     constructor(config, args) {
@@ -81,17 +81,17 @@ class ReactComponent extends React.Component {
         this.__contentToRender = null;
         this.__propsEmitter = new Emitter();
         this.__contextEmitter = new Emitter();
-        this.__viewsPublisher = null;
-        this.__viewsSubscription = null;
-        
-        if (config.render) {
-            this.__viewsPublisher =
-                    this.__propsEmitter.map(props => config.render(props));
-        } else {
-            const result = config.initialize(this.__propsEmitter);
+        this.__contentsPublisher = null;
+        this.__contentsSubscription = null;
 
-            this.__viewsPublisher = result.views;
-            
+        if (config.buildContent) {
+            this.__contentsPublisher =
+                    this.__propsEmitter.map(props => config.buildContent(props));
+        } else {
+            const result = config.transformInput(this.__propsEmitter);
+
+            this.__contentsPublisher = result.contents;
+
             if (result.methods) {
                 for (let methodName in result.methods) {
                     if (result.methods.hasOwnProperty(methodName)) {
@@ -104,32 +104,32 @@ class ReactComponent extends React.Component {
 
     componentWillMount() {
         const self = this;
-        
+
         var mounted = false;
 
-        
-        this.__viewsSubscription = this.__viewsPublisher.subscribe({
+
+        this.__contentsSubscription = this.__contentsPublisher.subscribe({
             next(value) {
                 self.__contentToRender = value;
-                
+
                 if (mounted) {
-                    self.forceUpdate(); 
+                    self.forceUpdate();
                 }
             }
         });
-        
+
         this.__propsEmitter.next(this.props);
         mounted = true;
     }
-    
+
     componentDidMount() {
     }
 
     componentWillUnmount() {
         this.__propsEmitter.complete();
-        this.__viewsSubscription.unsubscribe();
-        this.__viewsSubscription = null;
-        this.__viewsPublisher = null;
+        this.__contentsSubscription.unsubscribe();
+        this.__contentsSubscription = null;
+        this.__contentsPublisher = null;
     }
 
     componentWillReceiveProps(nextProps) {
@@ -140,7 +140,7 @@ class ReactComponent extends React.Component {
         throw e;
     }
     }
-    
+
     shouldComponentUpdate() {
         return !!this.__contentToRender;
     }
@@ -154,7 +154,7 @@ class ReactComponent extends React.Component {
 
         const ret = this.__contentToRender;
         this.__contentToRender = null;
-        
+
         return ret;
     }
 

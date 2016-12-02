@@ -1,4 +1,4 @@
-import { defineComponent, defineIntents, mount, createElement as htm, Types, registerCustomElement } from 'js-surface';
+import { defineComponent, defineIntents, mount, createElement as htm, Types } from 'js-surface';
 
 
 
@@ -143,10 +143,3 @@ setTimeout(() => {
     mount(htm('div', null, 'done'), 'main-content');
 }, 4000);
 */
-
-
-registerCustomElement(
-    'my-counter-label',
-    CounterLabel, props => Object.assign(props, { value: parseInt(props.value) }));
-
-registerCustomElement('my-counter', Counter);

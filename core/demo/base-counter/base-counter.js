@@ -1,24 +1,23 @@
-import { defineComponent, mount, createElement as htm } from 'js-surface/core';
-import Types from '../../util/src/main/Types.js';
-import Emitter from '../../util/src/main/Emitter.js';
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
+import Emitter from '../../../util/src/main/Emitter.js';
 
 const CounterLabel = defineComponent({
     name: 'CounterLabel',
-    
+
     properties: {
         value: {
             type: Types.number
         }
     },
-    
-    render(props) {
+
+    buildContent(props) {
         return htm('label', null, htm('b', null, props.value));
     }
 });
 
 const Counter = defineComponent({
     name: 'Counter',
-    
+
     properties: {
         textDecrement: {
             type: Types.string,
@@ -33,27 +32,27 @@ const Counter = defineComponent({
             defaultValue: null
         }
     },
-    
-    initialize(inputs) {
-        const views = new Emitter();
-        
+
+    transformInput(inputs) {
+        const contents = new Emitter();
+
         var props = null, counterValue = 0;
-            
+
         const increase = delta => {
             counterValue += delta;
-            views.next(getContent());
+            contents.next(getContent());
         };
-        
+
         const reset = value => {
             counterValue = value;
-            views.next(getContent());
+            contents.next(getContent());
         };
-        
+
         inputs.subscribe(p => {
              props = p;
-             views.next(getContent());
+             contents.next(getContent());
         });
-            
+
         const getContent = () =>
             htm('span',
                 {style: props.style},
@@ -62,9 +61,9 @@ const Counter = defineComponent({
                     {style: {width: '30px', display: 'inline-block', textAlign: 'center'}},
                     CounterLabel({value: counterValue})),
                 htm('button', {onClick: () => increase(1)}, props.textIncrement));
-        
+
         return {
-            views: views,
+            contents,
             methods: {
                 reset(value = 0) {
                     reset(value);
@@ -74,7 +73,7 @@ const Counter = defineComponent({
     }
 });
 
-const counterCtrlView = props => { 
+const counterCtrlView = props => {
     var elem = null;
 
 
@@ -95,7 +94,7 @@ const counterCtrlView = props => {
 
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
-    
+
     properties: {
         label: {
             type: value => null,
@@ -103,20 +102,19 @@ const CounterCtrl = defineComponent({
         },
         lang: {
             type: value => typeof value === 'string',
-            defaultValue: 'en',
-            implcit: true
+            defaultValue: 'en'
         }
     },
 
 
-    initialize: inputs => {
-        const views = new Emitter();
-        
+    transformInput: inputs => {
+        const contents = new Emitter();
+
         inputs.subscribe(props => {
-            views.next(counterCtrlView(props));
+            contents.next(counterCtrlView(props));
         });
-        
-        return { views };
+
+        return { contents };
     }
 });
 
