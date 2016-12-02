@@ -2,9 +2,9 @@ import warn from '../../../util/src/main/warn.js';
 
 const
     COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/,
-    CONFIG_KEYS = new Set(['name', 'properties', 'transformInput', 'buildContent']),
+    CONFIG_KEYS = new Set(['name', 'properties', 'initProcess', 'process']),
     PROPERTY_CONFIG_KEYS = new Set(['type', 'defaultValue']),
-    INITIALIZATION_RESULT_KEYS = new Set(['contents', 'methods']);
+    INIT_PROCESS_RESULT_KEYS = new Set(['contents', 'methods']);
 
 export default function defineBaseComponent(config, adapter) {
     const err = validateConfig(config);
@@ -20,19 +20,19 @@ export default function defineBaseComponent(config, adapter) {
         { defaultValues, neededValidations } = determinePropertyConstraints(config.properties),
         hasDefaultValues = !neededValidations.every(validation => validation[2]),
         needsSpecialPropertyHandling = neededValidations.length > 0 || hasDefaultValues,
-        improvedConfig = config.transformInput || needsSpecialPropertyHandling
+        improvedConfig = config.initProcess || needsSpecialPropertyHandling
         	? Object.assign({}, config)
         	: config;
 
-    if (config.buildContent && needsSpecialPropertyHandling) {
-        improvedConfig.buildContent = properties => {
+    if (config.process && needsSpecialPropertyHandling) {
+        improvedConfig.process = properties => {
         	const props = mapAndValidateProperties(
         		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies');
 
-            return config.buildContent(props);
+            return config.process(props);
         };
-    } else if (config.transformInput) {
-        improvedConfig.transformInput = inputs => {
+    } else if (config.initProcess) {
+        improvedConfig.initProcess = inputs => {
 	    	const improvedInputs = !needsSpecialPropertyHandling
 	    		? inputs
 	    		: inputs.map(properties =>
@@ -40,7 +40,7 @@ export default function defineBaseComponent(config, adapter) {
 		        		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies'));
 
             const
-            	result = config.transformInput(improvedInputs),
+            	result = config.initProcess(improvedInputs),
             	err = validateInitializationResult(result);
 
             if (err) {
@@ -72,15 +72,15 @@ function validateConfig(config) {
     } else if (!config.name.match(COMPONENT_NAME_REGEX)) {
         errMsg = "Configuration parameter 'name' must match with regex "
             + COMPONENT_NAME_REGEX + ` (given '${config.name}')`;
-    } else if (config.buildContent === undefined && config.transformInput === undefined) {
-        errMsg = "Either configuration parameter 'buildContent' "
-            + "or parameter 'transformInput' must be set";
-    } else if (config.buildContent !== undefined && config.transformInput !== undefined) {
-        errMsg = "Configuration parameters 'buildContent' and 'transformInput' must not "
+    } else if (config.process === undefined && config.initProcess === undefined) {
+        errMsg = "Either configuration parameter 'process' "
+            + "or parameter 'initProcess' must be set";
+    } else if (config.process !== undefined && config.initProcess !== undefined) {
+        errMsg = "Configuration parameters 'process' and 'initProcess' must not "
             + 'be set both';
-    } else if (config.buildContent !== undefined && typeof config.buildContent !== 'function') {
-        errMsg = "Configuration parameter 'buildContent' must be a function";
-    } else if (config.transformInput !== undefined && typeof config.transformInput !== 'function') {
+    } else if (config.process !== undefined && typeof config.process !== 'function') {
+        errMsg = "Configuration parameter 'process' must be a function";
+    } else if (config.initProcess !== undefined && typeof config.initProcess !== 'function') {
         errMsg = "Configuration parameter 'inititialize' must be a function";
     }
 
@@ -219,7 +219,7 @@ function validateInitializationResult(result) {
 	let ret = null;
 
     for (let key in result) {
-    	if (result.hasOwnProperty(key) && !INITIALIZATION_RESULT_KEYS.has(key)) {
+    	if (result.hasOwnProperty(key) && !INIT_PROCESS_RESULT_KEYS.has(key)) {
 			ret = `Illegal key '${key}' in initialization result`;
 			break;
     	}

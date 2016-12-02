@@ -10,12 +10,12 @@ export default function defineExtComponent(config, adapter) {
         baseConfig.properties = config.properties;
     }
 
-	if (config.transformInput) {
-		baseConfig.transformInput = config.transformInput;
-	} else if (config.buildContent) {
-		baseConfig.buildContent = config.buildContent;
+	if (config.initProcess) {
+		baseConfig.initProcess = config.initProcess;
+	} else if (config.process) {
+		baseConfig.process = config.process;
 	} else {
-	    baseConfig.transformInput = inputs => {
+	    baseConfig.initProcess = inputs => {
 	        let state = null,
 	            mounted = false;
 

@@ -38,44 +38,31 @@ module.exports = function (grunt) {
             }
         },
         */
-        webpack: {
-			jsSurface: {
-    			entry: "./build/packages/js-surface.js",
-    			output: {
-        			path: "dist/",
-    				filename: "js-surface.js"
-    			}
-    		},
-			jsSurfaceInferno: {
-    			entry: "./build/packages/js-surface-inferno.js",
-    			output: {
-        			path: "dist/",
-    				filename: "js-surface-inferno.js"
-    			}
-    		},
-			jsSurfaceReactDOM: {
-    			entry: "./build/packages/js-surface-react-dom.js",
-    			output: {
-        			path: "dist/",
-    				filename: "js-surface-react-dom.js"
-    			}
-    		},
-			jsSurfaceReactNative: {
-    			entry: "./build/packages/js-surface-native.js",
-    			output: {
-        			path: "dist/",
-    				filename: "js-surface-react-native.js"
-    			}
-    		}
-    	},
         browserify: {
             jsSurface: {
                 src: 'build/packages/js-surface.js',
-                dest: 'dist/v<%= pkg.version %>/js-surface-<%= pkg.version %>.js'
+                dest: 'dist/index.js'
             },
             jsSurfaceInferno: {
-    	        src: 'build/packages/js-surface-react.js',
-                dest: 'dist/v<%= pkg.version %>/js-surface-react-<%= pkg.version %>.js'
+            	options: {
+            		ignore: ['./node_modules/**']
+            	},
+                src: 'build/packages/js-surface-inferno.js',
+                dest: 'dist/inferno.js'
+            },
+            jsSurfaceReactDOM: {
+            	options: {
+            		ignore: ['./node_modules/**']
+            	},
+    	        src: 'build/packages/js-surface-react-dom.js',
+                dest: 'dist/react-dom.js'
+            },
+            jsSurfaceReactNative: {
+            	options: {
+            		ignore: ['./node_modules/**']
+            	},
+    	        src: 'build/packages/js-surface-react-native.js',
+                dest: 'dist/react-native.js'
             }
         },
         uglify: {
@@ -89,20 +76,20 @@ module.exports = function (grunt) {
                         + '*/\n'
             },
             jsSurface: {
-                src: ['dist/js-surface.js'],
-                dest: 'dist/js-surface.min.js'
+                src: ['dist/index.js'],
+                dest: 'dist/index.min.js'
             },
             jsSurfaceInferno: {
-                src: ['dist/js-surface-inferno.js'],
-                dest: 'dist/js-surface-inferno.min.js'
+                src: ['dist/inferno.js'],
+                dest: 'dist/inferno.min.js'
             },
             jsSurfaceReactDOM: {
-                src: ['dist/js-surface-react-dom.js'],
-                dest: 'dist/js-surface-react-dom.min.js'
+                src: ['dist/react-dom.js'],
+                dest: 'dist/react-dom.min.js'
             },
             jsSurfaceReactNative: {
-                src: ['dist/js-surface-react-dom.js'],
-                dest: 'dist/js-surface-react-native.min.js'
+                src: ['dist/react-native.js'],
+                dest: 'dist/react-native.min.js'
             }
         },
         compress: {
@@ -110,22 +97,22 @@ module.exports = function (grunt) {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/js-surface.min.js'],
-                dest: 'dist/js-surface.min.js.gz'
+                src: ['dist/index.min.js'],
+                dest: 'dist/index.min.js.gz'
             },
             jsSurfaceInferno: {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/js-surface-inferno.min.js'],
-                dest: 'dist/js-surface-inferno.min.js.gz'
+                src: ['dist/inferno.min.js'],
+                dest: 'dist/inferno.min.js.gz'
             },
             jsSurfaceReactDOM: {
                 options: {
                     mode: 'gzip'
                 },
-                src: ['dist/js-surface-react-dom.min.js'],
-                dest: 'dist/js-surface-react-dom.min.js.gz'
+                src: ['dist/react-dom.min.js'],
+                dest: 'dist/react-dom.min.js.gz'
             },
             jsSurfaceReactNative: {
                 options: {
@@ -167,6 +154,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask('compile', ['babel']);
     grunt.registerTask('test', ['babel', 'mochaTest']);
-    grunt.registerTask('dist', ['clean', 'babel', 'webpack',  'uglify', 'compress'/*, 'esdoc'*/]);
+    grunt.registerTask('dist', ['clean', 'babel', 'webpack', 'browserify', 'uglify', 'compress'/*, 'esdoc'*/]);
     grunt.registerTask('default', ['dist']);
 };

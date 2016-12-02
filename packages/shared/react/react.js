@@ -34,14 +34,14 @@ function defineReactComponent(config) {
             ? Object.getOwnPropertyNames(config.properties)
             : [];
 
-    if (config.buildContent) {
+    if (config.process) {
         if (config.properties) {
             const hasInjectedProps = !propNames.every(
                 propName => !config.properties[propName].inject);
 
             if (false && !hasInjectedProps) {
                 ret = props => {
-                    return config.buildContent(props);
+                    return config.process(props);
                 };
 
                 ret.displayName = config.name;
@@ -51,10 +51,10 @@ function defineReactComponent(config) {
 
     if (!ret) {
         const constructor = function (...args) {
-            ReactComponent.call(this, config, args);
+            SurfaceReactComponent.call(this, config, args);
         };
 
-        constructor.prototype = Object.create(ReactComponent.prototype);
+        constructor.prototype = Object.create(SurfaceReactComponent.prototype);
         constructor.displayName = config.name;
 
         if (config.properties) {
@@ -73,7 +73,7 @@ function defineReactComponent(config) {
     return ret;
 }
 
-class ReactComponent extends React.Component {
+class SurfaceReactComponent extends React.Component {
     constructor(config, args) {
         super(...args);
 
@@ -84,11 +84,11 @@ class ReactComponent extends React.Component {
         this.__contentsPublisher = null;
         this.__contentsSubscription = null;
 
-        if (config.buildContent) {
+        if (config.process) {
             this.__contentsPublisher =
-                    this.__propsEmitter.map(props => config.buildContent(props));
+                    this.__propsEmitter.map(props => config.process(props));
         } else {
-            const result = config.transformInput(this.__propsEmitter);
+            const result = config.initProcess(this.__propsEmitter);
 
             this.__contentsPublisher = result.contents;
 
@@ -148,7 +148,7 @@ class ReactComponent extends React.Component {
     render() {
         if (!this.__contentToRender) {
             throw new Error(
-                '[ReactComponent#render] Something went wrong - '
+                '[SurfaceReactComponent#render] Something went wrong - '
                 + `no content to render for component '${this.__config.name}'`);
         }
 
@@ -159,6 +159,6 @@ class ReactComponent extends React.Component {
     }
 
     toString() {
-        return 'ReactComponent/class';
+        return 'SurfaceReactComponent/class';
     }
 }

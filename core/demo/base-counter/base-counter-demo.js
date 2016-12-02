@@ -10,7 +10,7 @@ const CounterLabel = defineComponent({
         }
     },
 
-    buildContent(props) {
+    process(props) {
         return htm('label', null, htm('b', null, props.value));
     }
 });
@@ -33,7 +33,7 @@ const Counter = defineComponent({
         }
     },
 
-    transformInput(inputs) {
+    initProcess(inputs) {
         const contents = new Emitter();
 
         var props = null, counterValue = 0;
@@ -107,7 +107,7 @@ const CounterCtrl = defineComponent({
     },
 
 
-    transformInput: inputs => {
+    initProcess: inputs => {
         const contents = new Emitter();
 
         inputs.subscribe(props => {

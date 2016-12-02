@@ -103,6 +103,7 @@ export function getExports({ InfernoComponent, createInfernoElement, renderInfer
 
 	        ret = (props, ...children) => exports.createElement(constructor, props, ...children);
 	    }
+
 	    return ret;
 	}
 
@@ -118,11 +119,11 @@ export function getExports({ InfernoComponent, createInfernoElement, renderInfer
 	        this.__contentsPublisher = null;
 	        this.__contentsSubscription = null;
 
-	        if (config.render) {
+	        if (config.process) {
 	            this.__contentsPublisher =
-	                this.__propsEmitter.map(props => config.render(props));
+	                this.__propsEmitter.map(props => config.process(props));
 	        } else {
-	            const { contents, methods} = config.transformInput(this.__propsEmitter);
+	            const { contents, methods} = config.initProcess(this.__propsEmitter);
 
 	            this.__contentsPublisher = contents;
 
