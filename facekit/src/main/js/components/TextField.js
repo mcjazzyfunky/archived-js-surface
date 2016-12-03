@@ -15,7 +15,7 @@ const properties = {
         type: Types.string,
         defaultValue: null
     },
-    
+
     defaultValue: {
         type: Types.string,
         defaultValue: null
@@ -36,6 +36,11 @@ const properties = {
         defaultValue: ''
     },
 
+	onChange: {
+		type: Types.func,
+		defaultValue: null
+	},
+
     readOnly: {
         type: Types.bool,
         defaultValue: false
@@ -54,10 +59,10 @@ const Intents = defineIntents({
 
 function initState(props) {
     let value = props.value;
-    
+
     if (props.value === null) {
         value = props.defaultValue;
-    } 
+    }
 
     if (value === null) {
         value = '';
@@ -66,13 +71,13 @@ function initState(props) {
     return { value };
 }
 
-const stateTransitions = {
+const stateReducer = {
     setValue(val) {
-        return state => ({ value: val }); 
+        return state => ({ value: val });
     }
 };
 
-function initInteractions(send) {
+function initInteractor(send) {
     return {
         callback(func, event) {
             func(event);
@@ -90,18 +95,14 @@ function render({ props, state, prevState, send }) {
     const
         onChange = event => {
             const newValue = event.target.value;
-            
-            if (props.value !== null) {
-                if (props.onChange) {
-                    send(Intents.callback(props.onChange, createChangeEvent(newValue)));
-                }    
-            } else {
-                send(Intents.setValue(event.target.value));
+
+            if (props.onChange) {
+                send(Intents.callback(props.onChange, createChangeEvent(newValue)));
             }
         },
-        
+
         id = props.id ? props.id : 'fk--text-field-' + (nextAutoId++),
-        label = createLabel(props.label + ' ' + state.value + ', ' + props.value, id),
+        label = createLabel(props.label + ' state: ' + state.value + ', props: ' + props.value, id),
         value = state.value,
         prevValue = prevState ? prevState.value : null,
         className = ComponentHelper.buildCssClass('form-group fk-text-field', props.className);
@@ -120,7 +121,7 @@ function render({ props, state, prevState, send }) {
                 { className: 'form-control'
                 , type: 'text'
                 , id: id
-                , value: state.value
+                , value: Math.random() + state.value + ' | ' + props.value
                 , onChange
                 , disabled: props.disabled
                 , readOnly: props.readOnly
@@ -130,30 +131,31 @@ function render({ props, state, prevState, send }) {
 
 export default defineComponent({
     name,
+    properties,
     initState,
-    stateTransitions,
-    initInteractions,
+    stateReducer,
+    initInteractor,
     onNextProps,
     render
-})
+});
 
 // -------------------------------------------------------------------
 
 function createLabel(text, id) {
     let ret;
-    
+
     if (typeof text !== 'string' || text.trim().length === 0) {
         ret = null;
     } else {
         ret = htm('label', { htmlFor: id }, text.trim());
     }
-    
+
     return ret;
 }
 
 function createChangeEvent(value) {
-    return {
+    return ({
         type: 'change',
         value
-    };    
+    });
 }

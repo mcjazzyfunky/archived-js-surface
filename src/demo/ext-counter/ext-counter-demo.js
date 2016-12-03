@@ -26,7 +26,7 @@ const CounterIntents = defineIntents({
 const Counter = defineComponent({
     name: 'Counter',
 
-    stateTransitions: {
+    stateReducer: {
         increase(delta) {
             return state => ({ counterValue: state.counterValue + delta });
         },
@@ -115,7 +115,7 @@ const CounterCtrlIntents = defineIntents({
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
 
-    initInteractions(send) {
+    initInteractor(send) {
           return async function(intent) {
               const [counterInstance, counterValue] = intent.payload;
               counterInstance.resetCounter(counterValue);

@@ -1,4 +1,4 @@
-import warn from '../../../util/src/main/warn.js';
+import warn from '../util/warn.js';
 
 const
     COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/,
@@ -58,7 +58,6 @@ export default function defineBaseComponent(config, adapter) {
 
 function validateConfig(config) {
     var ret = null, errMsg = '';
-
     if (config === undefined) {
         errMsg = 'Configuration must not be undefined';
     } else if (config === null) {

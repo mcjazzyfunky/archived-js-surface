@@ -1,7 +1,7 @@
 import { render as renderInferno } from 'inferno';
 import createInfernoElement from 'inferno-create-element';
 import InfernoComponent from 'inferno-component';
-import { getExports } from './shared/inferno/inferno.js';
+import { getExports } from './platform/inferno.js';
 
 const {
 	createElement,

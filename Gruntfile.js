@@ -17,7 +17,7 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: './',
-                    src: ['core/**/*.js*', 'packages/**/*.js*', 'util/**/*.js'],
+                    src: ['core/**/*.js*', 'src/main/**/*.js*', 'util/**/*.js'],
                     dest: 'build/',
                     ext: '.js'
                 }]
@@ -40,42 +40,42 @@ module.exports = function (grunt) {
         */
         browserify: {
             jsSurface: {
-                src: 'build/packages/js-surface.js',
+                src: 'build/src/main/js-surface.js',
                 dest: 'dist/index.js'
             },
             jsSurfaceInferno: {
             	options: {
             		ignore: ['./node_modules/**']
             	},
-                src: 'build/packages/js-surface-inferno.js',
+                src: 'build/src/main/js-surface-inferno.js',
                 dest: 'dist/inferno.js'
             },
             jsSurfaceReactDOM: {
             	options: {
             		ignore: ['./node_modules/**']
             	},
-    	        src: 'build/packages/js-surface-react-dom.js',
+    	        src: 'build/src/main/js-surface-react-dom.js',
                 dest: 'dist/react-dom.js'
             },
             jsSurfaceReactNative: {
             	options: {
             		ignore: ['./node_modules/**']
             	},
-    	        src: 'build/packages/js-surface-react-native.js',
+    	        src: 'build/src/main/js-surface-react-native.js',
                 dest: 'dist/react-native.js'
             },
             jsSurfaceReactLite: {
             	options: {
             		ignore: ['./node_modules/**']
             	},
-    	        src: 'build/packages/js-surface-react-lite.js',
+    	        src: 'build/src/main/js-surface-react-lite.js',
                 dest: 'dist/react-lite.js'
             },
             jsSurfacePreact: {
             	options: {
             		ignore: ['./node_modules/**']
             	},
-    	        src: 'build/packages/js-surface-preact.js',
+    	        src: 'build/src/main/js-surface-preact.js',
                 dest: 'dist/preact.js'
             }
         },
@@ -117,42 +117,48 @@ module.exports = function (grunt) {
         compress: {
             jsSurface: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/index.min.js'],
                 dest: 'dist/index.min.js.gz'
             },
             jsSurfaceInferno: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/inferno.min.js'],
                 dest: 'dist/inferno.min.js.gz'
             },
             jsSurfaceReactDOM: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/react-dom.min.js'],
                 dest: 'dist/react-dom.min.js.gz'
             },
             jsSurfaceReactNative: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/react-native.min.js'],
                 dest: 'dist/react-native.min.js.gz'
             },
             jsSurfaceReactLite: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/react-lite.min.js'],
                 dest: 'dist/react-lite.min.js.gz'
             },
             jsSurfacePreact: {
                 options: {
-                    mode: 'gzip'
+                    mode: 'gzip',
+            		level: 9
                 },
                 src: ['dist/preact.min.js'],
                 dest: 'dist/preact.min.js.gz'

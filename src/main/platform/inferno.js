@@ -1,7 +1,7 @@
-import defineExtComponent from '../../../core/src/main/defineExtComponent.js';
-import defineIntents from '../../../util/src/main/defineIntents.js';
-import Types from '../../../util/src/main/Types.js';
-import Emitter from '../../../util/src/main/Emitter.js';
+import defineExtComponent from '../core/defineExtComponent.js';
+import defineIntents from '../util/defineIntents.js';
+import Types from '../util/Types.js';
+import Emitter from '../util/Emitter.js';
 
 export function getExports({ InfernoComponent, createInfernoElement, renderInferno }) {
 	const exports = { defineIntents, Types};

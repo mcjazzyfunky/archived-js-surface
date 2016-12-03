@@ -6,7 +6,7 @@ import TextField from '../../main/js/components/TextField.js';
 
 const name = 'FKInputsDemo';
 
-const Intends = defineIntents({
+const Intents = defineIntents({
     setFirstName: true
 });
 
@@ -14,21 +14,27 @@ function initState(props) {
     return { firstName: 'John Doe' };
 }
 
-const stateTransitions = {
+const stateReducer = {
     setFirstName(value) {
         return state => Object.assign({}, state, { firstName: value });
     }
 }
 
 function render({ props, state,  send }) {
+	const onChange = ev => {
+		 send(Intents.setFirstName(ev.value))
+	};
+
+
     return (
         htm('div',
             null,
+            RandomLabel(),
             state.firstName,
             TextField({
                 label: 'First name:',
                 value: state.firstName,
-                onChange: ev => send(Intends.setFirstName(ev.value))
+                onChange
             })));
 }
 
@@ -36,6 +42,23 @@ function render({ props, state,  send }) {
 export default defineComponent({
     name,
     initState,
-    stateTransitions,
+    stateReducer,
     render
 })
+
+
+const RandomLabel = defineComponent({
+	name: "RandomLabel",
+	initState() {
+		return null;
+	},
+
+	onDidUpdate() {
+
+	},
+
+
+	render() {
+		return htm('label', null, Math.random());
+	}
+});

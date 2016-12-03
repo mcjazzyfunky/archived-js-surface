@@ -1,4 +1,4 @@
-import { getExports } from './shared/react/react.js';
+import { getExports } from './platform/react.js';
 import React from 'react';
 import AppRegistry from 'react-native';
 

@@ -11,10 +11,10 @@ const
     number = 100,
     pageSize = 25,
     totalItemCount = 1220;
-    
+
 export const Pagination = defineComponent({
     name: 'FKPagination',
-   
+
     properties: {
         className: {
             type: Types.string,
@@ -40,22 +40,22 @@ export const Pagination = defineComponent({
             type: Types.bool,
             defaultValue: true
         },
-        
+
         showLastButton: {
             type: Types.bool,
             defaultValue: true
         },
-        
+
         showPreviousButton: {
             type: Types.bool,
             defaultValue: true
         },
-        
+
         showNextButton: {
             type: Types.bool,
             defaultValue: true
         },
-        
+
         onChange: {
             type: Types.func,
             defaultValue: null
@@ -131,7 +131,7 @@ export const Pagination = defineComponent({
                         index === pageIndex,
                         () => moveToPage(index))
                 );
-        
+
         return (
             htm('div',
                 {className: classNameOuter},
@@ -146,7 +146,7 @@ export const Pagination = defineComponent({
     }
 });
 
-            
+
 function buildLinkListItem(text, isActive, moveToPage) {
     return (
         htm('li', {
@@ -165,12 +165,12 @@ const Intents = defineIntents({
 
 export const DemoOfPagination = defineComponent({
     name: 'DemoOfPagination',
-    
+
     initState() {
         return { pageIndex: 0 };
     },
-    
-    stateTransitions: {
+
+    stateReducer: {
         moveToPage(pageIndex) {
             return state => Objects.transform(state, {
                 pageIndex: {$set: pageIndex}
@@ -202,23 +202,23 @@ class RPaginationClass extends React.Component {
     render() {
         const
             pageIndex = this.props.pageIndex,
-            
+
             metrics = PaginationHelper.calcPaginationMetrics(
                             this.props.pageIndex,
                             this.props.pageSize,
                             this.props.totalItemCount),
-            
+
             paginationInfo = PaginationHelper.determineVisiblePaginationButtons(
                                     this.props.pageIndex,
                                     metrics.pageCount,
                                     6),
-            
+
             classNameOuter = ComponentHelper.buildCssClass(
                                     'fk-pagination',
                                     this.props.className),
-            
+
             classNameInner = 'pagination',
-            
+
             firstPageLink = metrics.pageCount > 0
                                 ? buildLinkListItem2(
                                         1,
@@ -226,21 +226,21 @@ class RPaginationClass extends React.Component {
                                         this.props,
                                         0)
                                 : null,
-            
+
             precedingEllipsis = paginationInfo.firstButtonIndex > 1
                                     ? buildLinkListItem2(
                                             '...',
                                             false,
                                             this.props)
                                     : null,
-            
+
             succeedingEllipsis = paginationInfo.lastButtonIndex < metrics.pageCount - 2
                                         ? buildLinkListItem2(
                                                 '...',
                                                 false,
                                                 this.props)
                                         : null,
-            
+
             lastPageLink =  metrics.pageCount > 0
                                 ? buildLinkListItem2(
                                     metrics.pageCount,
@@ -256,8 +256,8 @@ class RPaginationClass extends React.Component {
                                             index + 1,
                                             index === pageIndex,
                                             this.props,
-                                            index)).toArray();        
-                                            
+                                            index)).toArray();
+
         return (
             React.createElement('div',
                 {className: classNameOuter},
@@ -275,11 +275,11 @@ class RPaginationClass extends React.Component {
 function buildLinkListItem2(text, isActive, props, pageIndexToMove = null) {
     const
         onChangeProp = props.onChange,
-        
+
         onClick = !isActive && pageIndexToMove !== null && typeof onChangeProp === 'function'
-            ? () => onChangeProp({targetPage: pageIndexToMove}) 
+            ? () => onChangeProp({targetPage: pageIndexToMove})
             : null;
-        
+
     return (
         React.createElement('li',
             {className: isActive ? 'active' : '', key: (pageIndexToMove === null ? undefined : pageIndexToMove + text + isActive)},
@@ -293,9 +293,9 @@ function buildLinkListItem2(text, isActive, props, pageIndexToMove = null) {
 class RDemoOfPaginationClass extends React.Component {
     constructor() {
         super();
-        this.state = {currPageIdx: 0};    
+        this.state = {currPageIdx: 0};
     }
-    
+
     render() {
         return (
             React.createElement('div',
@@ -318,7 +318,7 @@ class RDemoOfPaginationClass extends React.Component {
 const
     RPagination = React.createFactory(RPaginationClass),
     RDemoOfPagination = React.createFactory(RDemoOfPaginationClass);
-    
+
 
 if (1) {
     mount(

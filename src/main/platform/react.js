@@ -1,7 +1,9 @@
-import defineExtComponent from '../../../core/src/main/defineExtComponent.js';
-import defineIntents from '../../../util/src/main/defineIntents.js';
-import Types from '../../../util/src/main/Types.js';
-import Emitter from '../../../util/src/main/Emitter.js';
+import defineExtComponent from '../core/defineExtComponent.js';
+import defineIntents from '../util/defineIntents.js';
+import Types from '../util/Types.js';
+import Emitter from '../util/Emitter.js';
+
+import { createElement } from 'js-surface';
 
 export function getExports(React) {
 	const exports = { defineIntents, Types};
@@ -28,7 +30,7 @@ export function getExports(React) {
 	            const hasInjectedProps = !propNames.every(
 	                propName => !config.properties[propName].inject);
 
-	            if (false && !hasInjectedProps) {
+	            if (true || !hasInjectedProps) {
 	                ret = props => {
 	                    return config.process(props);
 	                };
@@ -72,6 +74,7 @@ export function getExports(React) {
 	        this.__contextEmitter = new Emitter();
 	        this.__contentsPublisher = null;
 	        this.__contentsSubscription = null;
+	        this.__udateTimeout = null;
 
 	        if (config.process) {
 	            this.__contentsPublisher =
@@ -98,11 +101,19 @@ export function getExports(React) {
 
 
 	        this.__contentsSubscription = this.__contentsPublisher.subscribe({
-	            next(value) {
+	            next(value) {console.log("???????????????", self.__config.name);
 	                self.__contentToRender = value;
+	                var content = value;
 
 	                if (mounted) {
-	                    self.forceUpdate();
+	                    if (self.__updateTimeout) {
+	                    	clearTimeout(self.__updateTimeout);
+	                    }
+content = self.__contentToRender;
+	                    this.__updateTimeout = setTimeout(() => {
+	                    	self.__updateTimeout = null;self.__contentToRender = content;window.xxx = content;
+	                    	self.forceUpdate();
+	                    }, 0);
 	                }
 	            }
 	        });
@@ -122,6 +133,7 @@ export function getExports(React) {
 	    }
 
 	    componentWillReceiveProps(nextProps) {
+
 		    try {
 		        this.__propsEmitter.next(nextProps);
 		    } catch(e) {
@@ -131,17 +143,17 @@ export function getExports(React) {
 		}
 
 	    shouldComponentUpdate() {
-	        return !!this.__contentToRender;
+	        return false;
 	    }
 
 	    render() {
-	        if (!this.__contentToRender) {
+	        if (!window.xxx && !this.__contentToRender) {
 	            throw new Error(
 	                '[SurfaceReactComponent#render] Something went wrong - '
 	                + `no content to render for component '${this.__config.name}'`);
 	        }
 
-	        const ret = this.__contentToRender;
+	        const ret = window.xxx || this.__contentToRender;
 	        this.__contentToRender = null;
 
 	        return ret;

@@ -1,5 +1,6 @@
-import { getExports } from './shared/react/react.js';
-import ReactLite from 'react-lite';
+import { getExports } from './platform/react.js';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 const {
 	createElement,
@@ -7,7 +8,7 @@ const {
 	defineIntents,
 	isElement,
 	Types
-} = getExports(ReactLite);
+} = getExports(React);
 
 export {
 	createElement,
@@ -28,5 +29,5 @@ function mount(content, targetNode) {
         targetNode = document.getElementById(targetNode);
     }
 
-    return ReactLite.render(content, targetNode);
+    return ReactDOM.render(content, targetNode);
 }

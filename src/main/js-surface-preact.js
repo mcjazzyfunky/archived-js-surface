@@ -1,4 +1,4 @@
-import { getExports } from './shared/react/react.js';
+import { getExports } from './platform/react.js';
 import Preact from 'preact';
 
 const

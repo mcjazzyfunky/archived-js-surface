@@ -1,5 +1,5 @@
 import defineBaseComponent from './defineBaseComponent.js';
-import Emitter from '../../../util/src/main/Emitter.js';
+import Emitter from '../util/Emitter.js';
 
 export default function defineExtComponent(config, adapter) {
     const baseConfig = {};
@@ -22,18 +22,18 @@ export default function defineExtComponent(config, adapter) {
 	        const
 	            stateEmitter = new Emitter(),
 
-	            interactions = config.initInteractions
-	                ? config.initInteractions({ send: (it => send(it)) })
+	            interactors = config.initInteractor
+	                ? config.initInteractor({ send: (it => send(it)) })
 	                : null,
 
 	            send = createSendFunc(
-	                config.stateTransitions,
+	                config.stateReducer,
 	                () => state,
 	                newState => {
 	                    state = newState;
 	                    stateEmitter.next(state);
 	                },
-	                interactions),
+	                interactors),
 
 	            methods = {};
 
@@ -72,7 +72,7 @@ export default function defineExtComponent(config, adapter) {
 	                }
 
 	                if (config.onDidMount) {
-	                defer(() => config.onDidMount({ props: nextProps, state: nextState, send }));
+	                	defer(() => config.onDidMount({ props: nextProps, state: nextState, send }));
 	                }
 
 	                mounted = true;
@@ -123,21 +123,19 @@ export default function defineExtComponent(config, adapter) {
 }
 
 
-function createSendFunc(stateTransitions, getState, setState, interactions) {
+function createSendFunc(stateReducer, getState, setState, interactors) {
     return function send(intent) {
         defer(() => {
-            if (stateTransitions) {
-                if (stateTransitions.hasOwnProperty(intent.type)) {
-                    const
-                        currState = getState(),
-                        payload = intent.payload || [],
-                        nextState = stateTransitions[intent.type](...payload)(currState);
-                        setState(nextState);
-                }
-            } else if (typeof interactions === 'function') {
-                interactions(intent, send);
-            } else if (interactions && interactions.hasOwnProperty(intent.type)) {
-                interactions[intent.type](intent);
+            if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
+                const
+                    currState = getState(),
+                    payload = intent.payload || [],
+                    nextState = stateReducer[intent.type](...payload)(currState);
+                    setState(nextState);
+            } else if (typeof interactors === 'function') {
+                interactors(intent, send);
+            } else if (interactors && interactors.hasOwnProperty(intent.type)) {
+                interactors[intent.type](...intent.payload);
             }
         });
     };
