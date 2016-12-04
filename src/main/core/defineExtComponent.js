@@ -1,6 +1,8 @@
 import defineBaseComponent from './defineBaseComponent.js';
 import Emitter from '../util/Emitter.js';
 
+const NO_OP_FUNCTION = () => {};
+
 export default function defineExtComponent(config, adapter) {
     const baseConfig = {};
 
@@ -16,131 +18,173 @@ export default function defineExtComponent(config, adapter) {
 		baseConfig.process = config.process;
 	} else {
 	    baseConfig.initProcess = inputs => {
-	        let state = null,
-	            mounted = false;
 
-	        const
-	            stateEmitter = new Emitter(),
+            const { contents, getState, getProps, send  }
+                =  initiateCircuit(inputs, config),
 
-	            interactors = config.initInteractor
-	                ? config.initInteractor({ send: (it => send(it)) })
-	                : null,
+                methods = {};
 
-	            send = createSendFunc(
-	                config.stateReducer,
-	                () => state,
-	                newState => {
-	                    state = newState;
-	                    stateEmitter.next(state);
-	                },
-	                interactors),
+            if (config.methods) {
+                for (let methodName in config.methods) {
+                    if (config.methods.hasOwnProperty(methodName)) {
+                        methods[methodName] = (...args) => {
+                            config.methods[methodName](...args)({
+                            	props: getState(),
+                            	state: getProps,
+                            	send
+                            });
+                        };
+                    }
+                }
+            }
 
-	            methods = {};
-
-	        let newInputs = inputs;
-
-	        if (config.onNextProps) {
-	            newInputs = inputs.scan((props, nextProps, idx) => {
-	                if (idx > 0) {
-	                    config.onNextProps({ props, nextProps });
-	                }
-
-	                return props;
-	            });
-	        }
-
-	        let propsAndStateStream = newInputs.combineLatest(stateEmitter.startWith(0),
-	            (props, state) => [props, state]);
-
-	        let prevProps = null, prevState = null;
-
-	        if (config.needsUpdate) {
-	            propsAndStateStream = propsAndStateStream.filter(([nextProps, nextState], idx) => {
-	                return idx === 0 || !!config.needsUpdate({ props: prevProps, nextProps, state: prevState, nextState });
-	            });
-	        }
-
-	        const contents = propsAndStateStream.map(([nextProps, nextState])  => {
-	            if (!mounted) {
-	                if (config.initState) {
-	                    const stateResult = config.initState(nextProps);
-	                    nextState = state = stateResult;
-	                }
-
-	                if (config.onWillMount) {
-	                    config.onWillMount({ props: nextProps, state: nextState, send  });
-	                }
-
-	                if (config.onDidMount) {
-	                	defer(() => config.onDidMount({ props: nextProps, state: nextState, send }));
-	                }
-
-	                mounted = true;
-	            } else {
-	                if (config.onWillUpdate) {
-	                    config.onWillUpdate({ props: prevProps, nextProps, state: prevState, nextState, send });
-	                }
-
-	                if (config.onDidUpdate) {
-	                    defer(() => config.onDidUpdate({ props: nextProps, prevProps, state: nextState, prevState, send }));
-	                }
-	             }
-
-	            // TODO
-	            try {
-	                let r = config.render({ props: nextProps, prevProps, state: nextState, prevState, send  });
-
-	                prevProps = nextProps,
-	                prevState = nextState;
-
-	                return r;
-	            } catch(e) {
-	                console.error(e);
-	                throw e;
-	            }
-	        });
-
-	        if (config.methods) {
-	            for (let methodName in config.methods) {
-	                if (config.methods.hasOwnProperty(methodName)) {
-	                    methods[methodName] = (...args) => {
-	                        config.methods[methodName](...args)({ props: prevProps, state: prevState, send });
-	                    };
-	                }
-	            }
-	        }
-
-	        const ret = {
-	            contents,
-	            methods
-	        };
-
-	        return ret;
-	    };
+            return { contents, methods };
+    	};
 	}
 
     return defineBaseComponent(baseConfig, adapter);
 }
 
+function defer(fn) {
+    setTimeout(fn, 0);
+}
 
-function createSendFunc(stateReducer, getState, setState, interactors) {
+
+function initiateCircuit(inputs, config) {
+    let hasStarted = false,
+        props,
+        prevProps,
+        state,
+        prevState,
+        subscr1,
+        subscr2;
+
+    const
+        contentEmitter = new Emitter(),
+        stateEmitter = new Emitter(),
+        getProps = () => props,
+        getState = () => state,
+
+        interactor = !config.initInteractor
+            ? null
+            : config.initInteractor({
+                send: intent => send(intent)
+            }),
+
+        setState = newState => {
+            state = newState;
+            stateEmitter.next(state);
+        },
+
+        send = createSendFunc(
+            getState, setState, config.stateReducer, interactor);
+
+
+    subscr1 = inputs.subscribe({
+        next(props) {
+            handleNext(props, state, true);
+        },
+        error(err) {
+            contentEmitter.error(err);
+            subscr2.unsubscribe();
+            subscr1 = subscr2 = null;
+        },
+        complete() {
+            contentEmitter.complete();
+            subscr2.unsubscribe();
+            subscr1 = subscr2 = null;
+
+            if (config.onWillUnmount) {
+            	config.onWillUnmount();
+            }
+        }
+    }),
+
+    subscr2 = stateEmitter.subscribe({
+        next(state) {
+            handleNext(props, state, false);
+        }
+    });
+
+	function handleNext(nextProps, nextState, isPropsChange) {
+		if (!hasStarted) {
+		    if (config.initState) {
+		        state = config.initState(nextProps);
+		    }
+
+		    if (config.onWillMount) {
+		        config.onWillMount({ props: nextProps, state, send })
+		    }
+		} else if (config.onNextProps) {
+			config.onNextProps({
+				props,
+				nextProps,
+				state
+			});
+		}
+
+		if (isPropsChange) {
+			prevProps = props;
+			props = nextProps;
+		} else {
+			prevState = state;
+			state = nextState;
+		}
+
+
+		if (!hasStarted || !config.needsUpdate || config.needsUpdate(
+			{ props, nextProps, state, nextState })) {
+
+            if (hasStarted && config.onWillUpdate) {
+               config.onWillUpdate({ props, nextProps, state, nextState, send});
+            }
+
+            contentEmitter.next(config.render({
+                props,
+                prevProps,
+                state,
+                prevState,
+                send
+            }));
+
+            if (hasStarted && config.onDidUpdate) {
+                defer(() => config.onDidUpdate(
+                	{ props, nextProps, state, nextState, send}));
+            }
+		}
+
+		if (!hasStarted) {
+			if (config.onDidMount) {
+				defer(() => config.onDidMount({ props, state, send }));
+			}
+		}
+
+		hasStarted = true;
+	}
+
+    return {
+        getProps,
+        getState,
+        contents: contentEmitter.asPublisher(),
+        send
+    };
+}
+
+
+function createSendFunc(getState, setState, stateReducer, interactor) {
     return function send(intent) {
-        defer(() => {
-            if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
+       defer(() => {
+       		if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
                 const
                     currState = getState(),
                     payload = intent.payload || [],
                     nextState = stateReducer[intent.type](...payload)(currState);
                     setState(nextState);
-            } else if (typeof interactors === 'function') {
-                interactors(intent, send);
-            } else if (interactors && interactors.hasOwnProperty(intent.type)) {
-                interactors[intent.type](...intent.payload);
+            } else if (typeof interactor === 'function') {
+                interactor(intent, send);
+            } else if (interactor && interactor.hasOwnProperty(intent.type)) {
+                interactor[intent.type](...intent.payload);
             }
-        });
-    };
-}
-
-function defer(fn) {
-    setTimeout(fn, 0);
+       });
+   };
 }

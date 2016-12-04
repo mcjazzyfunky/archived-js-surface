@@ -1,4 +1,4 @@
-import { getExports } from './platform/react/react.js';
+import { getExports } from './platform/react.js';
 import ReactLite from 'react-lite';
 
 const {

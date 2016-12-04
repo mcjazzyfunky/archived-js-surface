@@ -64,7 +64,7 @@ function initState(props) {
         value = props.defaultValue;
     }
 
-    if (value === null) {
+    if (value === undefined || value === null) {
         value = '';
     }
 
@@ -86,6 +86,7 @@ function initInteractor(send) {
 }
 
 function onNextProps({ props, nextProps, state, send }) {
+	console.log('onNextProps:', props.value, nextProps.value, state.value)
     if (props.value !== null && nextProps.value !== state.value) {
         send(Intents.setValue(nextProps.value));
     }
@@ -95,7 +96,7 @@ function render({ props, state, prevState, send }) {
     const
         onChange = event => {
             const newValue = event.target.value;
-
+console.log(event.target);
             if (props.onChange) {
                 send(Intents.callback(props.onChange, createChangeEvent(newValue)));
             }
@@ -116,12 +117,12 @@ function render({ props, state, prevState, send }) {
     return (
         htm('div',
             { className },
-            label,
+            label,(console.log(33333, state)),
             htm('input',
                 { className: 'form-control'
                 , type: 'text'
                 , id: id
-                , value: Math.random() + state.value + ' | ' + props.value
+                , value: '' + state.value
                 , onChange
                 , disabled: props.disabled
                 , readOnly: props.readOnly
@@ -133,7 +134,7 @@ export default defineComponent({
     name,
     properties,
     initState,
-    stateReducer,
+    //stateReducer,
     initInteractor,
     onNextProps,
     render

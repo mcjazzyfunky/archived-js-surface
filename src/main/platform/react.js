@@ -3,8 +3,6 @@ import defineIntents from '../util/defineIntents.js';
 import Types from '../util/Types.js';
 import Emitter from '../util/Emitter.js';
 
-import { createElement } from 'js-surface';
-
 export function getExports(React) {
 	const exports = { defineIntents, Types};
 
@@ -101,20 +99,28 @@ export function getExports(React) {
 
 
 	        this.__contentsSubscription = this.__contentsPublisher.subscribe({
-	            next(value) {console.log("???????????????", self.__config.name);
+	            next(value) {
 	                self.__contentToRender = value;
 	                var content = value;
 
 	                if (mounted) {
+	                    	self.forceUpdate();
 	                    if (self.__updateTimeout) {
 	                    	clearTimeout(self.__updateTimeout);
 	                    }
 content = self.__contentToRender;
 	                    this.__updateTimeout = setTimeout(() => {
 	                    	self.__updateTimeout = null;self.__contentToRender = content;window.xxx = content;
-	                    	self.forceUpdate();
+	                    	//self.forceUpdate();
 	                    }, 0);
 	                }
+	            },
+
+	            error(err) {
+	            	console.error(err);
+	            },
+
+	            complete() {
 	            }
 	        });
 

@@ -1,53 +1,76 @@
 import Publisher from './Publisher.js';
 
+const NO_OP = () => {};
+
 export default class Emitter extends Publisher {
-    constructor() {
-        super(subscriber => {
-            this.__subscribers.push(subscriber);
+	constructor() {
+		super(subscriber => {
+			const proxy = typeof subscriber !== 'function'
+				? subscriber
+				: { next: subscriber, error: NO_OP, complete: NO_OP };
 
-            return () => {
-                const index = this.__subscribers.indexOf(subscriber);
+			this.__subscribers.push(proxy);
 
-                this.__subscribers.slice(index, index + 1);
-            };
-        });
-        
-        this.__subscribers = [];
-        this.__publisher = null;
-    }
+			return { unsubscribe: () => this.__unsubscribe(proxy) };
+		});
 
-    next(event) {
-        for (let subscriber of this.__subscribers) {
-            subscriber.next(event);
-        }
-    }
+		this.__subscribers = [];
+		this.__publisherCounterpart = null;
+	}
 
-    complete(event) {
-        for (let subscriber of this.__subscribers) {
-            subscriber.complete();
-        }
+	next(event) {
+		const length = this.__subscribers.length;
 
-        this.__subscribers = [];
-    }
+		try {
+			for (let i = 0; i < length; ++i) {
+				this.__subscribers[i].next(event);
+			}
+		} catch (err) {
+			this.error(err);
 
-    error(error) {
-        for (let subscriber of this.__subscribers) {
-            subscriber.error(error);
-        }
+			// TODO - remove sometimes
+			console.error('[Emitter.next]', err);
+		}
+	}
 
-        this.__subscribers = [];
-    }
+	error(err) {
+		const length = this.__subscribers.length;
 
-    asPublisher() {
-        let ret = this.__publisher;
+		for (let i = 0; i < length; ++i) {console.log(this.__subscribers)
+			this.__subscribers[i].error(err);
+		}
 
-        if (!ret) {
-            ret = this.__publisher = new Publisher(subscriber => {
-                return this.subscribe(subscriber);
-            });
-        }
+		this.__subscribers.length = 0;
+	}
 
-        return ret;
-    }
+	complete() {
+		const length = this.__subscribers.length;
+
+		for (let i = 0; i < length; ++i) {
+			this.__subscribers[i].complete();
+		}
+
+		this.__subscribers.length = 0;
+	}
+
+	asPublisher() {
+		let ret = this.__publisherCounterpart;
+
+		if (!ret) {
+			ret = this.__publisherCounterpart =
+			    new Publisher(subscriber => this.subscribe(subscriber));
+		}
+
+		return ret;
+	}
+
+    __unsubscribe(subscriber) {
+    	const length = this.__subscribers.length;
+
+    	for (let i = 0; i < length !== subscriber; ++i) {
+    		if (this.__subscribers[i] === subscriber) {
+    			this.__subscribers.splice(i, 1);
+    		}
+    	}
+    };
 }
-
