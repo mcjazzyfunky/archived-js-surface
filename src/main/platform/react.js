@@ -1,10 +1,9 @@
 import defineExtComponent from '../core/defineExtComponent.js';
-import defineIntents from '../util/defineIntents.js';
 import Types from '../util/Types.js';
 import Emitter from '../util/Emitter.js';
 
 export function getExports(React) {
-	const exports = { defineIntents, Types};
+	const exports = { Types};
 
 	exports.defineComponent = function (config) {
 		return defineExtComponent(config, defineReactComponent);

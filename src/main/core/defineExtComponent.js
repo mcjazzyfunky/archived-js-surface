@@ -1,7 +1,8 @@
 import defineBaseComponent from './defineBaseComponent.js';
 import Emitter from '../util/Emitter.js';
+import warn from '../util/warn.js';
 
-const NO_OP_FUNCTION = () => {};
+const NO_OP = () => {};
 
 export default function defineExtComponent(config, adapter) {
     const baseConfig = {};
@@ -56,8 +57,7 @@ function initiateCircuit(inputs, config) {
         prevProps,
         state,
         prevState,
-        subscr1,
-        subscr2;
+        subscr;
 
     const
         contentEmitter = new Emitter(),
@@ -80,19 +80,19 @@ function initiateCircuit(inputs, config) {
             getState, setState, config.stateReducer, interactor);
 
 
-    subscr1 = inputs.subscribe({
+    inputs.subscribe({
         next(props) {
             handleNext(props, state, true);
         },
         error(err) {
             contentEmitter.error(err);
-            subscr2.unsubscribe();
-            subscr1 = subscr2 = null;
+            subscr.unsubscribe();
+            subscr = null;
         },
         complete() {
             contentEmitter.complete();
-            subscr2.unsubscribe();
-            subscr1 = subscr2 = null;
+            subscr.unsubscribe();
+            subscr = null;
 
             if (config.onWillUnmount) {
             	config.onWillUnmount();
@@ -100,7 +100,7 @@ function initiateCircuit(inputs, config) {
         }
     }),
 
-    subscr2 = stateEmitter.subscribe({
+    subscr = stateEmitter.subscribe({
         next(state) {
             handleNext(props, state, false);
         }
@@ -113,13 +113,14 @@ function initiateCircuit(inputs, config) {
 		    }
 
 		    if (config.onWillMount) {
-		        config.onWillMount({ props: nextProps, state, send })
+		        config.onWillMount({ props: nextProps, state, send });
 		    }
 		} else if (config.onNextProps) {
 			config.onNextProps({
 				props,
 				nextProps,
-				state
+				state,
+				send
 			});
 		}
 
@@ -149,7 +150,7 @@ function initiateCircuit(inputs, config) {
 
             if (hasStarted && config.onDidUpdate) {
                 defer(() => config.onDidUpdate(
-                	{ props, nextProps, state, nextState, send}));
+                	{ props, nextProps, state, nextState, send }));
             }
 		}
 
@@ -172,8 +173,26 @@ function initiateCircuit(inputs, config) {
 
 
 function createSendFunc(getState, setState, stateReducer, interactor) {
-    return function send(intent) {
-       defer(() => {
+    return function send(subject, ...rest) {
+    	const subjectIsString = typeof subject === 'string';
+
+    	let intent;
+
+    	if (!subjectIsString && (subject === null || typeof subject !== 'object')) {
+    		warn('Illegal internal component intent has been sent', subject);
+    	} else if (subjectIsString) {
+    		 intent = {
+        		type: subject
+        	};
+
+        	if (rest.length > 0) {
+        		intent.payload = rest;
+        	}
+    	} else {
+    		intent = subject;
+    	}
+
+        defer(() => {
        		if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
                 const
                     currState = getState(),
@@ -184,6 +203,8 @@ function createSendFunc(getState, setState, stateReducer, interactor) {
                 interactor(intent, send);
             } else if (interactor && interactor.hasOwnProperty(intent.type)) {
                 interactor[intent.type](...intent.payload);
+            } else {
+            	warn('Illegal intent', intent);
             }
        });
    };

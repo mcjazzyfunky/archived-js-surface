@@ -1,6 +1,4 @@
-import { defineComponent, defineIntents, mount, createElement as htm, Types } from 'js-surface';
-
-
+import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
 
 const CounterLabel = defineComponent({
     name: 'CounterLabel',
@@ -18,20 +16,20 @@ const CounterLabel = defineComponent({
 
 // --------------------------------------------------------------------
 
-const CounterIntents = defineIntents({
-    increase: true,
-    resetCounter: true
-});
+// Counter actions
+const
+    INCREASE_COUNTER = 'increaseCounter',
+    RESET_COUNTER = 'resetCounter';
 
 const Counter = defineComponent({
     name: 'Counter',
 
     stateReducer: {
-        increase(delta) {
+        [INCREASE_COUNTER](delta) {
             return state => ({ counterValue: state.counterValue + delta });
         },
 
-        resetCounter(value) {
+        [RESET_COUNTER](value) {
             return state => ({ counterValue: value });
         }
     },
@@ -54,7 +52,7 @@ const Counter = defineComponent({
     methods: {
         resetCounter(n) {
             return ({ props, state, send }) => {
-                send(CounterIntents.resetCounter(n));
+                send(RESET_COUNTER, n);
             };
         }
     },
@@ -90,7 +88,7 @@ const Counter = defineComponent({
             htm('span',
                 {style: props.style},
                 htm('button',
-                    { onClick: () => send(CounterIntents.increase(-1)) },
+                    { onClick: () => send(INCREASE_COUNTER, -1) },
                     '-'),
 
                 htm('div',
@@ -98,28 +96,26 @@ const Counter = defineComponent({
                     CounterLabel({value: state.counterValue})),
 
                 htm('button',
-                    { onClick: () => send(CounterIntents.increase(1)) } ,
+                    { onClick: () => send(INCREASE_COUNTER, 1) } ,
                     '+'))
         );
     }
 });
 
-
 // --------------------------------------------------------------------
 
-const CounterCtrlIntents = defineIntents({
-    resetCounter: true
-});
-
+// CountrCtrl actions
+const RESET_CHILD_COUNTER = 'resetChildCounter';
 
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
 
     initInteractor(send) {
-          return async function(intent) {
-              const [counterInstance, counterValue] = intent.payload;
-              counterInstance.resetCounter(counterValue);
-          };
+    	return {
+            [RESET_CHILD_COUNTER]: async function (counterInstance, counterValue) {
+                counterInstance.resetCounter(counterValue);
+            }
+        };
     },
 
     render({ send }) {
@@ -128,11 +124,11 @@ const CounterCtrl = defineComponent({
         return (
             htm("div",
                 null,
-                htm('button', { onClick: () => send(CounterCtrlIntents.resetCounter(counterInstance, 0)) }, 'Reset to 0'),
+                htm('button', { onClick: () => send(RESET_CHILD_COUNTER, counterInstance, 0) }, 'Reset to 0'),
                 ' ',
                 Counter({ref: it => counterInstance = it, style: {margin: '0 20px'}}),
                 ' ',
-                htm('button', { onClick: () => send(CounterCtrlIntents.resetCounter(counterInstance, 100)) }, 'Reset to 100')));
+                htm('button', { onClick: () => send(RESET_CHILD_COUNTER, counterInstance	, 100) }, 'Reset to 100')));
     }
 });
 
