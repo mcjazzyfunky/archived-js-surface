@@ -4,7 +4,6 @@ import ReactLite from 'react-lite';
 const {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	Types
 } = getExports(ReactLite);
@@ -12,7 +11,6 @@ const {
 export {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	mount,
 	Types

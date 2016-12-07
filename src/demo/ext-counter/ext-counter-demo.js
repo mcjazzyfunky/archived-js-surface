@@ -16,23 +16,17 @@ const CounterLabel = defineComponent({
 
 // --------------------------------------------------------------------
 
-// Counter actions
+// Counter intents
 const
-    INCREASE_COUNTER = 'increaseCounter',
-    RESET_COUNTER = 'resetCounter';
+    // State transitions
+    INCREASE_COUNTER = Symbol('increaseCounter'),
+    RESET_COUNTER = Symbol('resetCounter'),
+
+    // Interactions (aka side effects)
+    LOG = Symbol('log');
 
 const Counter = defineComponent({
     name: 'Counter',
-
-    stateReducer: {
-        [INCREASE_COUNTER](delta) {
-            return state => ({ counterValue: state.counterValue + delta });
-        },
-
-        [RESET_COUNTER](value) {
-            return state => ({ counterValue: value });
-        }
-    },
 
     properties: {
         initValue: {
@@ -45,8 +39,27 @@ const Counter = defineComponent({
         }
     },
 
-    initState(props) {
+    initState({ props }) {
         return { counterValue: props.initValue };
+    },
+
+    stateReducer: {
+        [INCREASE_COUNTER](delta) {
+            return state => ({ counterValue: state.counterValue + delta });
+        },
+
+        [RESET_COUNTER](value) {
+            return state => ({ counterValue: value });
+        }
+    },
+
+    initInteractor({ send }) {
+    	return {
+    		[LOG](msg, params) {
+    			console.log(msg, JSON.stringify(params));
+    			// alert(msg + JSON.stringify(params));
+    		}
+    	}
     },
 
     methods: {
@@ -57,30 +70,34 @@ const Counter = defineComponent({
         }
     },
 
-    needsUpdate(params) {
-        console.log('check wheter update needed - params:', params);
+    needsUpdate({ send }) {
+    	send(LOG, 'check whether update needed', arguments[0]);
 
         return true;
     },
 
-    onWillMount(params) {
-        console.log('will mount Counter - params:', params);
+    onNextProps({ send }) {
+        send(LOG, 'next props for Counter - params:', arguments[0]);
     },
 
-    onDidMount(params) {
-        console.log('did mount Counter - params:', params);
+    onWillMount({ send }) {
+        send(LOG, 'will mount Counter - params:', arguments[0]);
     },
 
-    onWillUpdate(params) {
-        console.log('will update Counter - params:', params);
+    onDidMount({ send }) {
+        send(LOG, 'did mount Counter - params:', arguments[0]);
     },
 
-    onDidUpdate(params) {
-        console.log('did update Counter - params:', params);
+    onWillUpdate({ send }) {
+        send(LOG, 'will update Counter - params:', arguments[0]);
     },
 
-    onWillUnmount(params) {
-        console.log('will unmount Counter - params:', params);
+    onDidUpdate({ send }) {
+        send(LOG, 'did update Counter - params:', arguments[0]);
+    },
+
+    onWillUnmount({ send }) {
+        send(LOG, 'will unmount Counter - params:', arguments[0]);
     },
 
     render({ props, state, send }) {
@@ -105,14 +122,14 @@ const Counter = defineComponent({
 // --------------------------------------------------------------------
 
 // CountrCtrl actions
-const RESET_CHILD_COUNTER = 'resetChildCounter';
+const RESET_CHILD_COUNTER = Symbol('resetChildCounter');
 
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
 
     initInteractor(send) {
     	return {
-            [RESET_CHILD_COUNTER]: async function (counterInstance, counterValue) {
+            [RESET_CHILD_COUNTER]: function (counterInstance, counterValue) {
                 counterInstance.resetCounter(counterValue);
             }
         };

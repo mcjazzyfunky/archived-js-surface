@@ -6,7 +6,6 @@ import { getExports } from './platform/inferno.js';
 const {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	mount,
 	Types
@@ -15,7 +14,6 @@ const {
 export {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	mount,
 	Types

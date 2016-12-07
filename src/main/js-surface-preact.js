@@ -7,7 +7,6 @@ const
 
 const {
 	defineComponent,
-	defineIntents,
 	isElement,
 	Types
 } = getExports({
@@ -20,7 +19,6 @@ const {
 export {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	mount,
 	Types

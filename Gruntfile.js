@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         },
         babel: {
             options: {
-                modules: 'common',
+		presets: ["es2015", "es2017"],
                 retainLines: true,
                 moduleIds: false,
                 sourceMaps: true

@@ -2,8 +2,6 @@ import defineBaseComponent from './defineBaseComponent.js';
 import Emitter from '../util/Emitter.js';
 import warn from '../util/warn.js';
 
-const NO_OP = () => {};
-
 export default function defineExtComponent(config, adapter) {
     const baseConfig = {};
 
@@ -53,11 +51,9 @@ function defer(fn) {
 
 function initiateCircuit(inputs, config) {
     let hasStarted = false,
-        props,
-        prevProps,
-        state,
-        prevState,
-        subscr;
+        props = null,
+        state = null,
+        subscr = null;
 
     const
         contentEmitter = new Emitter(),
@@ -71,9 +67,8 @@ function initiateCircuit(inputs, config) {
                 send: intent => send(intent)
             }),
 
-        setState = newState => {
-            state = newState;
-            stateEmitter.next(state);
+        setState = nextState => {
+            stateEmitter.next(nextState);
         },
 
         send = createSendFunc(
@@ -81,8 +76,25 @@ function initiateCircuit(inputs, config) {
 
 
     inputs.subscribe({
-        next(props) {
-            handleNext(props, state, true);
+        next(nextProps) {
+            if (!hasStarted && config.initState) {
+		        state = config.initState({ props: nextProps });
+		    } else if (hasStarted && config.onNextProps) {
+                config.onNextProps({ props, nextProps, state });
+            }
+
+		    if (!hasStarted && config.onWillMount) {
+		        config.onWillMount({ props: nextProps, state, send });
+		    }
+
+    		if (!hasStarted  && config.onDidMount) {
+    			defer(() => config.onDidMount({ props, state, send }));
+    		}
+
+            handleNextContent(hasStarted, props, nextProps, state, state, send, contentEmitter, config);
+
+            props = nextProps;
+            hasStarted = true;
         },
         error(err) {
             contentEmitter.error(err);
@@ -101,67 +113,14 @@ function initiateCircuit(inputs, config) {
     }),
 
     subscr = stateEmitter.subscribe({
-        next(state) {
-            handleNext(props, state, false);
+        next(nextState) {
+            handleNextContent(hasStarted, props, props, state, nextState, send, contentEmitter, config);
+            state = nextState;
+        },
+        error(err) {
+            console.log(err);
         }
     });
-
-	function handleNext(nextProps, nextState, isPropsChange) {
-		if (!hasStarted) {
-		    if (config.initState) {
-		        state = config.initState(nextProps);
-		    }
-
-		    if (config.onWillMount) {
-		        config.onWillMount({ props: nextProps, state, send });
-		    }
-		} else if (config.onNextProps) {
-			config.onNextProps({
-				props,
-				nextProps,
-				state,
-				send
-			});
-		}
-
-		if (isPropsChange) {
-			prevProps = props;
-			props = nextProps;
-		} else {
-			prevState = state;
-			state = nextState;
-		}
-
-
-		if (!hasStarted || !config.needsUpdate || config.needsUpdate(
-			{ props, nextProps, state, nextState })) {
-
-            if (hasStarted && config.onWillUpdate) {
-               config.onWillUpdate({ props, nextProps, state, nextState, send});
-            }
-
-            contentEmitter.next(config.render({
-                props,
-                prevProps,
-                state,
-                prevState,
-                send
-            }));
-
-            if (hasStarted && config.onDidUpdate) {
-                defer(() => config.onDidUpdate(
-                	{ props, nextProps, state, nextState, send }));
-            }
-		}
-
-		if (!hasStarted) {
-			if (config.onDidMount) {
-				defer(() => config.onDidMount({ props, state, send }));
-			}
-		}
-
-		hasStarted = true;
-	}
 
     return {
         getProps,
@@ -171,16 +130,60 @@ function initiateCircuit(inputs, config) {
     };
 }
 
+function handleNextContent(hasStarted, props, nextProps, state, nextState, send, contentEmitter, config) {
+	if (hasStarted && config.needsUpdate && config.needsUpdate(
+		{ props, nextProps, state, nextState, send })) {
+
+        if (config.onWillUpdate) {
+            config.onWillUpdate({
+           		props,
+           		nextProps,
+           		state,
+           		nextState,
+           		send
+            });
+        }
+	}
+
+    contentEmitter.next(
+        config.render({
+            props: nextProps,
+            prevProps: props,
+            state: nextState,
+            prevState: state,
+            send
+        }));
+
+    if (hasStarted && config.onDidUpdate) {
+        defer(() => config.onDidUpdate({
+            props: nextProps,
+            prevProps: props,
+            state: nextState,
+            prevState: state,
+            send
+        }));
+    }
+}
 
 function createSendFunc(getState, setState, stateReducer, interactor) {
     return function send(subject, ...rest) {
-    	const subjectIsString = typeof subject === 'string';
+    	const
+    		typeOfSubject = typeof subject,
 
-    	let intent;
+    		subjectIsStringOrSymbol = typeOfSubject === 'string'
+    				|| typeOfSubject === 'symbol'
+    				|| subject && subject.constructor === Symbol,
 
-    	if (!subjectIsString && (subject === null || typeof subject !== 'object')) {
-    		warn('Illegal internal component intent has been sent', subject);
-    	} else if (subjectIsString) {
+    		subjectIsObject = subject !== null && typeOfSubject === 'object';
+
+    	let intent = null,
+    		errMsg = null,
+    		errSbj = null;
+
+    	if (!subjectIsStringOrSymbol && !subjectIsObject) {
+    		errMsg = 'Illegal internal component intent has been sent';
+    		errSbj = subject;
+    	} else if (subjectIsStringOrSymbol) {
     		 intent = {
         		type: subject
         	};
@@ -188,24 +191,34 @@ function createSendFunc(getState, setState, stateReducer, interactor) {
         	if (rest.length > 0) {
         		intent.payload = rest;
         	}
+    	} else if (typeof subject.type !== 'string') {
+    		errMsg = 'Illegal internal component intent type';
+    		errSbj = subject;
     	} else {
     		intent = subject;
     	}
 
-        defer(() => {
+		if (!errMsg) {
        		if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
                 const
                     currState = getState(),
                     payload = intent.payload || [],
                     nextState = stateReducer[intent.type](...payload)(currState);
-                    setState(nextState);
+
+                defer(() => setState(nextState));
             } else if (typeof interactor === 'function') {
-                interactor(intent, send);
+                interactor(intent);
             } else if (interactor && interactor.hasOwnProperty(intent.type)) {
                 interactor[intent.type](...intent.payload);
             } else {
-            	warn('Illegal intent', intent);
+            	errMsg = 'Illegal component intent has been sent';
+            	errSbj = intent;
             }
-       });
+		}
+
+		if (errMsg) {
+			warn(errMsg, errSbj);
+			throw new Error(errMsg);
+		}
    };
 }

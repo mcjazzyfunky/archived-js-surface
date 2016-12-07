@@ -5,7 +5,6 @@ import AppRegistry from 'react-native';
 const {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	Types
 } = getExports(React);
@@ -13,7 +12,6 @@ const {
 export {
 	createElement,
 	defineComponent,
-	defineIntents,
 	isElement,
 	mount,
 	Types
