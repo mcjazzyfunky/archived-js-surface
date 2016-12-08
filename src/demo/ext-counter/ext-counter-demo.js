@@ -53,7 +53,7 @@ const Counter = defineComponent({
         }
     },
 
-    initInteractor({ send }) {
+    initMiddleware({ send }) {
     	return {
     		[LOG](msg, params) {
     			console.log(msg, JSON.stringify(params));
@@ -121,19 +121,8 @@ const Counter = defineComponent({
 
 // --------------------------------------------------------------------
 
-// CountrCtrl actions
-const RESET_CHILD_COUNTER = Symbol('resetChildCounter');
-
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
-
-    initInteractor(send) {
-    	return {
-            [RESET_CHILD_COUNTER]: function (counterInstance, counterValue) {
-                counterInstance.resetCounter(counterValue);
-            }
-        };
-    },
 
     render({ send }) {
         let counterInstance = null;
@@ -141,11 +130,11 @@ const CounterCtrl = defineComponent({
         return (
             htm("div",
                 null,
-                htm('button', { onClick: () => send(RESET_CHILD_COUNTER, counterInstance, 0) }, 'Reset to 0'),
+                htm('button', { onClick: () => send(() => counterInstance.resetCounter(0)) }, 'Reset to 0'),
                 ' ',
                 Counter({ref: it => counterInstance = it, style: {margin: '0 20px'}}),
                 ' ',
-                htm('button', { onClick: () => send(RESET_CHILD_COUNTER, counterInstance	, 100) }, 'Reset to 100')));
+                htm('button', { onClick: () => send(() => counterInstance.resetCounter(100)) }, 'Reset to 100')));
     }
 });
 

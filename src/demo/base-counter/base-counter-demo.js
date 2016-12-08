@@ -76,7 +76,6 @@ const Counter = defineComponent({
 const counterCtrlView = props => {
     var elem = null;
 
-
     const btnText1 = 'Reset to 0 ',
         btnText2 = 'Reset to 100 ';
 

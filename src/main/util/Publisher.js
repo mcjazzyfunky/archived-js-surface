@@ -11,12 +11,28 @@ export default class Publisher {
         return new Publisher(subscriber => {
             const subscription = this.subscribe({
                 next(value) {
-                    subscriber.next(f(value));
+                	try {
+                    	subscriber.next(f(value));
+                	} catch (err) {
+                		if (subscriber.error) {
+                			subscriber.error(err);
+                		}
+
+                		subscription.unsubscribe();
+                	}
                 },
 
-                error: err => subscriber.error(err),
+                error: err => {
+                	if (subscriber.error) {
+                		subscriber.error(err);
+                	}
+                },
 
-                complete: () => subscriber.complete()
+                complete: () => {
+                	if (subscriber.complete) {
+                		subscriber.complete();
+                	}
+                }
             });
 
             return subscription;

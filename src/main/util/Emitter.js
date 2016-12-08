@@ -26,17 +26,17 @@ export default class Emitter extends Publisher {
 				this.__subscribers[i].next(event);
 			}
 		} catch (err) {
-			this.error(err);
-
 			// TODO - remove sometimes
 			console.error('[Emitter.next]', err);
+
+			this.error(err);
 		}
 	}
 
 	error(err) {
 		const length = this.__subscribers.length;
 
-		for (let i = 0; i < length; ++i) {console.log(this.__subscribers)
+		for (let i = 0; i < length; ++i) {
 			this.__subscribers[i].error(err);
 		}
 

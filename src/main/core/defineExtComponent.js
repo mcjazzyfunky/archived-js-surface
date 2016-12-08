@@ -61,9 +61,9 @@ function initiateCircuit(inputs, config) {
         getProps = () => props,
         getState = () => state,
 
-        interactor = !config.initInteractor
+        interactor = !config.initMiddleware
             ? null
-            : config.initInteractor({
+            : config.initMiddleware({
                 send: intent => send(intent)
             }),
 
@@ -174,13 +174,14 @@ function createSendFunc(getState, setState, stateReducer, interactor) {
     				|| typeOfSubject === 'symbol'
     				|| subject && subject.constructor === Symbol,
 
-    		subjectIsObject = subject !== null && typeOfSubject === 'object';
+    		subjectIsObject = subject !== null && typeOfSubject === 'object',
+    		subjectIsFunction = typeOfSubject === 'function';
 
     	let intent = null,
     		errMsg = null,
     		errSbj = null;
 
-    	if (!subjectIsStringOrSymbol && !subjectIsObject) {
+    	if (!subjectIsStringOrSymbol && !subjectIsObject && !subjectIsFunction) {
     		errMsg = 'Illegal internal component intent has been sent';
     		errSbj = subject;
     	} else if (subjectIsStringOrSymbol) {
@@ -191,7 +192,7 @@ function createSendFunc(getState, setState, stateReducer, interactor) {
         	if (rest.length > 0) {
         		intent.payload = rest;
         	}
-    	} else if (typeof subject.type !== 'string') {
+    	} else if (subjectIsObject && typeof subject.type !== 'string') {
     		errMsg = 'Illegal internal component intent type';
     		errSbj = subject;
     	} else {
@@ -199,7 +200,9 @@ function createSendFunc(getState, setState, stateReducer, interactor) {
     	}
 
 		if (!errMsg) {
-       		if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
+			if (subjectIsFunction) {
+    			intent.apply(null, rest);
+			} else if (stateReducer && stateReducer.hasOwnProperty(intent.type)) {
                 const
                     currState = getState(),
                     payload = intent.payload || [],
