@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
+import { defineComponent, mount, createElement as htm } from 'js-surface';
 import Emitter from '../../main/util/Emitter.js';
 
 const CounterLabel = defineComponent({
@@ -6,7 +6,7 @@ const CounterLabel = defineComponent({
 
     properties: {
         value: {
-            type: Types.number
+            type: Number
         }
     },
 
@@ -20,15 +20,15 @@ const Counter = defineComponent({
 
     properties: {
         textDecrement: {
-            type: Types.string,
+            type: String,
             defaultValue: '-',
         },
         textIncrement: {
-            type: Types.string,
+            type: String,
             defaultValue: '+'
         },
         style: {
-            type: Types.object,
+            type: Object,
             defaultValue: null
         }
     },
@@ -96,11 +96,11 @@ const CounterCtrl = defineComponent({
 
     properties: {
         label: {
-            type: value => null,
+            type: String,
             defaultValue: ''
         },
         lang: {
-            type: value => typeof value === 'string',
+            type: String,
             defaultValue: 'en'
         }
     },

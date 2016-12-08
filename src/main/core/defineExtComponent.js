@@ -45,7 +45,8 @@ export default function defineExtComponent(config, adapter) {
 }
 
 function defer(fn) {
-    setTimeout(fn, 0);
+//    setTimeout(fn, 0);
+fn();
 }
 
 
@@ -96,10 +97,14 @@ function initiateCircuit(inputs, config) {
             props = nextProps;
             hasStarted = true;
         },
-        error(err) {
+        error(err) {console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzz", err)
+            try {
             contentEmitter.error(err);
             subscr.unsubscribe();
             subscr = null;
+            } catch (err2) {
+                console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZ", err, err2);
+            }
         },
         complete() {
             contentEmitter.complete();

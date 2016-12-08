@@ -1,3 +1,9 @@
+/*
+import { EventStream } from 'js-prelude';
+
+
+export default EventStream;
+*/
 export default class Publisher {
 	constructor(onSubscribe) {
 		this.__onSubscribe = onSubscribe;

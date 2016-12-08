@@ -1,5 +1,16 @@
 import Publisher from './Publisher.js';
 
+/*
+import { EventSubject } from 'js-prelude';
+
+EventSubject.prototype.asPublisher = function () {
+	return this.asEventStream();
+};
+
+//export default EventSubject;
+*/
+
+
 const NO_OP = () => {};
 
 export default class Emitter extends Publisher {
@@ -11,7 +22,9 @@ export default class Emitter extends Publisher {
 
 			this.__subscribers.push(proxy);
 
-			return { unsubscribe: () => this.__unsubscribe(proxy) };
+			return {
+				unsubscribe: () => this.__unsubscribe(proxy)
+			};
 		});
 
 		this.__subscribers = [];
@@ -35,9 +48,14 @@ export default class Emitter extends Publisher {
 
 	error(err) {
 		const length = this.__subscribers.length;
-
+console.log("xxxxxxxxxxxxxxxxxxxxxxxxxx", err)
 		for (let i = 0; i < length; ++i) {
-			this.__subscribers[i].error(err);
+			try {
+				this.__subscribers[i].error(err);
+			} catch (err2) {
+				console.err("yyyyyyyyyyyyyyyyyyyy",err);
+				console.err(err2);
+			}
 		}
 
 		this.__subscribers.length = 0;

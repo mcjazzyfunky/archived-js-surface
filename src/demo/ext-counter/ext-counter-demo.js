@@ -5,7 +5,7 @@ const CounterLabel = defineComponent({
 
     properties: {
         value: {
-            type: Types.number
+            type: Number
         }
     },
 
@@ -30,11 +30,11 @@ const Counter = defineComponent({
 
     properties: {
         initValue: {
-            type: Types.number,
+            type: Number,
             defaultValue: 0
         },
         style: {
-            type: Types.object,
+            type: Object,
             defaultValue: null
         }
     },

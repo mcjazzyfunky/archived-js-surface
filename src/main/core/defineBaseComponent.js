@@ -148,14 +148,19 @@ function validatePropertyConfig(propertyConfig, path) {
     } else if (typeof propertyConfig !== 'object') {
         errMsg = `Configuration parameter '${path}' `
             + 'must be an object';
-    } else if (typeof propertyConfig.type !== 'function') {
+    } else if ([String, Number, Boolean, Array, Date, Object].indexOf(propertyConfig.type) === -1) {
         errMsg = `Configuration parameter '${path}.type' `
-            + ' must be a function';
+            + ' must either be String, Number, Boolean, Array, Date or Object';
     } else if (propertyConfig.hasOwnProperty('defaultValue')
     	&& propertyConfig.defaultValue === undefined) {
 
         errMsg = `Configuration parameter '${path}.defaultValue' `
             + ' must not be set to undefined';
+    } else if (propertyConfig.hasOwnProperty('constraint')
+        && typeof propertyConfig.defaultValue !== 'function') {
+
+        errMsg = `Optinal configuration parameter '${path}.constraint' `
+            + ' must be a function';
     } else {
 	    for(let key in propertyConfig) {
 	    	if (propertyConfig.hasOwnProperty(key) && !PROPERTY_CONFIG_KEYS.has(key)) {
@@ -179,21 +184,38 @@ function validateProperties(componentName, properties, neededValidations, kind) 
     // Ignore children
     keysToBeChecked.delete('children');
 
-    for (let [propertyName, type, required] of neededValidations) {
-        let err = null;
+    for (let [propertyName, type, constraint, required] of neededValidations) {
+        let value = properties[propertyName],
+            errMsg = null;
 
         keysToBeChecked.delete(propertyName);
 
         if (required && properties[propertyName] === undefined) {
-            err = new Error(`Missing mandatory property '${propertyName}' for '${componentName}'`);
-        } else {
-            err = type(properties, propertyName, componentName, kind) || null;
+            errMsg = `Missing mandatory property '${propertyName}' for '${componentName}'`;
+        } else if (type === Array) {
+        	if (!Array.isArray(value)) {
+        		errMsg = `Property '${propertyName}' must be an array`;
+        	}
+        } else if (type === Object) {
+        	if (value === null || typeof value !== 'object') {
+        		errMsg = `Property '${propertyName}' must be an object`;
+        	}
+        } else if (type === Date) {
+        	if (!(value instanceof Date)) {
+        		errMsg = `Property '${propertyName}' must be a date`;
+        	}
+        } else if (value === null
+            || typeof value === 'object' || value.constructor !== type) {
+console.log(propertyName, typeof value, value, String, value.constructor);
+        	errMsg = `Property '${propertyName}' must be `
+        	    + type.name.toLowerCase();
+        } else if (constraint && !constraint(value)) {
+        	errMsg = `Invalid value for property '${propertyName}'`;
         }
 
-        // Just in case that React PropTypes validation functions are used
-        // we will try to normalize the error message a bit.
-        if (err) {
-            const errMsg = ('' + err)
+        // Just to make sure, we will try to normalize the error message a bit.
+        if (errMsg) {
+            errMsg = errMsg
                 .replace(/^\s*(Error|Warning)\s*(:?)\s*/i, '')
                 .replace(/(\s|\.)+$/, '')
                 .replace(/`/g, "'")
@@ -240,19 +262,19 @@ function determinePropertyConstraints(properties) {
         for (let propertyName of propertyNames) {
             const
                 type = properties[propertyName].type,
+                constraint = properties[propertyName] || null,
                 defaultValue = properties[propertyName].defaultValue,
                 propertyRequired = defaultValue === undefined;
 
-            if (type || propertyRequired) {
-                neededValidations.push([
-                	propertyName,
-                	type || null,
-                	propertyRequired]);
+            neededValidations.push([
+            	propertyName,
+            	type,
+            	constraint,
+            	propertyRequired]);
 
-		        if (!propertyRequired) {
-                	defaultValues[propertyName] = defaultValue;
-		        }
-            }
+	        if (!propertyRequired) {
+            	defaultValues[propertyName] = defaultValue;
+	        }
         }
     }
 
