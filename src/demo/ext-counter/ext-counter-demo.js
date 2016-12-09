@@ -1,4 +1,4 @@
-import { defineComponent, mount, createElement as htm, Types } from 'js-surface';
+import { defineComponent, mount, createElement as htm } from 'js-surface';
 
 const CounterLabel = defineComponent({
     name: 'CounterLabel',

@@ -1,6 +1,6 @@
 import { defineComponent, mount, createElement as htm } from 'js-surface';
 import Emitter from '../../main/util/Emitter.js';
-
+/*
 const CounterLabel = defineComponent({
     name: 'CounterLabel',
 
@@ -90,7 +90,7 @@ const counterCtrlView = props => {
             htm('button', {onClick: () => elem.reset(100) }, btnText2))
     );
 };
-
+*/
 const CounterCtrl = defineComponent({
     name: 'CounterCtrl',
 
@@ -105,13 +105,16 @@ const CounterCtrl = defineComponent({
         }
     },
 
-
     initProcess: inputs => {
         const contents = new Emitter();
 
+		/*
         inputs.subscribe(props => {
             contents.next(counterCtrlView(props));
         });
+        */
+        inputs.subscribe(props =>
+        	contents.next(htm('div', null, 'Juhu')));
 
         return { contents };
     }

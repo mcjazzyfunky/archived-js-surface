@@ -138,8 +138,7 @@ content = self.__contentToRender;
 	    }
 
 	    componentWillReceiveProps(nextProps) {
-
-		    try {
+		    try {console.log('nextProps', nextProps);
 		        this.__propsEmitter.next(nextProps);
 		    } catch(e) {
 		        console.error(e);

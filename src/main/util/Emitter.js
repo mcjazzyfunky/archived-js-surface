@@ -16,9 +16,10 @@ const NO_OP = () => {};
 export default class Emitter extends Publisher {
 	constructor() {
 		super(subscriber => {
-			const proxy = typeof subscriber !== 'function'
-				? subscriber
-				: { next: subscriber, error: NO_OP, complete: NO_OP };
+			const
+				proxy = typeof subscriber !== 'function'
+					? subscriber
+					: { next: subscriber, error: NO_OP, complete: NO_OP };
 
 			this.__subscribers.push(proxy);
 
@@ -83,11 +84,13 @@ console.log("xxxxxxxxxxxxxxxxxxxxxxxxxx", err)
 	}
 
     __unsubscribe(subscriber) {
-    	const length = this.__subscribers.length;
+    	let length = this.__subscribers.length;
 
-    	for (let i = 0; i < length !== subscriber; ++i) {
+    	for (let i = 0; i < length; ++i) {
     		if (this.__subscribers[i] === subscriber) {
     			this.__subscribers.splice(i, 1);
+    			--length;
+    			--i;
     		}
     	}
     };

@@ -3,49 +3,53 @@ import warn from '../util/warn.js';
 const
     COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/,
     CONFIG_KEYS = new Set(['name', 'properties', 'initProcess', 'process']),
-    PROPERTY_CONFIG_KEYS = new Set(['type', 'defaultValue']),
-    INIT_PROCESS_RESULT_KEYS = new Set(['contents', 'methods']);
+
+    VALUE_CONFIG_KEYS = new Set(['type', 'constraint',
+    	'defaultValue', 'defaultValueProvider']),
+
+    INIT_PROCESS_RESULT_KEYS = new Set(['contentStream', 'methods']);
 
 export default function defineBaseComponent(config, adapter) {
     const err = validateConfig(config);
 
     if (err) {
-    	warn('[defineComponent] ' + err);
-    	warn('[defineComponent] Invalid component confguration:', config);
+    	warn(err.toString());
+    	warn('Invalid component configuration:', config);
         throw err;
     }
 
     // slightly improved config enriched with some additioal validation checks
     const
-        { defaultValues, neededValidations } = determinePropertyConstraints(config.properties),
-        hasDefaultValues = !neededValidations.every(validation => validation[2]),
-        needsSpecialPropertyHandling = neededValidations.length > 0 || hasDefaultValues,
+        { validations, defaults } =
+        	determineValidationsAndDefaults(config.properties),
+
+        hasDefaults = !validations.every(validation => validation[2]),
+        needsSpecialPropertyHandling = validations.length > 0 || hasDefaults,
         improvedConfig = config.initProcess || needsSpecialPropertyHandling
         	? Object.assign({}, config)
         	: config;
 
     if (config.process && needsSpecialPropertyHandling) {
-        improvedConfig.process = properties => {
-        	const props = mapAndValidateProperties(
-        		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies');
+        improvedConfig.process = props =>
+        	 adjustValues(
+        	 	config.name, props, validations, defaults, hasDefaults, 'properties');
 
-            return config.process(props);
-        };
     } else if (config.initProcess) {
-        improvedConfig.initProcess = inputs => {
-	    	const improvedInputs = !needsSpecialPropertyHandling
-	    		? inputs
-	    		: inputs.map(properties =>
-		        	mapAndValidateProperties(
-		        		config.name, properties, neededValidations, defaultValues, hasDefaultValues, 'properies'));
+        improvedConfig.initProcess = propsStream => {
+	    	const improvedPropsStream = !needsSpecialPropertyHandling
+	    		? propsStream
+	    		: propsStream.map(props =>
+		        	adjustValues(
+		        		config.name, props, validations,
+		        		defaults, hasDefaults, 'properties'));
 
             const
-            	result = config.initProcess(improvedInputs),
-            	err = validateInitializationResult(result);
+            	result = config.initProcess(improvedPropsStream),
+            	err = validateInitProcessResult(result);
 
             if (err) {
-    			warn(err.message);
-    			warn('Invalid intialization result:', result);
+    			warn(err.toString());
+    			warn('Invalid process intialization result:', result);
     			throw err;
             }
 
@@ -57,191 +61,215 @@ export default function defineBaseComponent(config, adapter) {
 }
 
 function validateConfig(config) {
-    var ret = null, errMsg = '';
-    if (config === undefined) {
-        errMsg = 'Configuration must not be undefined';
-    } else if (config === null) {
-        errMsg = 'Configuration must not be null';
-    } else if (typeof config !== 'object') {
+    let ret = null,
+    	errMsg = '';
+
+    if (!config || typeof config !== 'object') {
         errMsg = 'Configuration must be an object';
-    } else if (config.name === undefined || config.name === null) {
-        errMsg = "Configuration parameter 'name' is missing";
+    } else if (!config.hasOwnProperty('name')) {
+    	errMsg = "Missing configuration parameter 'name'";
     } else if (typeof config.name !== 'string') {
         errMsg = "Configuration parameter 'name' must be a string";
     } else if (!config.name.match(COMPONENT_NAME_REGEX)) {
-        errMsg = "Configuration parameter 'name' must match with regex "
-            + COMPONENT_NAME_REGEX + ` (given '${config.name}')`;
-    } else if (config.process === undefined && config.initProcess === undefined) {
+        errMsg = "Configuration parameter 'name' must match regex "
+        	+ COMPONENT_NAME_REGEX;
+    } else if (config.hasOwnProperty('process') && typeof config.process !== 'function') {
+    	errMsg = "Configuration parameter 'process' must be a function";
+    } else if (config.hasOwnProperty('initProcess') && typeof config.initProcess !== 'function') {
+    	errMsg = "Configuration parameter 'initProcess' must be a function";
+    } else if (!config.hasOwnProperty('process') && !config.hasOwnProperty('initProcess')) {
         errMsg = "Either configuration parameter 'process' "
-            + "or parameter 'initProcess' must be set";
-    } else if (config.process !== undefined && config.initProcess !== undefined) {
+            + "or configuration parameter 'initProcess' must be set";
+    } else if (config.hasOwnProperty('process') && config.hasOwnProperty('initProcess')) {
         errMsg = "Configuration parameters 'process' and 'initProcess' must not "
-            + 'be set both';
-    } else if (config.process !== undefined && typeof config.process !== 'function') {
-        errMsg = "Configuration parameter 'process' must be a function";
-    } else if (config.initProcess !== undefined && typeof config.initProcess !== 'function') {
-        errMsg = "Configuration parameter 'inititialize' must be a function";
+            + 'be set both at once';
     }
 
-    if (!errMsg) {
-	    for (let key in config) {
-	    	if (config.hasOwnProperty(key) && !CONFIG_KEYS.has(key)) {
-				errMsg = `Illegal configuration key '${key}'`;
-	    	}
-	    }
-	}
-
-	if (!errMsg) {
-		errMsg = validateKindsConfigs(config);
-	}
-
     if (errMsg) {
-        ret = new Error(improveErrorMsg(errMsg, config));
+        ret = new Error(errMsg);
+    } else {
+		ret = validateValueConfigs(config, 'properties'); // TODO - also validate 'provisions'
+
+		if (!ret) {
+			ret = validateKeys(config, CONFIG_KEYS);
+		}
+    }
+
+	if (ret) {
+		const
+			errMsgPrefix =
+				config !== null
+				&& typeof config === 'object'
+				&& config.name.match(COMPONENT_NAME_REGEX)
+
+				? `Error at configuration of component '${config.name}': `
+				: 'Error at configuration of component: ';
+
+		ret = normalizeError(ret, errMsgPrefix);
+	}
+
+    return ret;
+}
+
+function validateKeys(obj, allowedKeys, path = null) {
+	let ret = null;
+
+    for (let key in obj) {
+    	if (obj.hasOwnProperty(key) && !allowedKeys.has(key)) {
+    		if (!path) {
+				ret = new Error(`Illegal key '${key}'`);
+    		} else {
+    			ret = new Error(`Illegal key '${path}.${key}'`);
+    		}
+
+			break;
+    	}
     }
 
     return ret;
 }
 
-function validateKindsConfigs(config) {
-	let errMsg = null;
+function validateValueConfigs(config, subConfigKey) {
+	let ret = null;
 
-    for (let kind of ['properties' /* more to come in later versions */]) {
-        if (config[kind] !== undefined
-            && (config[kind] === null || typeof config[kind] !== 'object')) {
+    const valueConfigs = config[subConfigKey];
 
-            errMsg = `Confguration parameter '${kind}' `
-                   + "must either be be an object or undeclared";
-        } else {
-            const
-                subConfig = config[kind] || {},
-                propertyNames = Object.getOwnPropertyNames(subConfig);
+    if (!valueConfigs || typeof valueConfigs !== 'object') {
+        ret = new Error(`Configuration parameter '${subConfigKey}' `
+            + 'must be an object');
+    } else {
+    	for (let valueKey in valueConfigs) {
+    		if (valueConfigs.hasOwnProperty(valueKey)) {
+    			ret = validateValueConfig(config, subConfigKey, valueKey);
 
-            for (let propertyName of propertyNames) {
-				const err = validatePropertyConfig(
-					subConfig[propertyName], `${kind}.${propertyName}`);
+    			if (ret) {
+    				break;
+    			}
+    		}
+    	}
+    }
 
-                if (err) {
-                	errMsg = err.message;
-                    break;
-                }
-            }
-        }
-
-        if (errMsg) {
-            break;
-        }
-   }
-
-   return errMsg ? new Error(errMsg) : null;
+    return ret;
 }
 
+function validateValueConfig(config, subConfigKey, valueKey) {
+	let ret = null,
+		errMsg = null;
 
-function validatePropertyConfig(propertyConfig, path) {
-	let errMsg = null;
+	const
+		valueConfig = config[subConfigKey][valueKey],
+		path = `${subConfigKey}.${valueKey}`;
 
-    if (propertyConfig === undefined) {
-       errMsg = `Configuration parameter '${path}' `
-            + 'must no be set to undefined';
-    } else if (propertyConfig === null) {
-        errMsg = `Configuration parameter '${path}' `
-            + 'must no be null';
-    } else if (typeof propertyConfig !== 'object') {
+    if (!valueConfig || typeof valueConfig !== 'object') {
         errMsg = `Configuration parameter '${path}' `
             + 'must be an object';
-    } else if ([String, Number, Boolean, Array, Date, Object].indexOf(propertyConfig.type) === -1) {
+    } else if (typeof valueConfig.type !== 'function') {
         errMsg = `Configuration parameter '${path}.type' `
-            + ' must either be String, Number, Boolean, Array, Date or Object';
-    } else if (propertyConfig.hasOwnProperty('defaultValue')
-    	&& propertyConfig.defaultValue === undefined) {
+            + ' must be a constructor function';
+    } else if (valueConfig.hasOwnProperty('defaultValue')
+    	&& valueConfig.defaultValue === undefined) {
 
         errMsg = `Configuration parameter '${path}.defaultValue' `
             + ' must not be set to undefined';
-    } else if (propertyConfig.hasOwnProperty('constraint')
-        && typeof propertyConfig.defaultValue !== 'function') {
+    } else if (valueConfig.hasOwnProperty('defaultValue')
+    	&& valueConfig.hasOwnProperty('defaultValueProvider')) {
 
-        errMsg = `Optinal configuration parameter '${path}.constraint' `
+        errMsg = `Configuration parameters '${path}.defaultValue' `
+            + `and '${path}.defaultValueProvider' must not be set both `
+            + 'at once';
+    } else if (valueConfig.hasOwnProperty('defaultValueProvider')
+    	&& typeof valueConfig.defaultValueProvider !== 'function') {
+
+    	errMsg = `Configuration parameter '${path}.defaultValueProvider `
+    	    + 'must be a function';
+	} else if (valueConfig.hasOwnProperty('constraint')
+        && typeof valueConfig.constraint !== 'function') {
+
+        errMsg = `Configuration parameter '${path}.constraint' `
             + ' must be a function';
-    } else {
-	    for(let key in propertyConfig) {
-	    	if (propertyConfig.hasOwnProperty(key) && !PROPERTY_CONFIG_KEYS.has(key)) {
-	    		errMsg = `Illegal configuration key '${path}.${key}'`;
-	    	}
-	    }
     }
 
-	return errMsg ? new Error(errMsg) : null;
+    if (errMsg) {
+    	ret = new Error(errMsg);
+    } else {
+    	ret = validateKeys(valueConfig, VALUE_CONFIG_KEYS, path);
+    }
+
+	return ret;
 }
 
-function validateProperties(componentName, properties, neededValidations, kind) {
-    let err = null;
+function validateValues(componentName, values, validations, kind) {
+    let ret = null,
+    	errMsg = '';
 
-    const keysToBeChecked = new Set(Object.keys(properties));
+    const keysToBeChecked = new Set(Object.keys(values));
 
-    // Depending on the platform they may be still available
-    keysToBeChecked.delete('ref');
-    keysToBeChecked.delete('key');
+    if (kind === 'property') {
+		// Depending on the platform they may be still available
+    	keysToBeChecked.delete('ref');
+    	keysToBeChecked.delete('key');
 
-    // Ignore children
-    keysToBeChecked.delete('children');
+		// TODO: That's not really nice - make it better!
+    	// Ignore children
+    	keysToBeChecked.delete('children');
+    }
 
-    for (let [propertyName, type, constraint, required] of neededValidations) {
-        let value = properties[propertyName],
-            errMsg = null;
+    for (let [valueName, type, constraint, required] of validations) {
+        let value = values[valueName];
 
-        keysToBeChecked.delete(propertyName);
+        keysToBeChecked.delete(valueName);
 
-        if (required && properties[propertyName] === undefined) {
-            errMsg = `Missing mandatory property '${propertyName}' for '${componentName}'`;
+        if (required && values[valueName] === undefined) {
+            errMsg = `Missing mandatory ${kind} '${valueName}' for '${componentName}'`;
         } else if (type === Array) {
         	if (!Array.isArray(value)) {
-        		errMsg = `Property '${propertyName}' must be an array`;
+        		errMsg = `The ${kind} '${valueName}' must be an array`;
         	}
         } else if (type === Object) {
         	if (value === null || typeof value !== 'object') {
-        		errMsg = `Property '${propertyName}' must be an object`;
+        		errMsg = `The ${kind} '${valueName}' must be an object`;
         	}
         } else if (type === Date) {
         	if (!(value instanceof Date)) {
-        		errMsg = `Property '${propertyName}' must be a date`;
+        		errMsg = `The ${kind} '${valueName}' must be a date`;
         	}
         } else if (value === null
             || typeof value === 'object' || value.constructor !== type) {
-console.log(propertyName, typeof value, value, String, value.constructor);
-        	errMsg = `Property '${propertyName}' must be `
+
+        	errMsg = `The ${kind} '${valueName}' must be `
         	    + type.name.toLowerCase();
-        } else if (constraint && !constraint(value)) {
-        	errMsg = `Invalid value for property '${propertyName}'`;
-        }
+        } else if (constraint) {
+        	const checkResult =  constraint(value);
 
-        // Just to make sure, we will try to normalize the error message a bit.
-        if (errMsg) {
-            errMsg = errMsg
-                .replace(/^\s*(Error|Warning)\s*(:?)\s*/i, '')
-                .replace(/(\s|\.)+$/, '')
-                .replace(/`/g, "'")
-                .replace(/^./, first => first.toUpperCase())
-                .trim();
-
-            err = new Error(errMsg);
-            break;
+        	if (checkResult instanceof Error) {
+        		errMsg = `Invalid value for ${kind} '${valueName}': `
+        			+ checkResult.message;
+        	} else if (checkResult && checkResult !== true) {
+        		errMsg = `Invalid value for ${kind} '${valueName}'`;
+        	}
         }
     }
 
-    if (!err && keysToBeChecked.size > 0) {
+    if (!errMsg && keysToBeChecked.size > 0) {
         const joined = Array.from(keysToBeChecked.values()).join(', ');
 
-        err = new Error(`Illegal property key(s) for '${componentName}': ` + joined);
+        errMsg = `Illegal ${kind} key(s): ${joined}`;
     }
 
-    return err;
+    if (errMsg) {
+        ret = normalizeError(errMsg,
+        	`Error with ${kind} of component '${componentName}': `);
+    }
+
+    return ret;
 }
 
-function validateInitializationResult(result) {
+function validateInitProcessResult(result) {
 	let ret = null;
 
     for (let key in result) {
     	if (result.hasOwnProperty(key) && !INIT_PROCESS_RESULT_KEYS.has(key)) {
-			ret = `Illegal key '${key}' in initialization result`;
+			ret = `Illegal key '${key}' in process initialization result`;
 			break;
     	}
     }
@@ -249,64 +277,69 @@ function validateInitializationResult(result) {
 	return ret;
 }
 
-function determinePropertyConstraints(properties) {
+function determineValidationsAndDefaults(valueConfigs) {
     const
-        neededValidations = [],
-        defaultValues = {};
+        validations = [],
+        defaults = {};
 
     // will determine which properties have default or are required
     // and/or have type constraints
-    if (properties) {
-        const propertyNames = Object.getOwnPropertyNames(properties);
+    if (valueConfigs) {
+        const keys = Object.getOwnPropertyNames(valueConfigs);
 
-        for (let propertyName of propertyNames) {
+        for (let key of keys) {
             const
-                type = properties[propertyName].type,
-                constraint = properties[propertyName] || null,
-                defaultValue = properties[propertyName].defaultValue,
+                type = valueConfigs[key].type,
+                constraint = valueConfigs[key].constraint || null,
+                defaultValue = valueConfigs[key].defaultValue,
+                defaultValueProvider = valueConfigs[key].defaultValueProvider,
                 propertyRequired = defaultValue === undefined;
 
-            neededValidations.push([
-            	propertyName,
+            validations.push([
+            	key,
             	type,
             	constraint,
             	propertyRequired]);
 
 	        if (!propertyRequired) {
-            	defaultValues[propertyName] = defaultValue;
+	        	if (defaultValueProvider) {
+	        		Object.defineProperty(defaults, key, {
+	        			get: defaultValueProvider
+	        		});
+	        	} else {
+            		defaults[key] = defaultValue;
+	        	}
 	        }
         }
     }
 
-    return { neededValidations, defaultValues };
+    return { validations, defaults };
 }
 
-function mapAndValidateProperties(componentName, properties, neededValidations, defaultValues, hasDefaultValues, kind) {
-   const err = validateProperties(componentName, properties, neededValidations, 'properties');
+function adjustValues(componentName, values, validations, defaults, hasDefaults, kind) {
+   const err = validateValues(componentName, values, validations, kind);
 
     if (err) {
     	warn(err.message);
-    	warn(`Invalid properties for '${componentName}':`, properties);
+    	warn(`Invalid properties for '${componentName}':`, values);
     	throw err;
     }
 
-    const props = hasDefaultValues
-        ? Object.assign({}, defaultValues, properties)
-        : properties;
-
-	return props;
+    return hasDefaults
+        ? Object.assign({}, defaults, values)
+        : values;
 }
 
-function improveErrorMsg(errMsg, config) {
-    var fullErrMsg = errMsg;
+function normalizeError(err, errMsgPrefix = '') {
+    var fullErrMsg =
+    	err.toString()
+			.trim()
+            .replace(/^(Error|Warning)\s*(:?)\s*/i, '')
+            .replace(/^./, first => first.toUpperCase());
 
-    if (config !== null
-        && typeof config === 'object'
-        && typeof config.name === 'string'
-        && config.name.match(COMPONENT_NAME_REGEX)) {
+	if (errMsgPrefix) {
+		fullErrMsg = `${errMsgPrefix} ${fullErrMsg}`.trim();
+	}
 
-        fullErrMsg = `Component definition of '${config.name}': ${errMsg}`;
-    }
-
-    return fullErrMsg.trim();
+    return new Error(fullErrMsg);
 }

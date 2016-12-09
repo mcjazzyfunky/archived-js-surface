@@ -45,8 +45,7 @@ export default function defineExtComponent(config, adapter) {
 }
 
 function defer(fn) {
-//    setTimeout(fn, 0);
-fn();
+    setTimeout(fn, 0);
 }
 
 
