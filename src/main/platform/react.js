@@ -71,13 +71,20 @@ export function getExports(React) {
 	        this.__contextEmitter = new Emitter();
 	        this.__contentsPublisher = null;
 	        this.__contentsSubscription = null;
-	        this.__udateTimeout = null;
 
 	        if (config.process) {
 	            this.__contentsPublisher =
-	                    this.__propsEmitter.map(props => config.process(props));
-	        } else {
+	                    this.__propsEmitter.map(
+	                    	props => config.process(props));
+	        } else {console.log('4444444444444')
 	            const result = config.initProcess(this.__propsEmitter);
+
+
+result.contents.subscribe({
+	next: content => console.log('new content', content),
+	error: err => console.error(err),
+	complete: () => {}
+});
 
 	            this.__contentsPublisher = result.contents;
 
@@ -93,26 +100,12 @@ export function getExports(React) {
 
 	    componentWillMount() {
 	        const self = this;
-
-	        var mounted = false;
-
-
+console.log('componentWillMount', this.__contentsPublisher)
 	        this.__contentsSubscription = this.__contentsPublisher.subscribe({
-	            next(value) {
+	            next(value) {console.log('next', value)
 	                self.__contentToRender = value;
-	                var content = value;
 
-	                if (mounted) {
-	                    	self.forceUpdate();
-	                    if (self.__updateTimeout) {
-	                    	clearTimeout(self.__updateTimeout);
-	                    }
-content = self.__contentToRender;
-	                    this.__updateTimeout = setTimeout(() => {
-	                    	self.__updateTimeout = null;self.__contentToRender = content;window.xxx = content;
-	                    	//self.forceUpdate();
-	                    }, 0);
-	                }
+	                self.forceUpdate();
 	            },
 
 	            error(err) {
@@ -122,9 +115,8 @@ content = self.__contentToRender;
 	            complete() {
 	            }
 	        });
-
+console.log("componentwillmount : sending initial props:", this.props)
 	        this.__propsEmitter.next(this.props);
-	        mounted = true;
 	    }
 
 	    componentDidMount() {
@@ -151,13 +143,13 @@ content = self.__contentToRender;
 	    }
 
 	    render() {
-	        if (!window.xxx && !this.__contentToRender) {
+	        if (!this.__contentToRender) {
 	            throw new Error(
 	                '[SurfaceReactComponent#render] Something went wrong - '
 	                + `no content to render for component '${this.__config.name}'`);
 	        }
 
-	        const ret = window.xxx || this.__contentToRender;
+	        const ret = this.__contentToRender;
 	        this.__contentToRender = null;
 
 	        return ret;

@@ -4,10 +4,10 @@ const
     COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/,
     CONFIG_KEYS = new Set(['name', 'properties', 'initProcess', 'process']),
 
-    VALUE_CONFIG_KEYS = new Set(['type', 'constraint',
-    	'defaultValue', 'defaultValueProvider']),
+    VALUE_CONFIG_KEYS = new Set(
+        ['type', 'constraint', 'defaultValue', 'defaultValueProvider']),
 
-    INIT_PROCESS_RESULT_KEYS = new Set(['contentStream', 'methods']);
+    INIT_PROCESS_RESULT_KEYS = new Set(['contents', 'methods']);
 
 export default function defineBaseComponent(config, adapter) {
     const err = validateConfig(config);
@@ -18,32 +18,34 @@ export default function defineBaseComponent(config, adapter) {
         throw err;
     }
 
-    // slightly improved config enriched with some additioal validation checks
+    // improved config enriched with some additioal validation checks
     const
         { validations, defaults } =
         	determineValidationsAndDefaults(config.properties),
 
-        hasDefaults = !validations.every(validation => validation[2]),
+        hasDefaults = !validations.every(validation => !validation[3]),
         needsSpecialPropertyHandling = validations.length > 0 || hasDefaults,
+
         improvedConfig = config.initProcess || needsSpecialPropertyHandling
         	? Object.assign({}, config)
         	: config;
 
     if (config.process && needsSpecialPropertyHandling) {
         improvedConfig.process = props =>
-        	 adjustValues(
-        	 	config.name, props, validations, defaults, hasDefaults, 'properties');
+        	config.process(
+        	    adjustValues(
+        	 	    config.name, props, validations,
+        	 	    defaults, hasDefaults, 'property'));
 
     } else if (config.initProcess) {
         improvedConfig.initProcess = propsStream => {
 	    	const improvedPropsStream = !needsSpecialPropertyHandling
 	    		? propsStream
 	    		: propsStream.map(props =>
-		        	adjustValues(
+		            adjustValues(
 		        		config.name, props, validations,
-		        		defaults, hasDefaults, 'properties'));
+		        		defaults, hasDefaults, 'property')),
 
-            const
             	result = config.initProcess(improvedPropsStream),
             	err = validateInitProcessResult(result);
 
@@ -214,12 +216,21 @@ function validateValues(componentName, values, validations, kind) {
     	keysToBeChecked.delete('children');
     }
 
-    for (let [valueName, type, constraint, required] of validations) {
+   try {
+    for (let [valueName, type, constraint, provider] of validations) {
+    	const defaultValue = provider ? provider() : undefined;
+
+    	if (provider && defaultValue === undefined) {
+    		throw new Error('Default value provider must not return undefined');
+    	}
+
         let value = values[valueName];
 
         keysToBeChecked.delete(valueName);
 
-        if (required && values[valueName] === undefined) {
+        if (defaultValue !== undefined && value === defaultValue) {
+        	// everything fine
+        } else if (defaultValue === undefined && values[valueName] === undefined) {
             errMsg = `Missing mandatory ${kind} '${valueName}' for '${componentName}'`;
         } else if (type === Array) {
         	if (!Array.isArray(value)) {
@@ -233,8 +244,8 @@ function validateValues(componentName, values, validations, kind) {
         	if (!(value instanceof Date)) {
         		errMsg = `The ${kind} '${valueName}' must be a date`;
         	}
-        } else if (value === null
-            || typeof value === 'object' || value.constructor !== type) {
+        } else if (value != undefined && value !== null
+            && typeof value !== 'object' && value.constructor !== type) {
 
         	errMsg = `The ${kind} '${valueName}' must be `
         	    + type.name.toLowerCase();
@@ -255,6 +266,10 @@ function validateValues(componentName, values, validations, kind) {
 
         errMsg = `Illegal ${kind} key(s): ${joined}`;
     }
+
+} catch (err) {
+	console.error(err);
+}
 
     if (errMsg) {
         ret = normalizeError(errMsg,
@@ -293,23 +308,24 @@ function determineValidationsAndDefaults(valueConfigs) {
                 constraint = valueConfigs[key].constraint || null,
                 defaultValue = valueConfigs[key].defaultValue,
                 defaultValueProvider = valueConfigs[key].defaultValueProvider,
-                propertyRequired = defaultValue === undefined;
+
+                provider = defaultValueProvider
+                	? defaultValueProvider
+                	: (defaultValue !== undefined ? () => defaultValue : null);
 
             validations.push([
             	key,
             	type,
             	constraint,
-            	propertyRequired]);
+            	provider]);
 
-	        if (!propertyRequired) {
-	        	if (defaultValueProvider) {
-	        		Object.defineProperty(defaults, key, {
-	        			get: defaultValueProvider
-	        		});
-	        	} else {
-            		defaults[key] = defaultValue;
-	        	}
-	        }
+	       	if (defaultValueProvider) {
+	       		Object.defineProperty(defaults, key, {
+	       			get: defaultValueProvider
+	       		});
+	       	} else if (defaultValue !== undefined) {
+           		defaults[key] = defaultValue;
+	       	}
         }
     }
 
@@ -317,7 +333,13 @@ function determineValidationsAndDefaults(valueConfigs) {
 }
 
 function adjustValues(componentName, values, validations, defaults, hasDefaults, kind) {
-   const err = validateValues(componentName, values, validations, kind);
+
+    const adjustedValues = hasDefaults
+    	? Object.assign({}, defaults, values)
+    	: values,
+
+		err = validateValues(
+			componentName, adjustedValues, validations, kind);
 
     if (err) {
     	warn(err.message);
@@ -325,9 +347,7 @@ function adjustValues(componentName, values, validations, defaults, hasDefaults,
     	throw err;
     }
 
-    return hasDefaults
-        ? Object.assign({}, defaults, values)
-        : values;
+	return adjustedValues;
 }
 
 function normalizeError(err, errMsgPrefix = '') {

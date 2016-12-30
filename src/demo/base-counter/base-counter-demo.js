@@ -1,6 +1,6 @@
 import { defineComponent, mount, createElement as htm } from 'js-surface';
 import Emitter from '../../main/util/Emitter.js';
-/*
+
 const CounterLabel = defineComponent({
     name: 'CounterLabel',
 
@@ -27,40 +27,56 @@ const Counter = defineComponent({
             type: String,
             defaultValue: '+'
         },
+        label: {
+        	type: String,
+        	defaultValue: null
+        },
         style: {
             type: Object,
             defaultValue: null
         }
     },
 
-    initProcess(inputs) {
+    initProcess(propsStream) {
         const contents = new Emitter();
 
-        var props = null, counterValue = 0;
+        var counterValue = 0;
 
         const increase = delta => {
             counterValue += delta;
             contents.next(getContent());
         };
 
-        const reset = value => {
-            counterValue = value;
-            contents.next(getContent());
-        };
+        const
+        	reset = value => {
+            	counterValue = value;
+            	contents.next(getContent());
+        	},
 
-        inputs.subscribe(p => {
-             props = p;
-             contents.next(getContent());
-        });
+	        getContent = props =>
+	            htm('span',
+	                {style: props.style},
+	                htm('label', null, props.label),
+	                htm('button', {onClick: () => increase(-1)}, props.textDecrement),
+	                htm('div',
+	                    {style: {width: '30px', display: 'inline-block', textAlign: 'center'}},
+	                    CounterLabel({value: counterValue})),
+	                htm('button', {onClick: () => increase(1)}, props.textIncrement)),
 
-        const getContent = () =>
-            htm('span',
-                {style: props.style},
-                htm('button', {onClick: () => increase(-1)}, props.textDecrement),
-                htm('div',
-                    {style: {width: '30px', display: 'inline-block', textAlign: 'center'}},
-                    CounterLabel({value: counterValue})),
-                htm('button', {onClick: () => increase(1)}, props.textIncrement));
+        	subscriber = {
+        		next(props) {
+        			const content = getContent(props);
+        			console.log("Rendered content", content);
+        			return content;
+        		},
+        		error(err) {
+        			console.error(err);
+        		},
+        		complete() {
+        		}
+        	};
+
+        propsStream.subscribe(subscriber);
 
         return {
             contents,
@@ -90,35 +106,6 @@ const counterCtrlView = props => {
             htm('button', {onClick: () => elem.reset(100) }, btnText2))
     );
 };
-*/
-const CounterCtrl = defineComponent({
-    name: 'CounterCtrl',
-
-    properties: {
-        label: {
-            type: String,
-            defaultValue: ''
-        },
-        lang: {
-            type: String,
-            defaultValue: 'en'
-        }
-    },
-
-    initProcess: inputs => {
-        const contents = new Emitter();
-
-		/*
-        inputs.subscribe(props => {
-            contents.next(counterCtrlView(props));
-        });
-        */
-        inputs.subscribe(props =>
-        	contents.next(htm('div', null, 'Juhu')));
-
-        return { contents };
-    }
-});
 
 
 mount(
@@ -126,8 +113,8 @@ mount(
         null,
         htm('div',
             null,
-            CounterCtrl({label: '1)'})),
+            Counter({label: '1)'})),
         htm('br'),
         htm('div',
             null,
-            htm(CounterCtrl, {label: '2)'}))), 'main-content');
+            htm(Counter, {label: '2)'}))), 'main-content');

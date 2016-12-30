@@ -1,30 +1,14 @@
 import Publisher from './Publisher.js';
 
-/*
-import { EventSubject } from 'js-prelude';
-
-EventSubject.prototype.asPublisher = function () {
-	return this.asEventStream();
-};
-
-//export default EventSubject;
-*/
-
-
-const NO_OP = () => {};
-
 export default class Emitter extends Publisher {
 	constructor() {
 		super(subscriber => {
-			const
-				proxy = typeof subscriber !== 'function'
-					? subscriber
-					: { next: subscriber, error: NO_OP, complete: NO_OP };
-
-			this.__subscribers.push(proxy);
+			this.__subscribers.push(subscriber);
 
 			return {
-				unsubscribe: () => this.__unsubscribe(proxy)
+				unsubscribe() {
+					this.__unsubscribe(subscriber);
+				}
 			};
 		});
 
@@ -33,40 +17,29 @@ export default class Emitter extends Publisher {
 	}
 
 	next(event) {
-		const length = this.__subscribers.length;
-
 		try {
-			for (let i = 0; i < length; ++i) {
-				this.__subscribers[i].next(event);
+			for (let subscriber of this.__subscribers) {
+				subscriber.next(event);
 			}
 		} catch (err) {
-			// TODO - remove sometimes
-			console.error('[Emitter.next]', err);
-
 			this.error(err);
 		}
 	}
 
 	error(err) {
-		const length = this.__subscribers.length;
-console.log("xxxxxxxxxxxxxxxxxxxxxxxxxx", err)
-		for (let i = 0; i < length; ++i) {
-			try {
-				this.__subscribers[i].error(err);
-			} catch (err2) {
-				console.err("yyyyyyyyyyyyyyyyyyyy",err);
-				console.err(err2);
-			}
+			// TODO - remove sometimes
+			console.error('[Emitter.error]', err);
+
+		for (let subscriber of this.__subscribers) {
+			subscriber.error(err);
 		}
 
 		this.__subscribers.length = 0;
 	}
 
 	complete() {
-		const length = this.__subscribers.length;
-
-		for (let i = 0; i < length; ++i) {
-			this.__subscribers[i].complete();
+		for (let subscriber of this.__subscribers) {
+			subscriber.complete();
 		}
 
 		this.__subscribers.length = 0;
@@ -93,5 +66,5 @@ console.log("xxxxxxxxxxxxxxxxxxxxxxxxxx", err)
     			--i;
     		}
     	}
-    };
+    }
 }
