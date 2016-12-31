@@ -27,6 +27,10 @@ const Constraints = {
 		return Array.isArray(it);
 	},
 
+	isFunction(it) {
+		return typeof it === 'function';
+	},
+
 	is(value) {
 		return it => Object.is(it, value);
 	},

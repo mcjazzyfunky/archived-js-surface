@@ -1,20 +1,17 @@
 import Constraints from './core/Constraints.js';
-import { getExports } from './platform/react.js';
+import { createCommonMethods } from './platform/react.js';
 import Preact from 'preact';
 
 const
-   createElement = Preact.h,
-   VNode  = Preact.h('').constructor;
+    createElement = Preact.h,
+    VNode  = Preact.h('').constructor,
 
-const {
-	defineComponent,
-	isElement,
-} = getExports({
-	Component: Preact.Component,
-	createElement,
-	createFactory,
-	isValidElement
-});
+	{ defineComponent, isElement } = createCommonMethods({
+		Component: Preact.Component,
+		createElement,
+		createFactory,
+		isValidElement
+    });
 
 export {
 	createElement,
@@ -28,9 +25,9 @@ function createFactory() {
 	return type => createElement.bind(null, type);
 }
 
-function isValidElement(what) {
-	return what !== undefined && what !== null
-		&& (typeof what !== 'object'|| what instanceof VNode);
+function isValidElement(it) {
+	return it !== undefined && it !== null
+		&& (typeof it !== 'object'|| it instanceof VNode);
 }
 
 function mount(content, targetNode) {

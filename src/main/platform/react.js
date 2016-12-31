@@ -1,164 +1,69 @@
-import predefineComponent from '../core/predefineComponent.js';
-// import Types from '../util/Types.js';
-// import Emitter from '../util/Emitter.js';
+import defComp from '../core/defComp.js';
 
-export function getExports(React) {
-	const exports = { Types};
+export function createCommonMethods(React) {
+	const commonMethods = {
+		defineComponent(config) {
+			const ExtCustomComponent = function (args, sendProps, getView) {
+				CustomComponent.apply(this, args, config, sendProps, getView);
+			};
 
-	exports.defineComponent = function (config) {
-		return predefineComponent(config, defineReactComponent);
+			ExtCustomComponent.displayName = config.name;
+
+			return defComp(config, config => {
+				return (...args) => {
+					let viewToRender = null;
+
+					const
+						{ sendProps, methods } = config.initControl(
+							view => { viewToRender = view; }),
+
+						component = new ExtCustomComponent(
+							args, sendProps, () => viewToRender);
+
+					return Object.assign(component, methods);
+				};
+			});
+		},
+
+		createElement: React.createElement,
+
+		isElement(it)  {
+	    	return it !== undefined
+	    		&& it !== null
+	    		&& React.isValidElement(it);
+		}
 	};
 
-	exports.createElement = React.createElement;
-
-	exports.isElement = function (what)  {
-	    return what !== undefined && what !== null && React.isValidElement(what);
-	};
-
-	function defineReactComponent(config) {
-	    let ret = null,
-
-	        propNames = config.properties
-	            ? Object.getOwnPropertyNames(config.properties)
-	            : [];
-
-	    if (config.process) {
-	        if (config.properties) {
-	            const hasInjectedProps = !propNames.every(
-	                propName => !config.properties[propName].inject);
-
-	            if (true || !hasInjectedProps) {
-	                ret = props => {
-	                    return config.process(props);
-	                };
-
-	                ret.displayName = config.name;
-	            }
-	        }
-	    }
-
-	    if (!ret) {
-	        const constructor = function (...args) {
-	            SurfaceReactComponent.call(this, config, args);
-	        };
-
-	        constructor.prototype = Object.create(SurfaceReactComponent.prototype);
-	        constructor.displayName = config.name;
-
-	        if (config.properties) {
-	            for (let propName of propNames) {
-	                const inject = !!config.properties[propName].inject;
-
-	                if (inject) {
-	                    constructor.contextTypes[propName] = constructor.propTypes[propName];
-	                }
-	            }
-	        }
-
-	        ret = React.createFactory(constructor);
-	    }
-
-	    return ret;
-	}
-
-	class SurfaceReactComponent extends React.Component {
-	    constructor(config, args) {
-	        super(...args);
+	class CustomComponent extends React.Component {
+	    constructor(superArgs, config, sendProps, getView) {
+	        super(...superArgs);
 
 	        this.__config = config;
-	        this.__contentToRender = null;
-	        this.__propsEmitter = new Emitter();
-	        this.__contextEmitter = new Emitter();
-	        this.__contentsPublisher = null;
-	        this.__contentsSubscription = null;
-
-	        if (config.process) {
-	            this.__contentsPublisher =
-	                    this.__propsEmitter.map(
-	                    	props => config.process(props));
-	        } else {console.log('4444444444444')
-	            const result = config.initProcess(this.__propsEmitter);
-
-
-result.contents.subscribe({
-	next: content => console.log('new content', content),
-	error: err => console.error(err),
-	complete: () => {}
-});
-
-	            this.__contentsPublisher = result.contents;
-
-	            if (result.methods) {
-	                for (let methodName in result.methods) {
-	                    if (result.methods.hasOwnProperty(methodName)) {
-	                        this[methodName] = result.methods[methodName];
-	                    }
-	                }
-	            }
-	        }
+	        this.__sendProps = sendProps;
+	        this.__getView = getView;
 	    }
 
 	    componentWillMount() {
-	        const self = this;
-console.log('componentWillMount', this.__contentsPublisher)
-	        this.__contentsSubscription = this.__contentsPublisher.subscribe({
-	            next(value) {console.log('next', value)
-	                self.__contentToRender = value;
-
-	                self.forceUpdate();
-	            },
-
-	            error(err) {
-	            	console.error(err);
-	            },
-
-	            complete() {
-	            }
-	        });
-console.log("componentwillmount : sending initial props:", this.props)
-	        this.__propsEmitter.next(this.props);
-	    }
-
-	    componentDidMount() {
+	    	this.__sendProps(this.props);
 	    }
 
 	    componentWillUnmount() {
-	        this.__propsEmitter.complete();
-	        this.__contentsSubscription.unsubscribe();
-	        this.__contentsSubscription = null;
-	        this.__contentsPublisher = null;
+			this.__sendProps(undefined);
 	    }
 
 	    componentWillReceiveProps(nextProps) {
-		    try {console.log('nextProps', nextProps);
-		        this.__propsEmitter.next(nextProps);
-		    } catch(e) {
-		        console.error(e);
-		        throw e;
-		    }
-		}
+	    	this.__sendProps(nextProps);
+	    }
 
 	    shouldComponentUpdate() {
-	        return false;
+	    	return false;
 	    }
 
 	    render() {
-	        if (!this.__contentToRender) {
-	            throw new Error(
-	                '[SurfaceReactComponent#render] Something went wrong - '
-	                + `no content to render for component '${this.__config.name}'`);
-	        }
-
-	        const ret = this.__contentToRender;
-	        this.__contentToRender = null;
-
-	        return ret;
+	    	return this.__getView();
 	    }
-
-	    toString() {
-	        return 'SurfaceReactComponent/class';
-    	}
 	}
 
-	return exports;
+	return commonMethods;
 }
+

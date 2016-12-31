@@ -1,7 +1,7 @@
-import predefineComponent from './core/predefineComponent.js';
+import defComp from './core/defComp.js';
 import Constraints from './core/Constraints.js';
 
-import { render as renderInferno } from 'inferno';
+import { render } from 'inferno';
 import createInfernoElement from 'inferno-create-element';
 import InfernoComponent from 'inferno-component';
 
@@ -11,15 +11,27 @@ export {
 	isElement,
 	mount,
 	Constraints
-}
+};
 
 function defineComponent(config) {
-	return predefineComponent(config, config => {
+	const ExtCustomComponent = function (args, sendProps, getView) {
+		CustomComponent.apply(this, args, config, sendProps, getView);
+	};
+
+	ExtCustomComponent.displayName = config.name;
+
+	return defComp(config, config => {
 		return (...args) => {
+			let viewToRender = null;
 
+			const
+				{ sendProps, methods } = config.initControl(
+					view => { viewToRender = view; }),
 
-			return new CustomInfernoComponent(
-				args, config, sendProps, getView);
+				component = new ExtCustomComponent(
+					args, sendProps, () => viewToRender);
+
+			return Object.assign(component, methods);
 		};
 	});
 }
@@ -53,14 +65,12 @@ function createElement(tag, props, ...children)  {
     return ret;
 }
 
-
-function isElement(what) {
-    return what !== undefined
-        && what !== null
-        && typeof what === 'object'
-        && !!(what.flags & (28 /* Component */ | 3970 /* Element */));
+function isElement(it) {
+    return it !== undefined
+        && it !== null
+        && typeof it === 'object'
+        && !!(it.flags & (28 | 3970 )); // 28: component, 3970: element
 }
-
 
 function mount(content, targetNode) {
     if (!exports.isElement(content)) {
@@ -68,15 +78,14 @@ function mount(content, targetNode) {
             "[mount] First argument 'content' has to be a valid element");
     }
 
-    if (typeof targetNode === 'string') {
-        targetNode = document.getElementById(targetNode);
-    }
+    const target = typeof targetNode === 'string'
+        ? document.getElementById(targetNode)
+        : targetNode;
 
-    renderInferno(content, targetNode);
+    render(content, target);
 }
 
-
-class CustomInfernoComponent extends InfernoComponent {
+class CustomComponent extends InfernoComponent {
     constructor(superArgs, config, sendProps, getView) {
         super(...superArgs);
 
@@ -90,7 +99,7 @@ class CustomInfernoComponent extends InfernoComponent {
     }
 
     componentWillUnmount() {
-		this.__sendProps(null);
+		this.__sendProps(undefined);
     }
 
     componentWillReceiveProps(nextProps) {

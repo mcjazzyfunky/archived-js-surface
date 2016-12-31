@@ -1,5 +1,5 @@
-import { getExports } from './platform/react.js';
 import Constraints from './core/Constraints.js';
+import { createCommonMethods } from './platform/react.js';
 import React from 'react';
 import AppRegistry from 'react-native';
 
@@ -7,7 +7,7 @@ const {
 	createElement,
 	defineComponent,
 	isElement
-} = getExports(React);
+} = createCommonMethods(React);
 
 export {
 	createElement,
@@ -18,5 +18,5 @@ export {
 };
 
 function mount(Component) {
-	AppRegistry.registerComponent('Main', () => Component);
+	AppRegistry.registerComponent('MainComponent', () => Component);
 }

@@ -1,4 +1,4 @@
-import { getExports } from './platform/react.js';
+import { createCommonMethods } from './platform/react.js';
 import Constraints from './core/Constraints.js';
 import ReactLite from 'react-lite';
 
@@ -6,7 +6,7 @@ const {
 	createElement,
 	defineComponent,
 	isElement
-} = getExports(ReactLite);
+} = createCommonMethods(ReactLite);
 
 export {
 	createElement,
@@ -22,9 +22,9 @@ function mount(content, targetNode) {
             "[mount] First argument 'content' has to be a valid element");
     }
 
-    if (typeof targetNode === 'string') {
-        targetNode = document.getElementById(targetNode);
-    }
+    const target = typeof targetNode === 'string'
+        ? document.getElementById(targetNode)
+        : targetNode;
 
-    return ReactLite.render(content, targetNode);
+    return ReactLite.render(content, target);
 }

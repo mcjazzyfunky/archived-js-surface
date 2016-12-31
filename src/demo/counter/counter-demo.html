@@ -3,6 +3,7 @@
 <html>
     <head>
         <script type="text/javascript" src="../../../node_modules/systemjs/dist/system.js"></script>
+        <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
 
         <script type="text/javascript">
             System.config({
@@ -11,7 +12,6 @@
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-
 
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
@@ -24,16 +24,20 @@
                     'inferno-create-element': 'node_modules/inferno/dist/inferno-create-element.min.js',
 
                     'js-surface': '../../main/js-surface-react-dom.js',
-                    //'js-surface': 'packages/js-surface.js',
+
+                    'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.min.js',
                }
             });
 
-            System.import('./base-counter-demo.js');
+            System.import('./counter-demo.js');
         </script>
     </head>
     <body>
-        <br/><br/>
-        <div id="main-content">
+        <br/>
+        <br/>
+        <div>
+            <div id="main-content">
+        </div>
         </div>
     </body>
 </html>

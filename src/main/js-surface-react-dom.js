@@ -1,5 +1,5 @@
 import Constraints from './core/Constraints.js';
-import { getExports } from './platform/react.js';
+import { createCommonMethods } from './platform/react.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -7,7 +7,7 @@ const {
 	createElement,
 	defineComponent,
 	isElement
-} = getExports(React);
+} = createCommonMethods(React);
 
 export {
 	createElement,

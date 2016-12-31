@@ -16,7 +16,7 @@ const
     VALUE_CONFIG_KEYS =
         new Set(['type', 'constraint', 'defaultValue', 'getDefaultValue']);
 
-export default function predefineComponent(config, definePlatformComponent) {
+export default function defComp(config, definePlatformComponent) {
     const err = validateConfig(config);
 
     if (err) {
