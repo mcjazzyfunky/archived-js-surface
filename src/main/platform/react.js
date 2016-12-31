@@ -1,12 +1,12 @@
-import defineExtComponent from '../core/defineExtComponent.js';
-import Types from '../util/Types.js';
-import Emitter from '../util/Emitter.js';
+import predefineComponent from '../core/predefineComponent.js';
+// import Types from '../util/Types.js';
+// import Emitter from '../util/Emitter.js';
 
 export function getExports(React) {
 	const exports = { Types};
 
 	exports.defineComponent = function (config) {
-		return defineExtComponent(config, defineReactComponent);
+		return predefineComponent(config, defineReactComponent);
 	};
 
 	exports.createElement = React.createElement;

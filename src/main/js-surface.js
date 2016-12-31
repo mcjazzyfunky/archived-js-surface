@@ -1,20 +1,10 @@
-import { render as renderInferno } from 'inferno';
-import createInfernoElement from 'inferno-create-element';
-import InfernoComponent from 'inferno-component';
-import { getExports } from './platform/inferno.js';
-
-const {
-	createElement,
-	defineComponent,
-	isElement,
-	mount,
-	Types
-} = getExports({ InfernoComponent, createInfernoElement, renderInferno });
+import { createElement, defineComponent, isElement, mount, Constraints }
+	from './js-surface-inferno.js';
 
 export {
 	createElement,
 	defineComponent,
 	isElement,
 	mount,
-	Types
+	Constraints
 };

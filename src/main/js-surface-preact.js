@@ -1,3 +1,4 @@
+import Constraints from './core/Constraints.js';
 import { getExports } from './platform/react.js';
 import Preact from 'preact';
 
@@ -8,7 +9,6 @@ const
 const {
 	defineComponent,
 	isElement,
-	Types
 } = getExports({
 	Component: Preact.Component,
 	createElement,
@@ -21,7 +21,7 @@ export {
 	defineComponent,
 	isElement,
 	mount,
-	Types
+	Constraints
 };
 
 function createFactory() {

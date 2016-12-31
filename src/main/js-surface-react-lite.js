@@ -1,11 +1,11 @@
 import { getExports } from './platform/react.js';
+import Constraints from './core/Constraints.js';
 import ReactLite from 'react-lite';
 
 const {
 	createElement,
 	defineComponent,
-	isElement,
-	Types
+	isElement
 } = getExports(ReactLite);
 
 export {
@@ -13,7 +13,7 @@ export {
 	defineComponent,
 	isElement,
 	mount,
-	Types
+	Constraints
 };
 
 function mount(content, targetNode) {

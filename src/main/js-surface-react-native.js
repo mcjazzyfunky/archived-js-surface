@@ -1,12 +1,12 @@
 import { getExports } from './platform/react.js';
+import Constraints from './core/Constraints.js';
 import React from 'react';
 import AppRegistry from 'react-native';
 
 const {
 	createElement,
 	defineComponent,
-	isElement,
-	Types
+	isElement
 } = getExports(React);
 
 export {
@@ -14,10 +14,9 @@ export {
 	defineComponent,
 	isElement,
 	mount,
-	Types
+	Constraints
 };
 
 function mount(Component) {
-	// TODO - get rid of that 'MainApp'
-	AppRegistry.registerComponent('MainApp', () => Component);
+	AppRegistry.registerComponent('Main', () => Component);
 }

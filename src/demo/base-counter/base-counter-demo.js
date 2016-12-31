@@ -1,5 +1,5 @@
 import { defineComponent, mount, createElement as htm } from 'js-surface';
-import Emitter from '../../main/util/Emitter.js';
+// import Emitter from '../../main/util/Emitter.js';
 
 const CounterLabel = defineComponent({
     name: 'CounterLabel',

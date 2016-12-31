@@ -1,3 +1,4 @@
+import Constraints from './core/Constraints.js';
 import { getExports } from './platform/react.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -5,8 +6,7 @@ import ReactDOM from 'react-dom';
 const {
 	createElement,
 	defineComponent,
-	isElement,
-	Types
+	isElement
 } = getExports(React);
 
 export {
@@ -14,7 +14,7 @@ export {
 	defineComponent,
 	isElement,
 	mount,
-	Types
+	Constraints
 };
 
 function mount(content, targetNode) {
