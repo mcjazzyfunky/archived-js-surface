@@ -1,4 +1,5 @@
-import defComp from './core/defComp.js';
+import adaptFunctionalComponent from './core/adaptFunctionalComponent.js';
+import createPropsAdjuster from './core/createPropsAdjuster.js',
 import Constraints from './core/Constraints.js';
 
 import { render } from 'inferno';
@@ -7,13 +8,27 @@ import InfernoComponent from 'inferno-component';
 
 export {
 	createElement,
-	defineComponent,
+	defineFunctionalComponent,
+	defineCommonComponent,
 	isElement,
 	mount,
 	Constraints
 };
 
-function defineComponent(config) {
+function defineFunctionalComponent(config) {
+	const propsAdjuster = createPropsAdjuster(config.name, config.properties);
+
+	const ret = props => config.render(propsAdjuster(props));
+
+	ret.displayName = config.name;
+	return ret;
+
+	return adaptFunctionalComponent(config, config => {
+
+	);
+}
+
+function defineCommonComponent(config) {
 	const ExtCustomComponent = function (args, sendProps, getView) {
 		CustomComponent.apply(this, args, config, sendProps, getView);
 	};

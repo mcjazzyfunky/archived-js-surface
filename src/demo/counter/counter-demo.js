@@ -1,6 +1,6 @@
-import { defineComponent, defineFunctionComponent, mount, createElement as htm } from 'js-surface';
+import { defineUsualComponent, defineFunctionalComponent, mount, createElement as htm } from 'js-surface';
 
-const CounterInfo = defineFunctionComponent({
+const CounterInfo = defineFunctionalComponent({
     name: 'CounterInfo',
 
     properties: {
@@ -9,7 +9,7 @@ const CounterInfo = defineFunctionComponent({
         }
     },
 
-    view(props) {
+    render(props) {
         return (
         	htm(
         		'label',
@@ -22,7 +22,7 @@ const CounterInfo = defineFunctionComponent({
 
 // --------------------------------------------------------------------
 
-const Counter = defineComponent({
+const Counter = defineUsualComponent({
     name: 'Counter',
 
     properties: {
@@ -112,10 +112,10 @@ const Counter = defineComponent({
 
 // --------------------------------------------------------------------
 
-const CounterCtrl = defineFunctionComponent({
+const CounterCtrl = defineFunctionalComponent({
     name: 'CounterCtrl',
 
-    view() {
+    render() {
         let counterInstance = null;
 
         return (
