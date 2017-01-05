@@ -18,7 +18,7 @@ const
 
 	INJECTION_NAME_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*$/,
 	METHOD_NAME_REGEX = /^[a-z][a-zA-Z0-9_-]*$/,
-    PROP_NAME_REGEX = '/^[a-z][a-zA-Z0-9_-]*$/';
+    PROP_NAME_REGEX = /^[a-z][a-zA-Z0-9_-]*$/;
 
 export {
 	CONFIG_COMMON_COMPONENT_BASE_KEYS,

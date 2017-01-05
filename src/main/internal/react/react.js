@@ -1,4 +1,7 @@
-import defComp from '../core/defComp.js';
+// import defComp from '../core/defComp.js';
+
+// TODO!!!!!
+const defComp = () => {};
 
 export function createCommonMethods(React) {
 	const commonMethods = {

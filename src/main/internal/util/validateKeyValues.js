@@ -12,6 +12,8 @@ export default function validateKeyValues(
 	} else {
 	    for (let key in obj) {
 	    	if (obj.hasOwnProperty(key) && !keyValueValidator(key, obj[key])) {
+	    		console.log('>>', key, obj[key], keyValueValidator(key, obj[key]))
+	    		console.log(keyValueValidator)
 				illegalParameters.push(key);
 	    	}
 	    }

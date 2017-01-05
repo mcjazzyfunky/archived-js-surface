@@ -29,11 +29,32 @@ function defineFunctionalComponent(config) {
 		const ret = props => config.render(props);
 
 		ret.displayName = adjustedConfig.name;
+
+		return ret;
 	});
 }
 
 function defineGeneralComponent(config) {
-    // TODO
+	const ExtCustomComponent = function (args, sendProps, getView) {
+		CustomComponent.apply(this, args, config, sendProps, getView);
+	};
+
+	ExtCustomComponent.displayName = config.name;
+
+	return defComp(config, config => {
+		return (...args) => {
+			let viewToRender = null;
+
+			const
+				{ sendProps, methods } = config.initControl(
+					view => { viewToRender = view; }),
+
+				component = new ExtCustomComponent(
+					args, sendProps, () => viewToRender);
+
+			return Object.assign(component, methods);
+		};
+	});
 }
 
 function defineStandardComponent(config) {

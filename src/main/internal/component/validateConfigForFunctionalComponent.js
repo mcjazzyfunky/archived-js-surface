@@ -4,6 +4,7 @@ import validateKeyValues from '../util/validateKeyValues.js';
 import validateComponentName from './validateComponentName.js';
 import validatePropertiesConfig from './validatePropertiesConfig.js';
 import validateFunctionConfig from './validateFunctionConfig.js';
+import warn from '../util/warn.js';
 
 export default function validateConfigForFunctionalComponent(
 	config, platformAdaption) {
@@ -13,10 +14,11 @@ export default function validateConfigForFunctionalComponent(
 	    	key => CONFIG_FUNCTIONAL_COMPONENT_KEYS.has(key))
 
 		|| validateComponentName(config.name)
-		|| validatePropertiesConfig(config)
+		|| validatePropertiesConfig(config.properties)
 		|| validateFunctionConfig(config, 'render', true);
 
 	if (err) {
+		warn('Illegal component configuration:', config);
 		throw prettifyComponentConfigError(err, config);
 	}
 

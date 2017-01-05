@@ -6,7 +6,7 @@ export default function validatePropertiesConfig(propsConfig) {
    let err = validateKeyValues(propsConfig, key => key.match(PROP_NAME_REGEX));
 
    if (!err) {
-    	for (let key in Object.getOwnPropertyNames(propsConfig)) {
+    	for (let key of Object.getOwnPropertyNames(propsConfig)) {
     		err = validatePropertyConfig(propsConfig[key]);
 
 			if (err) {

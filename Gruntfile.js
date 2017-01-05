@@ -39,9 +39,9 @@ module.exports = function (grunt) {
         },
         */
         browserify: {
-            jsSurface: {
-                src: 'build/src/main/js-surface.js',
-                dest: 'dist/index.js'
+            jsSurfaceStandalone: {
+                src: 'build/src/main/js-surface-standalone.js',
+                dest: 'dist/standalone.js'
             },
             jsSurfaceInferno: {
             	options: {
@@ -89,9 +89,9 @@ module.exports = function (grunt) {
                         + ' Licencse: New BSD License\n'
                         + '*/\n'
             },
-            jsSurface: {
-                src: ['dist/index.js'],
-                dest: 'dist/index.min.js'
+            jsSurfaceStandalone: {
+                src: ['dist/standalone.js'],
+                dest: 'dist/standalone.min.js'
             },
             jsSurfaceInferno: {
                 src: ['dist/inferno.js'],
@@ -115,13 +115,13 @@ module.exports = function (grunt) {
             }
         },
         compress: {
-            jsSurface: {
+            jsSurfaceStandalone: {
                 options: {
                     mode: 'gzip',
             		level: 9
                 },
-                src: ['dist/index.min.js'],
-                dest: 'dist/index.min.js.gz'
+                src: ['dist/standalone.min.js'],
+                dest: 'dist/standalone.min.js.gz'
             },
             jsSurfaceInferno: {
                 options: {
