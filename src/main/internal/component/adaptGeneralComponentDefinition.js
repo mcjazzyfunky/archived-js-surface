@@ -1,9 +1,9 @@
 import createPropsAdjuster from './createPropsAdjuster.js';
-import { FORBIDDEN_METHOD_NAMES, METHOD_NAME_REGEX } from './constants.js';
+import { FORBIDDEN_METHOD_NAMES, METHOD_NAME_REGEX } from './componentConstants.js';
 import validateConfigForGeneralComponent from './validateConfigForGeneralComponent.js';
-import validateConfigParameters from './validateConfigParameters.js';
+import validateKeyValues from '../util/validateKeyValues.js';
 
-export default function adaptGeneralComponent(config, platformAdaption) {
+export default function adaptGeneralComponentDefinition(config, platformAdaption) {
 	const err = validateConfigForGeneralComponent(config);
 
 	if (err) {
@@ -52,7 +52,7 @@ function validateInitProcessResult(result) {
 		if (result.methods === undefined) {
 			errMsg = "Parameter 'methods' must not be set to undefined";
 		} else if (result.methods !== null) {
-			const err = validateConfigParameters(result, (key, value) =>
+			const err = validateKeyValues(result, (key, value) =>
 			    !FORBIDDEN_METHOD_NAMES.has(key)
 				&& key.matches(METHOD_NAME_REGEX) && typeof value === 'function');
 
@@ -64,5 +64,5 @@ function validateInitProcessResult(result) {
 
 	return errMsg
 		? new Error(errMsg)
-		: validateConfigParameters;
+		: validateKeyValues;
 }

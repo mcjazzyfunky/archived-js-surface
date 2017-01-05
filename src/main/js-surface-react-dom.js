@@ -1,5 +1,5 @@
-import Constraints from './core/Constraints.js';
-import { createCommonMethods } from './platform/react.js';
+import Constraints from './api/Constraints.js';
+import { createCommonMethods } from './internal/react/react.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -13,11 +13,11 @@ export {
 	createElement,
 	defineComponent,
 	isElement,
-	mount,
+    render,
 	Constraints
 };
 
-function mount(content, targetNode) {
+function render(content, targetNode) {
     if (!isElement(content)) {
         throw new TypeError(
             "[mount] First argument 'content' has to be a valid element");

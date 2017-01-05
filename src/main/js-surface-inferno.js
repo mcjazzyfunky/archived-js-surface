@@ -1,34 +1,42 @@
-import adaptFunctionalComponent from './core/adaptFunctionalComponent.js';
-import createPropsAdjuster from './core/createPropsAdjuster.js',
-import Constraints from './core/Constraints.js';
+import adaptFunctionalComponentDefinition from
+	'./internal/component/adaptFunctionalComponentDefinition.js';
 
-import { render } from 'inferno';
+import createPropsAdjuster from './internal/component/createPropsAdjuster.js';
+import Constraints from './api/Constraints.js';
+
+import { render as renderInferno } from 'inferno';
 import createInfernoElement from 'inferno-create-element';
 import InfernoComponent from 'inferno-component';
 
+import defineMessages from './api/defineMessages.js';
+import defineStore from './api/defineStore.js';
+
 export {
 	createElement,
+	defineAdvancedComponent,
 	defineFunctionalComponent,
-	defineCommonComponent,
+	defineGeneralComponent,
+	defineMessages,
+	defineStandardComponent,
+	defineStore,
 	isElement,
-	mount,
+	render,
 	Constraints
 };
 
 function defineFunctionalComponent(config) {
-	const propsAdjuster = createPropsAdjuster(config.name, config.properties);
+	return adaptFunctionalComponentDefinition(config, adjustedConfig => {
+		const ret = props => config.render(props);
 
-	const ret = props => config.render(propsAdjuster(props));
-
-	ret.displayName = config.name;
-	return ret;
-
-	return adaptFunctionalComponent(config, config => {
-
-	);
+		ret.displayName = adjustedConfig.name;
+	});
 }
 
-function defineCommonComponent(config) {
+function defineGeneralComponent(config) {
+    // TODO
+}
+
+function defineStandardComponent(config) {
 	const ExtCustomComponent = function (args, sendProps, getView) {
 		CustomComponent.apply(this, args, config, sendProps, getView);
 	};
@@ -49,6 +57,10 @@ function defineCommonComponent(config) {
 			return Object.assign(component, methods);
 		};
 	});
+}
+
+function defineAdvancedComponent(config) {
+	// TODO
 }
 
 function createElement(tag, props, ...children)  {
@@ -87,8 +99,8 @@ function isElement(it) {
         && !!(it.flags & (28 | 3970 )); // 28: component, 3970: element
 }
 
-function mount(content, targetNode) {
-    if (!exports.isElement(content)) {
+function render(content, targetNode) {
+    if (!isElement(content)) {
         throw new TypeError(
             "[mount] First argument 'content' has to be a valid element");
     }
@@ -97,7 +109,7 @@ function mount(content, targetNode) {
         ? document.getElementById(targetNode)
         : targetNode;
 
-    render(content, target);
+    renderInferno(content, target);
 }
 
 class CustomComponent extends InfernoComponent {

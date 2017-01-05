@@ -1,5 +1,5 @@
-import { INJECTION_NAME_REGEX } from './constants.js';
-import validateKeys from './validateKeys.js';
+import { INJECTION_NAME_REGEX } from './componentConstants.js';
+import validateKeyValues from '../util/validateKeyValues.js';
 
 const
 	PROP_CONFIG_KEYS = new Set(
@@ -45,7 +45,7 @@ export default function validatePropertyConfig(propCfg) {
     	errMsg = "Property configuration parameter 'inject' "
     		+ 'must match regex ' + INJECTION_NAME_REGEX;
     } else {
-    	const err = validateKeys(propCfg, key => PROP_CONFIG_KEYS.has(key));
+    	const err = validateKeyValues(propCfg, key => PROP_CONFIG_KEYS.has(key));
 
     	if (err) {
     		errMsg = err.message;

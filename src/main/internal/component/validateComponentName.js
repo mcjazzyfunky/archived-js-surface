@@ -1,4 +1,4 @@
-import { COMPONENT_NAME_REGEX } from './constants.js';
+import { COMPONENT_NAME_REGEX } from './componentConstants.js';
 
 export default function validateComponentName(name) {
 	let errMsg = null;

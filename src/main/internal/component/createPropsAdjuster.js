@@ -1,4 +1,4 @@
-import warn from './warn.js';
+import warn from '../util/warn.js';
 
 export default function createPropsAdjuster(componentName, propertiesConfig) {
     let ret;
@@ -57,6 +57,8 @@ export default function createPropsAdjuster(componentName, propertiesConfig) {
 
 			    	throw new Error(errMsg);
 			    }
+
+			    return adjustedProps;
 			};
         }
     }

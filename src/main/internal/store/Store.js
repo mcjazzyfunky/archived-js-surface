@@ -22,9 +22,7 @@ export default class Store {
             this.__state = newState;
 
             for (let subscriber of this.__subscribers) {
-                setTimeout(() => {
-                  subscriber(newState);
-                }, 0);
+                subscriber(newState);
             }
         } else {
             const newData = msg.apply({

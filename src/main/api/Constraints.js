@@ -1,4 +1,4 @@
-export default {
+const Constraints = {
 	isNull(it) {
 		return it === null;
 	},

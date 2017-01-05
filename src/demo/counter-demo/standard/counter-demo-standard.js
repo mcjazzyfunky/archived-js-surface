@@ -1,4 +1,9 @@
-import { defineUsualComponent, defineFunctionalComponent, mount, createElement as htm } from 'js-surface';
+import {
+	createElement as dom,
+	defineStandardComponent,
+	defineFunctionalComponent,
+	render,
+} from 'js-surface';
 
 const CounterInfo = defineFunctionalComponent({
     name: 'CounterInfo',
@@ -11,10 +16,10 @@ const CounterInfo = defineFunctionalComponent({
 
     render(props) {
         return (
-        	htm(
+        	dom(
         		'label',
         		null,
-        		htm('b',
+        		dom('b',
         			null,
         			props.value)));
     }
@@ -22,7 +27,7 @@ const CounterInfo = defineFunctionalComponent({
 
 // --------------------------------------------------------------------
 
-const Counter = defineUsualComponent({
+const Counter = defineStandardComponent({
     name: 'Counter',
 
     properties: {
@@ -49,7 +54,7 @@ const Counter = defineUsualComponent({
     	this.state = { counterValue: this.state.counterValue + delta };
 	},
 
-    needsUpdate() {
+    shouldUpdate() {
     	console.log('[needsUpdate]', arguments);
     	return true;
     },
@@ -95,15 +100,15 @@ const Counter = defineUsualComponent({
 
     render() {
          return (
-            htm('span',
+            dom('span',
                 { className: 'counter' },
-                htm('button',
+                dom('button',
                     { onClick: () => this.increasesCounter(-1) },
                     '-'),
-                htm('div',
+                dom('div',
                     null,
                     CounterInfo({ value: this.state.counterValue })),
-                htm('button',
+                dom('button',
                     { onClick: () => this.increaseCounter(1) },
                     '+'))
         );
@@ -119,19 +124,19 @@ const CounterCtrl = defineFunctionalComponent({
         let counterInstance = null;
 
         return (
-            htm('div',
+            dom('div',
                 { className: 'counter-ctrl' },
-                htm('button',
+                dom('button',
                 	{ onClick: () => counterInstance.resetCounter(0) },
                 	'Reset to 0'),
                 	' ',
             		Counter({ ref: it => counterInstance = it }),
                 	' ',
-                	htm('button',
+                	dom('button',
                 		{ onClick: () => counterInstance.resetCounter(100) },
                 		'Reset to 100')));
     }
 });
 
-mount(CounterCtrl(), 'main-content');
+render(CounterCtrl(), 'main-content');
 

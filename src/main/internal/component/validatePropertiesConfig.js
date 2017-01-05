@@ -1,9 +1,9 @@
-import { PROP_NAME_REGEX } from './constants.js';
-import validateConfigParameters from './validateConfigParameters.js';
-import validatePropertyConfig from './validatePropertyConfig';
+import { PROP_NAME_REGEX } from './componentConstants.js';
+import validateKeyValues from '../util/validateKeyValues.js';
+import validatePropertyConfig from './validatePropertyConfig.js';
 
 export default function validatePropertiesConfig(propsConfig) {
-   let err = validateConfigParameters(propsConfig, key => key.match(PROP_NAME_REGEX));
+   let err = validateKeyValues(propsConfig, key => key.match(PROP_NAME_REGEX));
 
    if (!err) {
     	for (let key in Object.getOwnPropertyNames(propsConfig)) {

@@ -6,7 +6,9 @@ export default function validateKeyValues(
 	const illegalParameters = [];
 
 	if (obj === null || typeof obj !== 'object') {
-		ret = new Error('Must be an object');
+		if (mandatory || obj !== undefined) {
+			ret = new Error('Must be an object');
+		}
 	} else {
 	    for (let key in obj) {
 	    	if (obj.hasOwnProperty(key) && !keyValueValidator(key, obj[key])) {
@@ -18,7 +20,7 @@ export default function validateKeyValues(
 	    	ret = new Error('Illegal parameter ' + illegalParameters[0]);
 	    } else if (illegalParameters.length > 1) {
 			const errMsg = 'Illegal parameters '
-				+ illegalParameters.map(key => `' ${key}'`).join(', ');
+				+ illegalParameters.map(key => `'${key}'`).join(', ');
 
 	    	ret = new Error(errMsg);
 	    }

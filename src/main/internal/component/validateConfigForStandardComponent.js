@@ -1,8 +1,8 @@
 import { CONFIG_COMMON_COMPONENT_BASE_KEYS, METHOD_NAME_REGEX }
-     from './constant.js';
+     from './componentConstant.js';
 
-import prettifyConfigError from './prettifyConfigError.js';
-import validateConfigParameters from './validateConfigParameters.js';
+import prettifyComponentConfigError from './prettifyComponentConfigError.js';
+import validateKeyValues from '../util/validateKeyValues.js';
 import validateComponentName from './validateComponentName.js';
 import validatePropertiesConfig from './validatePropertiesConfig.js';
 import validateFunctionConfig from './validateFunctionConfig.js';
@@ -11,7 +11,7 @@ export default function validateConfigForCommonComponent(
 	config, platformAdaption) {
 
 	let err =
-	    validateConfigParameters(config, (key, value) =>
+	    validateKeyValues(config, (key, value) =>
 	    	CONFIG_BASE_KEYS.has(key)
 	    	|| (key.match(METHOD_NAME_REGEX)
 	    	&& typeof value === 'function'))
@@ -23,7 +23,7 @@ export default function validateConfigForCommonComponent(
 
 
 	if (err) {
-		throw prettifyConfigError(err, config);
+		throw prettifyComponentConfigError(err, config);
 	}
 
 	return err;
