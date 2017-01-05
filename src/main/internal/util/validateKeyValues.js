@@ -1,22 +1,24 @@
-export default function validateConfigParameters(obj, validator, mandatory) {
+export default function validateKeyValues(
+	obj, keyValueValidator, mandatory = true) {
+
 	let ret = null;
 
-	const illegalKeys = [];
+	const illegalParameters = [];
 
 	if (obj === null || typeof obj !== 'object') {
 		ret = new Error('Must be an object');
 	} else {
 	    for (let key in obj) {
-	    	if (obj.hasOwnProperty(key) && !validator(key, obj[key])) {
-				illegalKeys.push(key);
+	    	if (obj.hasOwnProperty(key) && !keyValueValidator(key, obj[key])) {
+				illegalParameters.push(key);
 	    	}
 	    }
 
-	    if (illegalKeys.length === 1) {
-	    	ret = new Error('Illegal parameter ' + illegalKeys[0]);
-	    } else if (illegalKeys.length > 1) {
+	    if (illegalParameters.length === 1) {
+	    	ret = new Error('Illegal parameter ' + illegalParameters[0]);
+	    } else if (illegalParameters.length > 1) {
 			const errMsg = 'Illegal parameters '
-				+ illegalKeys.map(key => `' ${key}'`).join(', ');
+				+ illegalParameters.map(key => `' ${key}'`).join(', ');
 
 	    	ret = new Error(errMsg);
 	    }

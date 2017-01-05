@@ -1,4 +1,4 @@
-const  COMPONENT_NAME_REGEX = /^[A-Z][a-zA-Z0-9]*$/;
+import { COMPONENT_NAME_REGEX } from './constants.js';
 
 export default function validateComponentName(name) {
 	let errMsg = null;

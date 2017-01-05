@@ -1,4 +1,4 @@
-export default function prettifyConfigError(err, config) {
+export default function prettifyComponentConfigError(err, config) {
 	let ret = null;
 
 	if (!config || typeof config.name !== 'string') {

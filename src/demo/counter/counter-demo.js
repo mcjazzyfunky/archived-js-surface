@@ -41,7 +41,7 @@ const Counter = defineUsualComponent({
     	}
     },
 
-    initialize() {
+    init() {
         this.state = { counterValue: this.props.initialValue };
     },
 
