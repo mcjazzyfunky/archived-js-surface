@@ -1,7 +1,6 @@
 import adaptFunctionalComponentDefinition from
 	'./internal/component/adaptFunctionalComponentDefinition.js';
 
-import createPropsAdjuster from './internal/component/createPropsAdjuster.js';
 import Constraints from './api/Constraints.js';
 
 import { render as renderInferno } from 'inferno';
@@ -10,6 +9,8 @@ import InfernoComponent from 'inferno-component';
 
 import defineMessages from './api/defineMessages.js';
 import defineStore from './api/defineStore.js';
+import hyperscript from './api/hyperscript.js';
+import Injector from './api/Injector.js';
 
 export {
 	createElement,
@@ -19,14 +20,16 @@ export {
 	defineMessages,
 	defineStandardComponent,
 	defineStore,
+	hyperscript,
 	isElement,
 	render,
-	Constraints
+	Constraints,
+	Injector
 };
 
 function defineFunctionalComponent(config) {
 	return adaptFunctionalComponentDefinition(config, adjustedConfig => {
-		const ret = props => config.render(props);
+		const ret = props => adjustedConfig.render(props);
 
 		ret.displayName = adjustedConfig.name;
 

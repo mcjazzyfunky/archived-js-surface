@@ -1,3 +1,5 @@
-import { defineStandardComponent } from 'js-surface';
+import { defineGeneralComponent } from 'js-surface';
 
-export default defineStandardComponent;
+export default function defineStandardComponent(config) {
+
+}

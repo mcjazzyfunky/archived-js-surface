@@ -10,14 +10,14 @@ export default class Store {
     dispatch(msg) {
         if (!(msg instanceof this.__messageClass)
             || typeof msg.apply !== 'function'
-            || msg.category !== 'reducers' && msg.category !== 'effects'
-            || msg.category === 'reducers' && msg.apply.length !== 1
-            || msg.category === 'effects' && msg.apply.length > 1) {
+            || msg.category !== 'updates' && msg.category !== 'interactions'
+            || msg.category === 'updates' && msg.apply.length !== 1
+            || msg.category === 'interactions' && msg.apply.length > 1) {
 
             throw new Error('Invalid message type passed to store dispatch method');
         }
 
-        if (msg.category === 'reducers') {
+        if (msg.category === 'updates') {
             const newState = msg.apply(this.__state);
             this.__state = newState;
 

@@ -1,5 +1,5 @@
 import {
-	createElement as dom,
+	hyperscript as dom,
 	defineFunctionalComponent,
 	render
 } from 'js-surface';
@@ -16,10 +16,13 @@ const HelloWorld = defineFunctionalComponent({
 
 	render({ name }) {
 		return (
-			dom('div',
+			dom('div/p/div/p',
 				null,
 				`Hello ${name}!`));
 	}
 });
 
 render(HelloWorld({ name: 'John Doe' }), 'main-content');
+
+const elem = document.getElementById('info');
+elem.innerText = document.getElementById('main-content').innerHTML;

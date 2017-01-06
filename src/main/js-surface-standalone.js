@@ -1,19 +1,29 @@
 import {
 	createElement,
-	defineComponent,
+	defineAdvancedComponent,
+	defineFunctionalComponent,
+	defineGeneralComponent,
 	defineMessages,
+	defineStandardComponent,
 	defineStore,
+	hyperscript,
 	isElement,
-	mount,
-	Constraints
+	render,
+	Constraints,
+	Injector
 } from './js-surface-inferno.js';
 
 export {
 	createElement,
-	defineComponent,
+	defineAdvancedComponent,
+	defineFunctionalComponent,
+	defineGeneralComponent,
 	defineMessages,
+	defineStandardComponent,
 	defineStore,
+	hyperscript,
 	isElement,
-	mount,
-	Constraints
+	render,
+	Constraints,
+	Injector
 };

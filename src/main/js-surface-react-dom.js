@@ -11,10 +11,17 @@ const {
 
 export {
 	createElement,
-	defineComponent,
+	defineAdvancedComponent,
+	defineFunctionalComponent,
+	defineGeneralComponent,
+	defineMessages,
+	defineStandardComponent,
+	defineStore,
+	hyperscript,
 	isElement,
-    render,
-	Constraints
+	render,
+	Constraints,
+	Injector
 };
 
 function render(content, targetNode) {
