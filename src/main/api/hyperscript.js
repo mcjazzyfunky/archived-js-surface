@@ -6,44 +6,42 @@ const
     tagPattern = '[a-zA-Z][a-zA-Z0-9_-]*',
     idPattern = '(#[a-zA-Z][a-zA-Z0-9_-]*)?',
     classPattern = '(\.[a-zA-Z][a-zA-Z0-9_-]*)*',
-    partPattern = `${tagPattern}${idPattern}${classPattern}`,
-    fullPattern = `^${partPattern}(\/${partPattern})*$`,
+    partialPattern = `${tagPattern}${idPattern}${classPattern}`,
+    fullPattern = `^${partialPattern}(\/${partialPattern})*$`,
 
-    hyperscriptRegex = new RegExp(fullPattern),
-    tagCache = {},
-    tagIsSimpleSymbol = Symbol('tagIsSimple');
+    tagRegex = new RegExp(`^${tagRegex}$`),
+    hyperscriptRegex = new RegExp(`${fullPattern}`),
 
+	tagCache = {},
+    tagIsSimpleMark = Symbol();
 
 function hyperscript(tag, ...rest) {
     let ret = null;
 
     const
-        type = typeof tag,
-        tagIsString = type === 'string';
+        typeOfTag = typeof tag,
+        tagIsString = typeOfTag === 'string';
 
-    if (!tagIsString && type !== 'function') {
-        throw new Error('[createElement] First parameter tag must either be a string or a component factory function');
+    if (!tagIsString && typeOfTag !== 'function') {
+        throw new Error('[createElement] First parameter tag must either be a string or a component function');
     }
 
     if (!tagIsString) {
-        ret = applyCreateElement(arguments);
+        ret = applyCreateElement(tag, rest);
     } else {
         let result = tagCache[tag];
 
-        if (result === tagIsSimpleSymbol) {
-            ret = applyCreateElement(arguments);
-        } else if (!result || !tagCache.hasOwnProperty(tag)) {
-            const tagIsSimple =
-                tag.indexOf('.') === -1
-                && tag.indexOf('#') === -1
-                && tag.indexOf('/') === -1;
+        if (result === tagIsSimpleMark) {
+            ret = applyCreateElement(tag, rest);
+        } else if (result === undefined || !tagCache.hasOwnProperty(tag)) {
+            if (!tag.match(hyperscriptRegex)) {
+                throw new Error(
+                	"[hyperscript] First argument 'tag' "
+                	+ `is not a valid hyperscript tag string ('${tag}')`);
+            } else if (tag.match(tagRegex)) {
+                tagCache[tag] = tagIsSimpleMark;
 
-            if (tagIsSimple) {
-                tagCache[tag] = tagIsSimpleSymbol;
-
-                ret = applyCreateElement(arguments);
-            } else if (!tag.match(hyperscriptRegex)) {
-                throw new Error('[createElement] First argument tag is not a proper hyperscript string');
+                ret = applyCreateElement(tag, rest);
             } else {
                 const parts = tag.split('/');
 
@@ -68,21 +66,34 @@ function hyperscript(tag, ...rest) {
                 lastTriple = result[result.length - 1],
                 lastTag = lastTriple[0],
                 lastId = lastTriple[1],
-                lastAttrs = lastId ? { id: lastId } : {},
-                secondArg = arguments[2],
-                secondArgHasAttrs = treatAsAttrs(secondArg),
+                lastClassName = lastTriple[2],
+                lastAttrs = {},
+                secondArg = arguments[1],
+
+                secondArgHasAttrs =
+                	secondArg === undefined || secondArg === null ||
+                	typeof secondArg === 'object' && !isElement(secondArg),
+
                 newArgs = [lastTag];
+
+			if (lastId) {
+				lastAttrs.id = lastId;
+			}
+
+			if (lastClassName) {
+				lastAttrs.className = lastClassName;
+			}
 
             if (secondArgHasAttrs) {
                 const
-                    lastClassName = lastAttrs.className,
-                    lastClassNameIsString = typeof lastClassName === 'string';
+                    secondArgClassName = !secondArg ? null : secondArg.className,
+                    secondArgClassNameIsString = typeof secondArgClassName === 'string';
 
                 Object.assign(lastAttrs, secondArg);
 
-                if (lastClassNameIsString && typeof lastAttrs.className === 'string') {
+                if (secondArgClassNameIsString && typeof lastAttrs.className === 'string') {
                     lastAttrs.className = (lastAttrs.className + ' ' + lastClassName).trim();
-                } else if (lastClassNameIsString) {
+                } else if (secondArgClassNameIsString) {
                     lastAttrs.className = lastClassName;
                 }
 
@@ -122,29 +133,13 @@ function hyperscript(tag, ...rest) {
     return ret;
 }
 
-function treatAsAttrs(what) {
-    return what === undefined || what === null || typeof what === 'object' && !isElement(what);
-}
 
-function pushMany(arr, items, start = 0, end = null) {
-    for (let i = start; end === null && i < items.length || i < end; ++i) {
-        arr.push(items[i]);
-    }
-}
+function applyCreateElement(tag, rest) {
+   const snd = rest[0];
 
-function applyCreateElement(args) {
-    let ret;
-
-    if (treatAsAttrs(args[1])) {
-        ret = createElement.apply(null, args);
-    } else {
-        const newArguments = [args[0], null];
-
-        pushMany(newArguments, args, 1);
-        ret = createElement.apply(null, newArguments);
-    }
-
-    return ret;
+   return  snd === undefined || snd === null || typeof snd === 'object' && !isElement(snd)
+        ? createElement(tag, snd || null, ...rest)
+    	: createElement(null, ...rest);
 }
 
 // Just temporary

@@ -26,8 +26,8 @@ const
 		todos: [],
 		inputText: '',
 		activeFilter: Filter.ALL,
-		editingTodoID: null,
-		editingText: ''
+		editTodoId: null,
+		editTodoText: ''
 	}),
 
 	determineNextId = todos =>
@@ -43,31 +43,37 @@ const
 				state.inputText = text;
 			},
 
-			StartEditing: (id, text) => state => {
-				state.editingTodoID = id,
-				state.editingText = text;
+			StartTodoEditing: (id, text) => state => {
+				state.todoEditId = id,
+				state.todoEditText = text;
 			},
 
-			ClearEditing: () => state => {
-				state.editingTodoID = null;
-				state.editingText = '';
+			StopTodoEditing: () => state => {
+				state.todoEditId = null;
+				state.todoEditText = '';
 			},
 
-			RemoveCompletedTodos: () => state => {
-				state.todos = state.todos.filter(Filters[Filter.COMPLETED]);
-			},
-
-			UpdateTodos: ({ id, text, completed }) => state => {
-				state.todos.forEach(todo => {
-					if (id === undefined || id === todo.id) {
-						if (text !== undefined) {
-							todo.text = text;
-						}
-
-						if (completed !== undefined) {
-							todo.completed = completed;
-						}
+			UpdateTodoText: (id, text) => state => {
+				for (let todo of state.todos) {
+					if (todo.id === id) {
+						todo.text = text;
+						break;
 					}
+				}
+			},
+
+			UpdateTodoCompleted: (id, completed) => state => {
+				for (let todo of state.todos) {
+					if (todo.id === id) {
+						todo.complete = completed;
+						break;
+					}
+				}
+			},
+
+			UpdateTodoCompleteness: completed => state => {
+				state.todos.forEach(todo => {
+					todo.completed = completed;
 				});
 			},
 
@@ -79,13 +85,12 @@ const
 				});
 			},
 
-			RemoveTodos: ({ id, text, completed }) => state => {
-				state.todos = state.todos.filter(
-					todo =>
-					    !(id === undefined || todo.id === id
-					    && text === undefined || todo.text === text
-					    && completed === undefined || todo.completed === completed)
-				);
+			RemoveTodoById: id => state => {
+				state.todos = state.todos.filter(todo => todo.id !== id);
+			},
+
+			RemoveCompletedTodos: () => state => {
+				state.todos = state.todos.filter(todo => !todo.completed);
 			}
 		}
 	}),
@@ -110,6 +115,8 @@ const
 		store.subscribe(state => {
 			window.localStorage.setItem(LOCAL_STORAGE_KEY, state);
 		});
+
+		return store;
 	},
 
     store = initStore(),
@@ -124,7 +131,7 @@ const
 		},
 
 		init() {
-			this.__unsubscrieFromStore = null;
+			this.__unsubscribeFromStore = null;
 		},
 
 		onWillMount() {
@@ -138,14 +145,30 @@ const
 		},
 
 		render() {
-			const store = this.props.store;
+			const
+				store = this.props.store,
+				state = store.getState(),
+				activeFilter = store.activeFilter,
+				dispatch = event => store.dispatch(event);
 
 			return (
 				dom('div',
 					null,
-					AppHeader({ store }),
-					AppBody({ store }),
-					AppFooter({ store }))
+					AppHeader({
+						inputText: state.inputText,
+						dispatch
+					}),
+					AppBody({
+						todos: state.todos,
+						todoEditId:	state.todoEditId,
+						todoEditText: state.todoEditText,
+						activeFilter,
+						dispatch
+					}),
+					AppFooter({
+						activeFilter,
+						dispatch
+					}))
 			);
 		}
 	}),
@@ -154,8 +177,11 @@ const
 		name: 'AppHeader',
 
 		properties: {
-			store: {
-				type: Store
+			inputText: {
+				type: String
+			},
+			dispatch: {
+				type: Function
 			}
 		},
 
@@ -170,8 +196,26 @@ const
 		name: 'AppBody',
 
 		properties: {
-			store: {
-				type: Store
+			todos: {
+				type: Array,
+				defaultValue: []
+			},
+
+			todoEditId: {
+				type: Number,
+				defaultValue: null
+			},
+
+			todoEditText: {
+				type: String
+			},
+
+			activeFilter: {
+				type: String
+			},
+
+			dispatch: {
+				type: Function
 			}
 		},
 
@@ -186,8 +230,11 @@ const
 		name: 'AppFooter',
 
 		properties: {
-			store: {
-				type: Store
+			activeFilter: {
+				type: String
+			},
+			dispatch: {
+				type: Function
 			}
 		},
 

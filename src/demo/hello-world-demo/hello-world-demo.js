@@ -16,13 +16,10 @@ const HelloWorld = defineFunctionalComponent({
 
 	render({ name }) {
 		return (
-			dom('div/p/div/p',
+			dom('div',
 				null,
 				`Hello ${name}!`));
 	}
 });
 
 render(HelloWorld({ name: 'John Doe' }), 'main-content');
-
-const elem = document.getElementById('info');
-elem.innerText = document.getElementById('main-content').innerHTML;
