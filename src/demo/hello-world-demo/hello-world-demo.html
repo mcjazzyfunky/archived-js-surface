@@ -9,6 +9,11 @@
             System.config({
                 baseURL: '../../..',
                 transpiler: 'plugin-babel',
+                meta: {
+			        babelOptions: {
+		               presets: ['es2017']
+			        }
+				},
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
@@ -23,7 +28,6 @@
                     'inferno-component': 'node_modules/inferno/dist/inferno-component.min.js',
                     'inferno-create-element': 'node_modules/inferno/dist/inferno-create-element.min.js',
 
-                    //'js-surface': '../../../main/js-surface-react-dom.js',
                     'js-surface': '../../main/js-surface-inferno.js',
 
                     'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.min.js',
@@ -37,8 +41,7 @@
         <br/>
         <br/>
         <div>
-            <div id="main-content">
-            </div>
+            <div id="main-content"/>
         </div>
     </body>
 </html>

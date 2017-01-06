@@ -10,29 +10,13 @@
                 baseURL: '../../../..',
                 transpiler: 'plugin-babel',
                 meta: {
-				    '*.js': {
-				        babelOptions: {
-			               // plugins: ['transform-object-rest-spread',  { 'useBuiltIns': true }],
-			               presets: ['babel-preset-stage-3']
-				        }
-				    }
+			        babelOptions: {
+		               presets: ['es2017']
+			        }
 				},
                 map: {
                     'plugin-babel': 'node_modules/systemjs-plugin-babel/plugin-babel.js',
                     'systemjs-babel-build': 'node_modules/systemjs-plugin-babel/systemjs-babel-browser.js',
-
-                    'babel-preset-stage-3': 'node_modules/babel-preset-stage-3/lib/index.js',
-
-                    //'core-js': 'node_modules/core-js',
-                    //'core-js/library/fn/get-iterator': 'node_modules/core-js/library/fn/get-iterator.js',
-                    //'core-js/library/modules/web.dom.iterable': 'node_modules/core-js/library/modules/web.dom.iterable.js',
-
-                    //'babel-runtime': 'node_modules/babel-runtime',
-                    //'babel-runtime/core-js/get-iterator': 'node_modules/babel-runtime/core-js/get-iterator.js',
-
-
-                    'transform-object-rest-spread': 'node_modules/babel-plugin-transform-object-rest-spread/lib/index.js',
-					'babel-plugin-syntax-object-rest-spread': 'node_modules/babel-plugin-syntax-object-rest-spread',
 
                     'react': 'node_modules/react/dist/react.js',
                     'react-dom': 'node_modules/react-dom/dist/react-dom.js',
