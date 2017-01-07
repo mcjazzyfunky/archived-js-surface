@@ -1,12 +1,12 @@
-export default function prettifyComponentConfigError(err, config) {
+export default function prettifyComponentConfigError(error, config) {
 	let ret = null;
 
 	if (!config || typeof config.name !== 'string') {
 		ret = new Error('Invalid component configuration => '
-			+ err.message);
+			+ error.message);
 	} else {
 		ret = new Error('Invalid component configuration '
-			+ `for '${config.name}' => ${err.message}`);
+			+ `for '${config.name}' => ${error.message}`);
 	}
 
 	return ret;

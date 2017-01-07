@@ -1,4 +1,4 @@
-import warn from '../util/warn.js';
+import warn from '../../util/warn.js';
 
 export default function createPropsAdjuster(componentName, propertiesConfig) {
     let ret;

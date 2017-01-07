@@ -1,4 +1,4 @@
-import createPropsAdjuster from './createPropsAdjuster.js';
+import createPropsAdjuster from '../helpers/createPropsAdjuster.js';
 import { FORBIDDEN_METHOD_NAMES, METHOD_NAME_REGEX } from './componentConstants.js';
 import validateConfigForGeneralComponent from './validateConfigForGeneralComponent.js';
 import validateInitProcessResult from './validateInitProcessResult.js';

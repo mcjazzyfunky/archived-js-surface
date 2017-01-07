@@ -1,4 +1,4 @@
-export default class VirtualStandardComponent {
+export default class Component {
 	constructor(initialProps, config, sendProps) {
 		this.__props = initialProps;
 		this.__state = this.getInitialState(initialProps);

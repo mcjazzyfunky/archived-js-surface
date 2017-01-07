@@ -2,12 +2,12 @@
 
 <html>
     <head>
-        <script type="text/javascript" src="../../../node_modules/systemjs/dist/system.js"></script>
-        <script type="text/javascript" src="../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
+        <script type="text/javascript" src="../../../../node_modules/systemjs/dist/system.js"></script>
+        <script type="text/javascript" src="../../../../node_modules/js-prelude/dist/js-prelude/polyfill.min.js"></script>
 
         <script type="text/javascript">
             System.config({
-                baseURL: '../../..',
+                baseURL: '../../../..',
                 transpiler: 'plugin-babel',
                 meta: {
 			        babelOptions: {
@@ -28,13 +28,13 @@
                     'inferno-component': 'node_modules/inferno/dist/inferno-component.min.js',
                     'inferno-create-element': 'node_modules/inferno/dist/inferno-create-element.min.js',
 
-                    'js-surface': '../../main/js-surface-inferno.js',
+                    'js-surface': '../../../main/js-surface-inferno.js',
 
                     'js-prelude': 'node_modules/js-prelude/dist/js-prelude/js-prelude.min.js',
                }
             });
 
-            System.import('./hello-world-demo.js');
+            System.import('./hello-world-demo-function.js');
         </script>
     </head>
     <body>

@@ -22,7 +22,10 @@ const
 		[Filter.COMPLETED]: todo => todo.completed
 	},
 
-	getDefaultAppState = () => ({
+	determineNextId = todos =>
+		todos.reduce((prev, next) => Math.max(prev.id, next.id), 0) + 1,
+
+	getDefaultStoreState = () => ({
 		todos: [],
 		inputText: '',
 		activeFilter: Filter.ALL,
@@ -30,30 +33,33 @@ const
 		editTodoText: ''
 	}),
 
-	determineNextId = todos =>
-		todos.reduce((prev, next) => Math.max(prev.id, next.id), 0) + 1,
+	Store = defineStore({
+		init(state = getDefaultStoreState()) {
+			return {
+				state
+			};
+		},
 
-	Action = defineMessages({
-		updates: {
-			SetFilter: filter => state => {
+		updateActions: {
+			setFilter: filter => state => {
 				state.activeFilter = filter;
 			},
 
-			SetInputText: text => state => {
+			setInputText: text => state => {
 				state.inputText = text;
 			},
 
-			StartTodoEditing: (id, text) => state => {
+			startTodoEditing: (id, text) => state => {
 				state.todoEditId = id,
 				state.todoEditText = text;
 			},
 
-			StopTodoEditing: () => state => {
+			stopTodoEditing: () => state => {
 				state.todoEditId = null;
 				state.todoEditText = '';
 			},
 
-			UpdateTodoText: (id, text) => state => {
+			updateTodoText: (id, text) => state => {
 				for (let todo of state.todos) {
 					if (todo.id === id) {
 						todo.text = text;
@@ -62,7 +68,7 @@ const
 				}
 			},
 
-			UpdateTodoCompleted: (id, completed) => state => {
+			updateTodoCompleted: (id, completed) => state => {
 				for (let todo of state.todos) {
 					if (todo.id === id) {
 						todo.complete = completed;
@@ -71,13 +77,13 @@ const
 				}
 			},
 
-			UpdateTodoCompleteness: completed => state => {
+			updateTodoCompleteness: completed => state => {
 				state.todos.forEach(todo => {
 					todo.completed = completed;
 				});
 			},
 
-			AddTodo: (text, completed = false) => state => {
+			addTodo: (text, completed = false) => state => {
 				state.todos.push({
 					id: determineNextId(state.todos),
 					text,
@@ -85,24 +91,14 @@ const
 				});
 			},
 
-			RemoveTodoById: id => state => {
+			removeTodoById: id => state => {
 				state.todos = state.todos.filter(todo => todo.id !== id);
 			},
 
-			RemoveCompletedTodos: () => state => {
+			removeCompletedTodos: () => state => {
 				state.todos = state.todos.filter(todo => !todo.completed);
 			}
 		}
-	}),
-
-	Store = defineStore({
-		messageType: Action,
-
-		init: initialState => ({
-			initialState: initialState
-				? initialState
-				: getDefaultAppState()
-		})
 	}),
 
 	initStore = () => {
@@ -110,7 +106,7 @@ const
 			initialState =
 				window.localStorage.getItem(LOCAL_STORAGE_KEY) || null,
 
-			store = Store.create(initialState);
+			store = new Store(initialState);
 
 		store.subscribe(state => {
 			window.localStorage.setItem(LOCAL_STORAGE_KEY, state);

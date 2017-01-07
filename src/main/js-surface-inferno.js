@@ -1,5 +1,5 @@
 import adaptFunctionalComponentDefinition from
-	'./internal/component/adaptFunctionalComponentDefinition.js';
+	'./internal/component/adaptions/adaptFunctionComponent.js';
 
 import Constraints from './api/Constraints.js';
 
@@ -7,19 +7,20 @@ import { render as renderInferno } from 'inferno';
 import createInfernoElement from 'inferno-create-element';
 import InfernoComponent from 'inferno-component';
 
-import defineMessages from './api/defineMessages.js';
-import defineStore from './api/defineStore.js';
+//import defineMessages from './api/defineMessages.js';
+//import defineStore from './api/defineStore.js';
 import hyperscript from './api/hyperscript.js';
 import Injector from './api/Injector.js';
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineFunctionalComponent,
+	defineClassComponent,
+	defineFunctionComponent,
 	defineGeneralComponent,
-	defineMessages,
-	defineStandardComponent,
-	defineStore,
+
+//	defineMessages,
+//	defineStore,
 	hyperscript,
 	isElement,
 	render,
@@ -27,7 +28,7 @@ export {
 	Injector
 };
 
-function defineFunctionalComponent(config) {
+function defineFunctionComponent(config) {
 	return adaptFunctionalComponentDefinition(config, adjustedConfig => {
 		const ret = props => adjustedConfig.render(props);
 
@@ -38,53 +39,53 @@ function defineFunctionalComponent(config) {
 }
 
 function defineGeneralComponent(config) {
-	const ExtCustomComponent = function (args, sendProps, getView) {
-		CustomComponent.apply(this, args, config, sendProps, getView);
-	};
 
-	ExtCustomComponent.displayName = config.name;
-
-	return defComp(config, config => {
-		return (...args) => {
-			let viewToRender = null;
-
-			const
-				{ sendProps, methods } = config.initControl(
-					view => { viewToRender = view; }),
-
-				component = new ExtCustomComponent(
-					args, sendProps, () => viewToRender);
-
-			return Object.assign(component, methods);
-		};
-	});
-}
-
-function defineStandardComponent(config) {
-	const ExtCustomComponent = function (args, sendProps, getView) {
-		CustomComponent.apply(this, args, config, sendProps, getView);
-	};
-
-	ExtCustomComponent.displayName = config.name;
-
-	return defComp(config, config => {
-		return (...args) => {
-			let viewToRender = null;
-
-			const
-				{ sendProps, methods } = config.initControl(
-					view => { viewToRender = view; }),
-
-				component = new ExtCustomComponent(
-					args, sendProps, () => viewToRender);
-
-			return Object.assign(component, methods);
-		};
-	});
 }
 
 function defineAdvancedComponent(config) {
-	// TODO
+	const ExtCustomComponent = function (args, sendProps, getView) {
+		CustomComponent.apply(this, args, config, sendProps, getView);
+	};
+
+	ExtCustomComponent.displayName = config.name;
+
+	return defComp(config, config => {
+		return (...args) => {
+			let viewToRender = null;
+
+			const
+				{ sendProps, methods } = config.initControl(
+					view => { viewToRender = view; }),
+
+				component = new ExtCustomComponent(
+					args, sendProps, () => viewToRender);
+
+			return Object.assign(component, methods);
+		};
+	});
+}
+
+function defineClassComponent(config) {
+	const ExtCustomComponent = function (args, sendProps, getView) {
+		CustomComponent.apply(this, args, config, sendProps, getView);
+	};
+
+	ExtCustomComponent.displayName = config.name;
+
+	return defComp(config, config => {
+		return (...args) => {
+			let viewToRender = null;
+
+			const
+				{ sendProps, methods } = config.initControl(
+					view => { viewToRender = view; }),
+
+				component = new ExtCustomComponent(
+					args, sendProps, () => viewToRender);
+
+			return Object.assign(component, methods);
+		};
+	});
 }
 
 function createElement(tag, props, ...children)  {
@@ -126,7 +127,7 @@ function isElement(it) {
 function render(content, targetNode) {
     if (!isElement(content)) {
         throw new TypeError(
-            "[mount] First argument 'content' has to be a valid element");
+            "[render] First argument 'content' has to be a valid element");
     }
 
     const target = typeof targetNode === 'string'

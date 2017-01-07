@@ -1,31 +1,42 @@
 import {
 	createElement as dom,
 	defineAdvancedComponent,
-	defineMessages,
 	defineStore,
 } from 'js-surface';
 
-const Action = defineMessages({
-	reducers: {
-		SetDateTime: dateTime => state => ({
+const Store = defineStore({
+	init() {
+		const ret = {
+			state: {
+				dateTime: new Date()
+			},
+			data: {
+				timerId: null
+			}
+		}
+	},
+
+	updates: {
+		setDateTime: dateTime => state => ({
 			...state,
 			dateTime
 		})
 	},
-	effects: {
-		SubscribeToTimer: () => ({ data, dispatch }) => {
+
+	commands: {
+		subscribeToTimer: () => (s, data, dispatch) => {
 			if (data.timerId) {
 				clearInterval(data.timerId);
 			}
 
 			const timerId = setInterval(() => {
-				dispatch(Action.SetDateTime(new Date()));
+				dispatch(Store.setDateTime(new Date()));
 			}, 1000);
 
 			return { ...data, timerId };
 		},
 
-		UnsubscribeFromTimer: () => ({ data }) => {
+		unsubscribeFromTimer: () => (s, data) => {
 			if (data.timerId) {
 				clearInterval(data.timerId);
 			}
@@ -33,22 +44,13 @@ const Action = defineMessages({
 			return { ...data, timerId: null };
 		},
 
-		UpdateDateTime: () => ({ dispatch }) => {
-			dispatch(Action.SetDateTime(new Date()));
+		updateDateTime: () => (s, d, dispatch) => {
+			dispatch(Store.setDateTime(new Date()));
+		},
+
+		updateDateTime: () => (s, d, dispatch) => {
+			self.dispatch(Store.setDateTime(new Date()));
 		}
-	}
-});
-
-
-const createStore = defineStore({
-	messageClass: Action,
-
-	initialState: {
-		dateTime: null
-	},
-
-	initialData: {
-		timerId: null
 	}
 });
 
@@ -63,17 +65,17 @@ export default defineAdvancedComponent({
 	},
 
 	init() {
-		return createStore();
+		return new Store({ dateTime: new Date() });
 	},
 
 	onWillMount({ dispatch }) {
 		dispatch(
-			Action.UpdateDateTime(),
-			Action.SubscribeToTimer());
+			Store.updateDateTime(),
+			Store.subscribeToTimer());
 	},
 
 	onWillUnmount({ dispatch }) {
-		dispatch(Action.UnsubscribeFromTimer());
+		dispatch(Store.unsubscribeFromTimer());
 	},
 
 	render({ props, state }) {

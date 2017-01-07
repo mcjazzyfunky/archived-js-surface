@@ -1,10 +1,10 @@
 import {
-	hyperscript as dom,
-	defineFunctionalComponent,
+	createElement as dom,
+	defineFunctionComponent,
 	render
 } from 'js-surface';
 
-const HelloWorld = defineFunctionalComponent({
+const HelloWorld = defineFunctionComponent({
 	name: 'HelloWorld',
 
 	properties: {
