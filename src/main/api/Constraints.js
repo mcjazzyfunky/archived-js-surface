@@ -55,8 +55,8 @@ const Constraints = {
     		: constraint(it);
     },
 
-    isOneOf(items, path = null) {
-        return items => !items.every(item => item !== it)
+    isOneOf(items) {
+        return (it, path) => !items.every(item => item !== it)
           ? null
           : createError('Must be one of: ' + items.join(', '));
     },

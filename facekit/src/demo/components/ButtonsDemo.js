@@ -1,16 +1,12 @@
-import { defineComponent, defineIntend, createElement as htm, Types, isElement } from 'js-surface';
+import {
+	defineFunctionComponent,
+	hyperscript as dom,
+} from 'js-surface';
 
 import { Seq } from 'js-prelude';
 
 import Button from '../../main/js/components/Button.js';
-import Tabs from '../../main/js/components/Tabs.js';
-import Tab from '../../main/js/components/Tab.js';
 
-
-const pagination = {
-    pageSize: 25,
-    totalItemCount: 1220
-};
 
 const
     buttonTypes = ['default', 'primary', 'success', 'info', 'warning', 'danger', 'link'],
@@ -18,33 +14,34 @@ const
     exampleIcons = ['fa-calendar', 'fa-twitter', 'glyphicon-home', 'glyphicon-print'],
     iconPositions = ['left', 'top', 'right', 'bottom'];
 
-export default defineComponent({
-    name: 'DemoOfuttons',
 
-    render({ props }) {
+export default defineFunctionComponent({
+    name: 'DemoOfButtons',
+
+    render() {
         return (
-            htm('div',
+            dom('div',
                 {className: 'container-fluid'},
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Enabled buttons:'),
                     ...Seq.from(buttonTypes).map(buttonType =>
-                        htm('div',
+                        dom('div',
                             {className: 'col-md-1'},
                             Button({
                                 text: buttonType,
                                 type: buttonType,
                                 onClick: () => alert('You clicked: ' + buttonType)
                             })))),
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Disabled buttons:'),
                     ...Seq.from(buttonTypes).map(buttonType =>
-                        htm('div',
+                        dom('div',
                             {className: 'col-md-1'},
                             Button({
                                 text: buttonType,
@@ -53,32 +50,32 @@ export default defineComponent({
                             }))
                     )),
 
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Buttons with icons'),
                     ...Seq.from(exampleIcons).map(icon =>
-                        htm('div',
+                        dom('div',
                             {className: 'col-md-1'},
                             Button({text: icon.replace(/^[^\-]+-/, ''), icon: icon})))),
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Buttons with different icon positions'),
                     ...Seq.from(iconPositions).map(iconPosition =>
-                        htm('div',
+                        dom('div',
                             {className: 'col-md-1'},
                             Button({text: iconPosition, icon: 'fa-cab', iconPosition: iconPosition})))),
 
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Links with different icon positions'),
                     ...Seq.from(iconPositions).map(iconPosition =>
-                        htm('div',
+                        dom('div',
                             {className: 'col-md-1'},
                             Button({
                                 text: iconPosition,
@@ -86,25 +83,25 @@ export default defineComponent({
                                 iconPosition: iconPosition,
                                 type: 'link'
                             })))),
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Button sizes:'),
                     ...Seq.from(sizes).map(size =>
-                        htm('div', {className: 'col-md-1'},
+                        dom('div', {className: 'col-md-1'},
                             Button({text: size, size: size})))),
 
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div', {className: 'col-md-2'},
+                    dom('div', {className: 'col-md-2'},
                         'Link sizes:'),
                     ...Seq.from(sizes).map(size =>
-                        htm('div', {className: 'col-md-1'},
+                        dom('div', {className: 'col-md-1'},
                             Button({text: size, size: size, type: 'link'})))),
-                htm('div',
+                dom('div',
                     {className: 'row'},
-                    htm('div',
+                    dom('div',
                         {className: 'col-md-2'},
                         'Menu buttons:'),
                     Button({
@@ -122,4 +119,3 @@ export default defineComponent({
         );
     }
 });
-    

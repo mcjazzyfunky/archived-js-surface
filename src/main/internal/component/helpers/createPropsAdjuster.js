@@ -99,7 +99,7 @@ function validateProps(props, validations) {
 		        } else if (defaultValue === undefined && props[propertyName] === undefined) {
 		            errMsg = `Missing mandatory property '${propertyName}'`;
 		        } else if (type === Array) {
-		        	if (!Array.isArray(props)) {
+		        	if (!Array.isArray(prop)) {
 		        		errMsg = `The property '${propertyName}' must be an array`;
 		        	}
 		        } else if (type === Object) {
