@@ -50,7 +50,7 @@ const Constraints = {
     },
 
     optional(constraint, path = null) {
-    	return it === undefined || it === null
+    	return it => it === undefined || it === null
     		? null
     		: constraint(it);
     },

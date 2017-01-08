@@ -18,8 +18,8 @@ class HelloWorldComponent extends Component {
 		return true;
 	}
 
-	onNextProps() {
-		console.log('onNextProps', arguments);
+	onWillReceiveProps() {
+		console.log('onWillRecieveProps', arguments);
 	}
 
 	onWillMount() {

@@ -7,7 +7,7 @@ export default Object.assign({}, shapeOfPartialBaseConfig, {
 	render: Constraints.isFunction,
 	init: isOptionalFunction,
 	shouldUpdate: isOptionalFunction,
-	onNextProps: isOptionalFunction,
+	onWillReceiveProps: isOptionalFunction,
 	onWillMount: isOptionalFunction,
 	onDidMount: isOptionalFunction,
 	onWillUpdate: isOptionalFunction,

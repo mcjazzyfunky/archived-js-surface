@@ -37,9 +37,9 @@ class CustomComponent extends Component {
 		this.__refresh = () => this.refresh();
 	}
 
-	onNextProps(nextProps) {
-		if (this.__config.onNextProps) {
-			this.__config.onNextProps({
+	onWillReceiveProps(nextProps) {
+		if (this.__config.onWillReceiveProps) {
+			this.__config.onWillReceiveProps({
 				props: this.props,
 				state: this.state,
 			    nextProps,

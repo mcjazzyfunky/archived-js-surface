@@ -13,7 +13,9 @@ const Store = defineStore({
 			data: {
 				timerId: null
 			}
-		}
+		};
+
+		return ret;
 	},
 
 	updates: {
@@ -42,10 +44,6 @@ const Store = defineStore({
 			}
 
 			return { ...data, timerId: null };
-		},
-
-		updateDateTime: () => (s, d, dispatch) => {
-			dispatch(Store.setDateTime(new Date()));
 		},
 
 		updateDateTime: () => (s, d, dispatch) => {

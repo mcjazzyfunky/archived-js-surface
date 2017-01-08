@@ -27,12 +27,12 @@ function hyperscript(tag, ...rest) {
     }
 
     if (!tagIsString) {
-        ret = applyCreateElement(tag, rest);
+        ret = applyCreateElement(tag, ...rest);
     } else {
         let result = tagCache[tag];
 
         if (result === tagIsSimpleMark) {
-            ret = applyCreateElement(tag, rest);
+            ret = applyCreateElement(tag, ...rest);
         } else if (result === undefined || !tagCache.hasOwnProperty(tag)) {
             if (!tag.match(hyperscriptRegex)) {
                 throw new Error(
@@ -41,7 +41,7 @@ function hyperscript(tag, ...rest) {
             } else if (tag.match(tagRegex)) {
                 tagCache[tag] = tagIsSimpleMark;
 
-                ret = applyCreateElement(tag, rest);
+                ret = applyCreateElement(tag, ...rest);
             } else {
                 const parts = tag.split('/');
 
@@ -108,8 +108,8 @@ function hyperscript(tag, ...rest) {
                 for (let i = 1; i < arguments.length; ++i) {
                     newArgs.push(arguments[i]);
                 }
-
-                ret = createElement.apply(null, newArgs);
+                
+                ret = applyCreateElement(...newArgs);
             }
 
             for (let i = result.length - 2; i >= 0; --i) {
@@ -134,12 +134,12 @@ function hyperscript(tag, ...rest) {
 }
 
 
-function applyCreateElement(tag, rest) {
+function applyCreateElement(tag, ...rest) {
    const snd = rest[0];
-
+   
    return  snd === undefined || snd === null || typeof snd === 'object' && !isElement(snd)
         ? createElement(tag, snd || null, ...rest)
-    	: createElement(null, ...rest);
+    	: createElement(tag, null, ...rest);
 }
 
 // Just temporary

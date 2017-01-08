@@ -27,28 +27,11 @@ export default class Component {
 		}
 	}
 
-	init(props) {
-	}
-
-	set state(newState) {
-		const oldState = this.__state;
-
-		if (this.shouldUpdate(this.props, newState)) {
-			this.onWillUpdate(this.props, newState);
-
-			this.refresh();
-
-			this.onDidUpdate(this.props, oldState);
-		}
-
-		this.__state = newState;
-	}
-
 	shouldUpdate(params) {
 		return true;
 	}
 
-	onNextProps(params) {
+	onWillReceiveProps(params) {
 	}
 
 	onWillMount(params) {

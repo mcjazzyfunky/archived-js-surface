@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         },
         babel: {
             options: {
-		presets: ["es2015", "es2017"],
+				presets: ["es2015", "es2016", "es2017"],
                 retainLines: true,
                 moduleIds: false,
                 sourceMaps: true
@@ -41,42 +41,62 @@ module.exports = function (grunt) {
         browserify: {
             jsSurfaceStandalone: {
                 src: 'build/src/main/js-surface-standalone.js',
-                dest: 'dist/standalone.js'
+                dest: 'dist/standalone.js',
+                options: {
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-standalone.js'
+					}
+                }
             },
             jsSurfaceInferno: {
-            	options: {
-            		ignore: ['./node_modules/**']
-            	},
                 src: 'build/src/main/js-surface-inferno.js',
-                dest: 'dist/inferno.js'
+                dest: 'dist/inferno.js',
+            	options: {
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-inferno.js'
+					},
+            		ignore: ['./node_modules/**']
+            	}
             },
             jsSurfaceReactDOM: {
-            	options: {
-            		ignore: ['./node_modules/**']
-            	},
     	        src: 'build/src/main/js-surface-react-dom.js',
-                dest: 'dist/react-dom.js'
+                dest: 'dist/react-dom.js',
+            	options: {
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-react-dom.js'
+					},
+            		ignore: ['./node_modules/**']
+            	}
             },
             jsSurfaceReactNative: {
-            	options: {
-            		ignore: ['./node_modules/**']
-            	},
     	        src: 'build/src/main/js-surface-react-native.js',
-                dest: 'dist/react-native.js'
+                dest: 'dist/react-native.js',
+            	options: {
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-react-native.js'
+					},
+            		ignore: ['./node_modules/**']
+            	}
             },
             jsSurfaceReactLite: {
-            	options: {
-            		ignore: ['./node_modules/**']
-            	},
     	        src: 'build/src/main/js-surface-react-lite.js',
-                dest: 'dist/react-lite.js'
+                dest: 'dist/react-lite.js',
+            	options: {
+            		ignore: ['./node_modules/**'],
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-react-lite.js'
+					}
+            	}
             },
             jsSurfacePreact: {
-            	options: {
-            		ignore: ['./node_modules/**']
-            	},
     	        src: 'build/src/main/js-surface-preact.js',
-                dest: 'dist/preact.js'
+                dest: 'dist/preact.js',
+            	options: {
+            		ignore: ['./node_modules/**'],
+					alias: {
+				    	'js-surface': './build/src/main/js-surface-preact.js'
+					}
+            	}
             }
         },
         uglify: {

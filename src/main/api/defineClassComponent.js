@@ -46,7 +46,7 @@ export default function defineClassComponent(config) {
 					component.refresh();
 					callAsync(() => callAsync(() => component.onDidMount()));
 				} else {
-					component.onNextProps(props);
+					component.onWillReceiveProps(props);
 
 					const shouldUpdate = component.shouldUpdate(props, component.state);
 

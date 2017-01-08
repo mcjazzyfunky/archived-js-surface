@@ -59,8 +59,8 @@ const Counter = defineStandardComponent({
     	return true;
     },
 
-    onNextProps(nextProps) {
-        console.log('[onNextProps]', arguments);
+    onWillReceiveProps(nextProps) {
+        console.log('[onWillReceiveProps]', arguments);
     },
 
     onWillChangeState(nextState) {
