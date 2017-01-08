@@ -1,10 +1,10 @@
 import createPropsAdjuster from '../helpers/createPropsAdjuster.js';
 
-import validateFunctionComponentConfig
-	from '../validations/validateFunctionComponentConfig.js';
+import validateFunctionalComponentConfig
+	from '../validations/validateFunctionalComponentConfig.js';
 
-export default function adaptFunctionComponent(config, platformAdaption) {
-	const err = validateFunctionComponentConfig(config);
+export default function adaptFunctionalComponent(config, platformAdaption) {
+	const err = validateFunctionalComponentConfig(config);
 
 	if (err) {
 		throw err;

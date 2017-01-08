@@ -1,10 +1,10 @@
-import adaptFunctionComponent from
-	'./internal/component/adaptions/adaptFunctionComponent.js';
+import adaptFunctionalComponent from
+	'./internal/component/adaptions/adaptFunctionalComponent.js';
 
-import adaptGeneralComponent from
-	'./internal/component/adaptions/adaptGeneralComponent.js';
+import adaptBasicComponent from
+	'./internal/component/adaptions/adaptBasicComponent.js';
 
-import defineClassComponent from './api/defineClassComponent.js';
+import defineStandardComponent from './api/defineStandardComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 
 import Component from './api/Component.js';
@@ -22,9 +22,9 @@ import Injector from './api/Injector.js';
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineClassComponent,
-	defineFunctionComponent,
-	defineGeneralComponent,
+	defineStandardComponent,
+	defineFunctionalComponent,
+	defineBasicComponent,
 
 //	defineMessages,
 //	defineStore,
@@ -36,8 +36,8 @@ export {
 	Injector
 };
 
-function defineFunctionComponent(config) {
-	return adaptFunctionComponent(config, adjustedConfig => {
+function defineFunctionalComponent(config) {
+	return adaptFunctionalComponent(config, adjustedConfig => {
 		const ret = props => adjustedConfig.render(props);
 
 		ret.displayName = adjustedConfig.name;
@@ -46,8 +46,8 @@ function defineFunctionComponent(config) {
 	});
 }
 
-function defineGeneralComponent(config) {
-	return adaptGeneralComponent(config, adjustedConfig => {
+function defineBasicComponent(config) {
+	return adaptBasicComponent(config, adjustedConfig => {
 		class ExtCustomComponent extends CustomComponent {
 			constructor(...args) {
 				super(args, adjustedConfig);

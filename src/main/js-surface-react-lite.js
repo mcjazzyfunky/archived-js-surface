@@ -1,6 +1,6 @@
 import { createCommonMethods } from './internal/react/react.js';
 
-import defineClassComponent from './api/defineClassComponent.js';
+import defineStandardComponent from './api/defineStandardComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 import hyperscript from './api/hyperscript.js';
 import Component from './api/Component.js';
@@ -11,16 +11,16 @@ import ReactLite from 'react-lite';
 const {
 	createElement,
 	defineFunctionalComponent,
-	defineGeneralComponent,
+	defineBasicComponent,
 	isElement
 } = createCommonMethods(ReactLite);
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineClassComponent,
+	defineStandardComponent,
 	defineFunctionalComponent,
-	defineGeneralComponent,
+	defineBasicComponent,
 //	defineMessages,
 //	defineStore,
 	hyperscript,

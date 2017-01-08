@@ -5,23 +5,23 @@ import { createCommonMethods } from './internal/react/react.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import defineClassComponent from './api/defineClassComponent.js';
+import defineStandardComponent from './api/defineStandardComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 import hyperscript from './api/hyperscript.js';
 
 const {
 	createElement,
-	defineFunctionComponent,
-	defineGeneralComponent,
+	defineFunctionalComponent,
+	defineBasicComponent,
 	isElement
 } = createCommonMethods(React);
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineClassComponent,
-	defineFunctionComponent,
-	defineGeneralComponent,
+	defineStandardComponent,
+	defineFunctionalComponent,
+	defineBasicComponent,
 
 //	defineMessages,
 //	defineStandardComponent,

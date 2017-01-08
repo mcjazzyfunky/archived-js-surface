@@ -13,7 +13,7 @@ export {
 	createElement,
 	defineAdvancedComponent,
 	defineFunctionalComponent,
-	defineGeneralComponent,
+	defineBasicComponent,
 	defineMessages,
 	defineStandardComponent,
 	defineStore,

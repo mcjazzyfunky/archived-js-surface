@@ -1,6 +1,6 @@
 import {
 	createElement as dom,
-	defineClassComponent,
+	defineStandardComponent,
 	render,
 	Component
 } from 'js-surface';
@@ -42,7 +42,7 @@ class ClockComponent extends Component {
 	}
 }
 
-const Clock = defineClassComponent({
+const Clock = defineStandardComponent({
 	name: 'Clock',
 
 	properties: {

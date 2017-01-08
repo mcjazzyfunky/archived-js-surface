@@ -1,9 +1,9 @@
 import createPropsAdjuster from '../helpers/createPropsAdjuster.js';
-import validateConfigForGeneralComponent from '../validations/validateGeneralComponentConfig.js';
+import validateConfigForBasicComponent from '../validations/validateBasicComponentConfig.js';
 import validateInitProcessResult from '../validations/validateInitProcessResult.js';
 
-export default function adaptGeneralComponentDefinition(config, platformAdaption) {
-	const err = validateConfigForGeneralComponent(config);
+export default function adaptBasicComponentDefinition(config, platformAdaption) {
+	const err = validateConfigForBasicComponent(config);
 
 	if (err) {
 		throw err;

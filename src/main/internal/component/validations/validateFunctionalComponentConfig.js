@@ -3,13 +3,13 @@ import Constraints from '../../../api/Constraints.js';
 import prettifyComponentConfigError
 	from '../helpers/prettifyComponentConfigError.js';
 
-import shapeOfClassComponentConfig
-	from '../shapes/shapeOfClassComponentConfig.js';
+import shapeOfFunctionalComponentConfig
+	from '../shapes/shapeOfFunctionalComponentConfig.js';
 
 
-export default function validateFunctionComponentConfig(config) {
+export default function validateFunctionalComponentConfig(config) {
 	const error =
-		Constraints.hasShape(shapeOfClassComponentConfig)(config, '');
+		Constraints.hasShape(shapeOfFunctionalComponentConfig)(config, '');
 
 	return error !== null
 		? prettifyComponentConfigError(error, config)

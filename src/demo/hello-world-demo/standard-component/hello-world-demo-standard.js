@@ -1,6 +1,6 @@
 import {
 	createElement as dom,
-	defineClassComponent,
+	defineStandardComponent,
 	render,
 	Component
 } from 'js-surface';
@@ -8,7 +8,7 @@ import {
 
 class HelloWorldComponent extends Component {
 	constructor(...args) {
-		console.log('Constructor args', ...args);
+		console.log('Constructor', ...args);
 		super(...args);
 	}
 
@@ -38,7 +38,7 @@ class HelloWorldComponent extends Component {
 		console.log('onDidUpdate', arguments);
 	}
 
-	render() {console.log('RRRRRRRRRRRRRREEEEEEEEEEEEENNNNNNNNNNNNNNDDDDDDDDDDEEEEEEEEEEERRRRRRRRRRR')
+	render() {
 		return (
 			dom('div', null, `Hello ${this.props.name}!`)
 		);
@@ -46,7 +46,7 @@ class HelloWorldComponent extends Component {
 }
 
 
-const HelloWorld = defineClassComponent({
+const HelloWorld = defineStandardComponent({
 	name: 'HelloWorld',
 
 	properties: {

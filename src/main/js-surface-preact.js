@@ -1,6 +1,6 @@
 import { createCommonMethods } from './internal/react/react.js';
 
-import defineClassComponent from './api/defineClassComponent.js';
+import defineStandardComponent from './api/defineStandardComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 import hyperscript from './api/hyperscript.js';
 import Component from './api/Component.js';
@@ -11,8 +11,8 @@ import Preact from 'preact';
 const {
     createElement = Preact.h,
     VNode  = Preact.h('').constructor,
-	defineFunctionComponent,
-	defineGeneralComponent,
+	defineFunctionalComponent,
+	defineBasicComponent,
 	isElement
 } = createCommonMethods({
 	Component: Preact.Component,
@@ -24,9 +24,9 @@ const {
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineClassComponent,
-	defineFunctionComponent,
-	defineGeneralComponent,
+	defineStandardComponent,
+	defineFunctionalComponent,
+	defineBasicComponent,
 //	defineMessages,
 //	defineStore,
 	hyperscript,

@@ -7,7 +7,7 @@ import shapeOfAdvancedComponentConfig
 	from '../shapes/shapeOfAdvancedComponentConfig.js';
 
 
-export default function validateFunctionComponentConfig(config) {
+export default function validateFunctionalComponentConfig(config) {
 	const error =
 		Constraints.hasShape(shapeOfAdvancedComponentConfig)(config, '');
 

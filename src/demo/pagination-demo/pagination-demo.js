@@ -1,11 +1,11 @@
 import {
-	defineFunctionComponent,
-	defineClassComponent,
+	defineFunctionalComponent,
+	defineStandardComponent,
 	createElement as dom,
 	render,
 	Component,
 }  from 'js-surface';
-console.log(defineFunctionComponent, defineClassComponent)
+console.log(defineFunctionalComponent, defineStandardComponent)
 import { Seq } from 'js-prelude';
 
 import PaginationHelper from './helpers/PaginationHelper.js';
@@ -19,7 +19,7 @@ const
     pageSize = 25,
     totalItemCount = 1220;
 
-export const Pagination = defineFunctionComponent({
+export const Pagination = defineFunctionalComponent({
     name: 'Pagination',
 
     properties: {
@@ -166,7 +166,7 @@ function buildLinkListItem(text, isActive, moveToPage) {
     );
 }
 
-const DemoOfPagination = defineClassComponent({
+const DemoOfPagination = defineStandardComponent({
 	name: 'DemoOfPagination',
 
 	componentClass: class extends Component {

@@ -1,10 +1,10 @@
 import {
 	createElement as dom,
-	defineGeneralComponent,
+	defineBasicComponent,
 	render
 } from 'js-surface';
 
-const HelloWorld = defineGeneralComponent({
+const HelloWorld = defineBasicComponent({
 	name: 'HelloWorld',
 
 	properties: {

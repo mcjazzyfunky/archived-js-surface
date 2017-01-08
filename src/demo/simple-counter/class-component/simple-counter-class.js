@@ -1,6 +1,6 @@
 import {
 	hyperscript as dom,
-	defineClassComponent,
+	defineStandardComponent,
 	render,
 	Component
 } from 'js-surface';
@@ -38,7 +38,7 @@ class SimpleCounterComponent extends Component {
 }
 
 
-const SimpleCounter = defineClassComponent({
+const SimpleCounter = defineStandardComponent({
 	name: 'SimpleCounter',
 
 	properties: {

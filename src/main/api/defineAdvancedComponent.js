@@ -1,4 +1,4 @@
-import { defineClassComponent } from 'js-surface';
+import { defineStandardComponent } from 'js-surface';
 
 import validateAdvancedComponentConfig
 	from '../internal/component/validations/validateAdvancedComponentConfig.js';
@@ -21,7 +21,7 @@ export default function defineAdvancedComponent(config) {
 		}
 	}
 
-	return defineClassComponent({
+	return defineStandardComponent({
 		name: config.name,
 		properties: config.properties,
 		componentClass: ExtCustomComponent

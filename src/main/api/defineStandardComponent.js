@@ -1,11 +1,11 @@
 import createPropsAdjuster from '../internal/component/helpers/createPropsAdjuster.js';
-import { defineGeneralComponent } from 'js-surface';
-import validateClassComponentConfig from '../internal/component/validations/validateClassComponentConfig.js';
+import { defineBasicComponent } from 'js-surface';
+import validateStandardComponentConfig from '../internal/component/validations/validateStandardComponentConfig.js';
 import callAsync from '../internal/util/callAsync.js';
 
 
-export default function defineClassComponent(config) {
-	const err = validateClassComponentConfig(config);
+export default function defineStandardComponent(config) {
+	const err = validateStandardComponentConfig(config);
 
 	if (err) {
 		throw err;
@@ -84,5 +84,5 @@ export default function defineClassComponent(config) {
 		    initProcess
 	    };
 
-	return defineGeneralComponent(adjustedConfig);
+	return defineBasicComponent(adjustedConfig);
 }

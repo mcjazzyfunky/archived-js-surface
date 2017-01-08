@@ -1,8 +1,8 @@
-import adaptFunctionComponent from
-	'../component/adaptions/adaptFunctionComponent.js';
+import adaptFunctionalComponent from
+	'../component/adaptions/adaptFunctionalComponent.js';
 
-import adaptGeneralComponent from
-	'../component/adaptions/adaptGeneralComponent.js';
+import adaptBasicComponent from
+	'../component/adaptions/adaptBasicComponent.js';
 
 //import defineMessages from './api/defineMessages.js';
 //import defineStore from './api/defineStore.js';
@@ -11,8 +11,8 @@ import adaptGeneralComponent from
 
 export function createCommonMethods(React) {
 	const commonMethods = {
-		defineFunctionComponent(config) {
-			return adaptFunctionComponent(config, adjustedConfig => {
+		defineFunctionalComponent(config) {
+			return adaptFunctionalComponent(config, adjustedConfig => {
 				const ret = props => adjustedConfig.render(props);
 
 				ret.displayName = adjustedConfig.name;
@@ -21,8 +21,8 @@ export function createCommonMethods(React) {
 			});
 		},
 
-		defineGeneralComponent(config) {
-			return adaptGeneralComponent(config, adjustedConfig => {
+		defineBasicComponent(config) {
+			return adaptBasicComponent(config, adjustedConfig => {
 				class ExtCustomComponent extends CustomComponent {
 					constructor(...args) {
 						super(args, adjustedConfig);
