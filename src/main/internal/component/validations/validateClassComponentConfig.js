@@ -4,7 +4,7 @@ import prettifyComponentConfigError
 	from '../helpers/prettifyComponentConfigError.js';
 
 import shapeOfClassComponentConfig
-	from '../config-shapes/shapeOfClassComponentConfig.js';
+	from '../shapes/shapeOfClassComponentConfig.js';
 
 
 export default function validateFunctionComponentConfig(config) {

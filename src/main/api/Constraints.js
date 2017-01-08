@@ -250,8 +250,8 @@ function buildSubPath(path, key) {
 function createError(errMsg, path)  {
     const
         fullErrMsg =
-            'Constraint violation '
-                + (path ? `at '${path}'` : '')
+            'Constraint violation'
+                + (path ? ` at '${path}'` : '')
                 + `: ${errMsg}`;
 
     return new ConstraintError(fullErrMsg, errMsg, path);

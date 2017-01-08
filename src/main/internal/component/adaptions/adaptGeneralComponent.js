@@ -1,7 +1,6 @@
 import createPropsAdjuster from '../helpers/createPropsAdjuster.js';
-import { FORBIDDEN_METHOD_NAMES, METHOD_NAME_REGEX } from './componentConstants.js';
-import validateConfigForGeneralComponent from './validateConfigForGeneralComponent.js';
-import validateInitProcessResult from './validateInitProcessResult.js';
+import validateConfigForGeneralComponent from '../validations/validateGeneralComponentConfig.js';
+import validateInitProcessResult from '../validations/validateInitProcessResult.js';
 
 export default function adaptGeneralComponentDefinition(config, platformAdaption) {
 	const err = validateConfigForGeneralComponent(config);
@@ -12,19 +11,17 @@ export default function adaptGeneralComponentDefinition(config, platformAdaption
 
 	const propsAdjuster = createPropsAdjuster(config.properties);
 
-	const improvedConfig = {
+	const adjustedConfig = {
 		name: config.name,
 		properties: config.properties,
 
 		initProcess: onNextView => {
 			const
 			    result = config.initProcess(onNextView),
-			    err = validateInitProcessResult(result);
+			    err = validateInitProcessResult(result, config);
 
 			if (err) {
-				throw new Error(
-				    `Function 'initProcess' of general component '$[config.name}' `
-				    `has returned an invalid value: ${err.message}`);
+				throw err;
 			}
 
 			return {
@@ -36,5 +33,5 @@ export default function adaptGeneralComponentDefinition(config, platformAdaption
 		}
 	};
 
-	return platformAdaption(improvedConfig);
+	return platformAdaption(adjustedConfig);
 }

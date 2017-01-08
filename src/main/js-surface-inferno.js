@@ -1,5 +1,11 @@
-import adaptFunctionalComponentDefinition from
+import adaptFunctionComponent from
 	'./internal/component/adaptions/adaptFunctionComponent.js';
+
+import adaptGeneralComponent from
+	'./internal/component/adaptions/adaptGeneralComponent.js';
+
+import defineClassComponent from './api/defineClassComponent.js';
+import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 
 import Constraints from './api/Constraints.js';
 
@@ -29,7 +35,7 @@ export {
 };
 
 function defineFunctionComponent(config) {
-	return adaptFunctionalComponentDefinition(config, adjustedConfig => {
+	return adaptFunctionComponent(config, adjustedConfig => {
 		const ret = props => adjustedConfig.render(props);
 
 		ret.displayName = adjustedConfig.name;
@@ -39,51 +45,26 @@ function defineFunctionComponent(config) {
 }
 
 function defineGeneralComponent(config) {
-
-}
-
-function defineAdvancedComponent(config) {
-	const ExtCustomComponent = function (args, sendProps, getView) {
-		CustomComponent.apply(this, args, config, sendProps, getView);
-	};
-
-	ExtCustomComponent.displayName = config.name;
-
-	return defComp(config, config => {
+	return adaptGeneralComponent(config, adjustedConfig => {
 		return (...args) => {
 			let viewToRender = null;
 
 			const
-				{ sendProps, methods } = config.initControl(
-					view => { viewToRender = view; }),
+				{ sendProps, methods } = adjustedConfig.initProcess(
+					view => { viewToRender = view; });
 
-				component = new ExtCustomComponent(
-					args, sendProps, () => viewToRender);
+			class ExtCustomComponent extends CustomComponent {
+				constructor(...args) {
+					super(args, config, sendProps, () => viewToRender);
 
-			return Object.assign(component, methods);
-		};
-	});
-}
+					if (methods) {
+						Object.assign(this, methods);
+					}
+				}
+			}
 
-function defineClassComponent(config) {
-	const ExtCustomComponent = function (args, sendProps, getView) {
-		CustomComponent.apply(this, args, config, sendProps, getView);
-	};
-
-	ExtCustomComponent.displayName = config.name;
-
-	return defComp(config, config => {
-		return (...args) => {
-			let viewToRender = null;
-
-			const
-				{ sendProps, methods } = config.initControl(
-					view => { viewToRender = view; }),
-
-				component = new ExtCustomComponent(
-					args, sendProps, () => viewToRender);
-
-			return Object.assign(component, methods);
+			ExtCustomComponent.displayName = config.name;
+			return createElement(ExtCustomComponent, ...args);
 		};
 	});
 }
