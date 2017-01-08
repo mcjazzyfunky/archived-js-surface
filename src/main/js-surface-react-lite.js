@@ -1,26 +1,34 @@
 import { createCommonMethods } from './internal/react/react.js';
+
+import defineClassComponent from './api/defineClassComponent.js';
+import defineAdvancedComponent from './api/defineAdvancedComponent.js';
+import hyperscript from './api/hyperscript.js';
+import Component from './api/Component.js';
 import Constraints from './api/Constraints.js';
+
 import ReactLite from 'react-lite';
 
 const {
 	createElement,
-	defineComponent,
+	defineFunctionalComponent,
+	defineGeneralComponent,
 	isElement
 } = createCommonMethods(ReactLite);
 
 export {
 	createElement,
 	defineAdvancedComponent,
+	defineClassComponent,
 	defineFunctionalComponent,
 	defineGeneralComponent,
-	defineMessages,
-	defineStandardComponent,
-	defineStore,
+//	defineMessages,
+//	defineStore,
 	hyperscript,
 	isElement,
 	render,
+	Component,
 	Constraints,
-	Injector
+//	Injector
 };
 
 function render(content, targetNode) {

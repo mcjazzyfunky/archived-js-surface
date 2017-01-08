@@ -1,30 +1,37 @@
-// import defComp from '../core/defComp.js';
+import adaptFunctionComponent from
+	'../component/adaptions/adaptFunctionComponent.js';
 
-// TODO!!!!!
-const defComp = () => {};
+import adaptGeneralComponent from
+	'../component/adaptions/adaptGeneralComponent.js';
+
+//import defineMessages from './api/defineMessages.js';
+//import defineStore from './api/defineStore.js';
+//import hyperscript from './api/hyperscript.js';
+//import Injector from './api/Injector.js';
 
 export function createCommonMethods(React) {
 	const commonMethods = {
-		defineComponent(config) {
-			const ExtCustomComponent = function (args, sendProps, getView) {
-				CustomComponent.apply(this, args, config, sendProps, getView);
-			};
+		defineFunctionComponent(config) {
+			return adaptFunctionComponent(config, adjustedConfig => {
+				const ret = props => adjustedConfig.render(props);
 
-			ExtCustomComponent.displayName = config.name;
+				ret.displayName = adjustedConfig.name;
 
-			return defComp(config, config => {
-				return (...args) => {
-					let viewToRender = null;
+				return ret;
+			});
+		},
 
-					const
-						{ sendProps, methods } = config.initControl(
-							view => { viewToRender = view; }),
+		defineGeneralComponent(config) {
+			return adaptGeneralComponent(config, adjustedConfig => {
+				class ExtCustomComponent extends CustomComponent {
+					constructor(...args) {
+						super(args, adjustedConfig);
+					}
+				}
 
-						component = new ExtCustomComponent(
-							args, sendProps, () => viewToRender);
+				ExtCustomComponent.displayName = adjustedConfig.name;
 
-					return Object.assign(component, methods);
-				};
+				return React.createFactory(ExtCustomComponent);
 			});
 		},
 
@@ -37,13 +44,31 @@ export function createCommonMethods(React) {
 		}
 	};
 
+
+
 	class CustomComponent extends React.Component {
-	    constructor(superArgs, config, sendProps, getView) {
+	    constructor(superArgs, config) {
 	        super(...superArgs);
 
-	        this.__config = config;
-	        this.__sendProps = sendProps;
-	        this.__getView = getView;
+			this.__viewToRender = null;
+			this.__initialized  = false;
+
+			const
+				{ sendProps, methods } = config.initProcess(
+					view => {
+						this.__viewToRender = view;
+
+						if (this.__initialized) {
+							this.forceUpdate();
+						} else {
+							this.__initialized  = true;
+						}});
+
+			this.__sendProps = sendProps;
+
+			if (methods) {
+				Object.assign(this, methods);
+			}
 	    }
 
 	    componentWillMount() {
@@ -63,7 +88,7 @@ export function createCommonMethods(React) {
 	    }
 
 	    render() {
-	    	return this.__getView();
+	    	return this.__viewToRender;
 	    }
 	}
 

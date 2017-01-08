@@ -1,35 +1,44 @@
-import Constraints from './api/Constraints.js';
 import { createCommonMethods } from './internal/react/react.js';
+
+import defineClassComponent from './api/defineClassComponent.js';
+import defineAdvancedComponent from './api/defineAdvancedComponent.js';
+import hyperscript from './api/hyperscript.js';
+import Component from './api/Component.js';
+import Constraints from './api/Constraints.js';
+
 import Preact from 'preact';
 
-const
+const {
     createElement = Preact.h,
     VNode  = Preact.h('').constructor,
-
-	{ defineComponent, isElement } = createCommonMethods({
-		Component: Preact.Component,
-		createElement,
-		createFactory,
-		isValidElement
-    });
+	defineFunctionComponent,
+	defineGeneralComponent,
+	isElement
+} = createCommonMethods({
+	Component: Preact.Component,
+	createElement,
+	createFactory,
+	isValidElement
+});
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineFunctionalComponent,
+	defineClassComponent,
+	defineFunctionComponent,
 	defineGeneralComponent,
-	defineMessages,
-	defineStandardComponent,
-	defineStore,
+//	defineMessages,
+//	defineStore,
 	hyperscript,
 	isElement,
 	render,
+	Component,
 	Constraints,
-	Injector
+//	Injector
 };
 
-function createFactory() {
-	return type => createElement.bind(null, type);
+function createFactory(type) {
+	return createElement.bind(null, type);
 }
 
 function isValidElement(it) {

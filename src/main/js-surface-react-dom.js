@@ -1,27 +1,37 @@
 import Constraints from './api/Constraints.js';
+import Component from './api/Component.js';
+
 import { createCommonMethods } from './internal/react/react.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import defineClassComponent from './api/defineClassComponent.js';
+import defineAdvancedComponent from './api/defineAdvancedComponent.js';
+import hyperscript from './api/hyperscript.js';
+
 const {
 	createElement,
-	defineComponent,
+	defineFunctionComponent,
+	defineGeneralComponent,
 	isElement
 } = createCommonMethods(React);
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineFunctionalComponent,
+	defineClassComponent,
+	defineFunctionComponent,
 	defineGeneralComponent,
-	defineMessages,
-	defineStandardComponent,
-	defineStore,
+
+//	defineMessages,
+//	defineStandardComponent,
+//	defineStore,
 	hyperscript,
 	isElement,
 	render,
+	Component,
 	Constraints,
-	Injector
+//	Injector
 };
 
 function render(content, targetNode) {
