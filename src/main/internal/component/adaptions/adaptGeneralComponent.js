@@ -9,7 +9,7 @@ export default function adaptGeneralComponentDefinition(config, platformAdaption
 		throw err;
 	}
 
-	const propsAdjuster = createPropsAdjuster(config.properties);
+	const propsAdjuster = createPropsAdjuster(config);
 
 	const adjustedConfig = {
 		name: config.name,

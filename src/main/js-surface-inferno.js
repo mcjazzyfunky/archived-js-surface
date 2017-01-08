@@ -7,6 +7,7 @@ import adaptGeneralComponent from
 import defineClassComponent from './api/defineClassComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 
+import Component from './api/Component.js';
 import Constraints from './api/Constraints.js';
 
 import { render as renderInferno } from 'inferno';
@@ -30,6 +31,7 @@ export {
 	hyperscript,
 	isElement,
 	render,
+	Component,
 	Constraints,
 	Injector
 };
@@ -46,24 +48,15 @@ function defineFunctionComponent(config) {
 
 function defineGeneralComponent(config) {
 	return adaptGeneralComponent(config, adjustedConfig => {
-		return (...args) => {
-			let viewToRender = null;
-
-			const
-				{ sendProps, methods } = adjustedConfig.initProcess(
-					view => { viewToRender = view; });
-
-			class ExtCustomComponent extends CustomComponent {
-				constructor(...args) {
-					super(args, config, sendProps, () => viewToRender);
-
-					if (methods) {
-						Object.assign(this, methods);
-					}
-				}
+		class ExtCustomComponent extends CustomComponent {
+			constructor(...args) {
+				super(args, adjustedConfig);
 			}
+		}
 
-			ExtCustomComponent.displayName = config.name;
+		ExtCustomComponent.displayName = adjustedConfig.name;
+
+		return (...args) => {
 			return createElement(ExtCustomComponent, ...args);
 		};
 	});
@@ -119,12 +112,30 @@ function render(content, targetNode) {
 }
 
 class CustomComponent extends InfernoComponent {
-    constructor(superArgs, config, sendProps, getView) {
+    constructor(superArgs, config) {
         super(...superArgs);
 
-        this.__config = config;
-        this.__sendProps = sendProps;
-        this.__getView = getView;
+		this.__viewToRender = null;
+		this.__initialized  = false;
+		this.__shouldUpdate = false;
+
+		const
+			{ sendProps, methods } = config.initProcess(
+				view => {
+					this.__viewToRender = view;
+
+					if (this.__initialized) {
+						this.__shouldUpdate = true;
+						this.setState(null);
+					} else {
+						this.__initialized  = true;
+					}});
+
+		this.__sendProps = sendProps;
+
+		if (methods) {
+			Object.assign(this, methods);
+		}
     }
 
     componentWillMount() {
@@ -140,10 +151,12 @@ class CustomComponent extends InfernoComponent {
     }
 
     shouldComponentUpdate() {
-    	return false;
+    	const ret = this.__shouldUpdate;
+    	this.__shouldUpdate = false;
+    	return ret;
     }
 
     render() {
-    	return this.__getView();
+    	return this.__viewToRender;
     }
 }

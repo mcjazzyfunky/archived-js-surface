@@ -1,9 +1,11 @@
 import warn from '../../util/warn.js';
 
-export default function createPropsAdjuster(componentName, propertiesConfig) {
+export default function createPropsAdjuster(config) {
     let ret;
 
     const
+    	propertiesConfig = config.properties,
+    	componentName = config.name,
         validations = [],
         defaults = {};
 
@@ -12,7 +14,7 @@ export default function createPropsAdjuster(componentName, propertiesConfig) {
     } else {
     	let hasDefaults = false;
 
-        for (let key of  Object.getOwnPropertyNames(propertiesConfig)) {
+        for (let key of  Object.keys(propertiesConfig)) {
             const
                 type = propertiesConfig[key].type,
                 constraint = propertiesConfig[key].constraint || null,

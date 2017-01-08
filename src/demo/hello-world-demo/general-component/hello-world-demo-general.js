@@ -23,6 +23,4 @@ const HelloWorld = defineGeneralComponent({
 	}
 });
 
-const content = HelloWorld();
-//console.log('content:', dom(HelloWorld()))
-render(content, 'main-content');
+render(HelloWorld(), 'main-content');

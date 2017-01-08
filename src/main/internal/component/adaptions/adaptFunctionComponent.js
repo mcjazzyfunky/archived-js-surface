@@ -11,7 +11,7 @@ export default function adaptFunctionComponent(config, platformAdaption) {
 	}
 
 	const
-	    propsAdjuster = createPropsAdjuster(config.name, config.properties),
+	    propsAdjuster = createPropsAdjuster(config),
 
         adjustedConfig = {
 		    name: config.name,
