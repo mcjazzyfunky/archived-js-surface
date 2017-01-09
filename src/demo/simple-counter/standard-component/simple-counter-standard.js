@@ -22,22 +22,22 @@ class SimpleCounterComponent extends Component {
 
 	onWillMount() {
 		console.log('onWillMount');
-		alert('onWillMount');
+		//alert('onWillMount');
 	}
 
 	onDidMount() {
 		console.log('onDidMount');
-		alert('onDidMount');
+		//alert('onDidMount');
 	}
 
 	onWillUpdate() {
 		console.log('onWillUpdate');
-		alert('onWillUpdate');
+		//alert('onWillUpdate');
 	}
 
 	onDidUpdate() {
 		console.log('onDidUpdate');
-		alert('onDidUpdate');
+		//alert('onDidUpdate');
 	}
 
 	render() {

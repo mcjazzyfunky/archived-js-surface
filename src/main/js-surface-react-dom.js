@@ -14,7 +14,12 @@ const {
 	defineFunctionalComponent,
 	defineBasicComponent,
 	isElement
-} = createCommonMethods(React);
+} = createCommonMethods({
+	Component: React.Component,
+	createElement: React.createElement,
+	createFactory: React.createFactory,
+	isValidElement: React.isValidElement
+});
 
 export {
 	createElement,

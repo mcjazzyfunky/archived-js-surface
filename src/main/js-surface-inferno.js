@@ -148,11 +148,11 @@ class CustomComponent extends InfernoComponent {
 		}
     }
 
-    componentWillMount() {
+    componentWillMount(node) {
     	this.__onProps(this.props);
     }
 
-    componentDidMount() {
+    componentDidMount(node) {
     	if (this.__resolveRenderingDone) {
 			this.__resolveRenderingDone();
     	}

@@ -13,7 +13,12 @@ const {
 	defineFunctionalComponent,
 	defineBasicComponent,
 	isElement
-} = createCommonMethods(ReactLite);
+} = createCommonMethods({
+	Component: ReactLite.Component,
+	createElement: ReactLite.createElement,
+	createFactory: ReactLite.createFactory,
+	isValidElement: ReactLite.isValidElement
+});
 
 export {
 	createElement,

@@ -8,7 +8,13 @@ const fakeState = {};
 
 Object.freeze(fakeState);
 
-export function createCommonMethods(React) {
+export function createCommonMethods(
+	{ Component
+	, createElement
+	, createFactory
+	, isValidElement
+	}) {
+
 	const commonMethods = {
 		defineFunctionalComponent(config) {
 			return adaptFunctionalComponent(config, adjustedConfig => {
@@ -30,21 +36,21 @@ export function createCommonMethods(React) {
 
 				ExtCustomComponent.displayName = adjustedConfig.name;
 
-				return React.createFactory(ExtCustomComponent);
+				return createFactory(ExtCustomComponent);
 			});
 		},
 
-		createElement: React.createElement,
+		createElement: createElement,
 
 		isElement(it)  {
 	    	return it !== undefined
 	    		&& it !== null
-	    		&& React.isValidElement(it);
+	    		&& isValidElement(it);
 		}
 	};
 
 
-	class CustomComponent extends React.Component {
+	class CustomComponent extends Component {
 	    constructor(superArgs, config) {
 	        super(...superArgs);
 

@@ -49,7 +49,7 @@ function isValidElement(it) {
 function render(content, targetNode) {
     if (!isElement(content)) {
         throw new TypeError(
-            "[mount] First argument 'content' has to be a valid element");
+            "[render] First argument 'content' has to be a valid element");
     }
 
     if (typeof targetNode === 'string') {
