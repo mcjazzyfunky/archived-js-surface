@@ -16,7 +16,7 @@ const HelloWorld = defineBasicComponent({
 
 	initProcess(onNextContent) {
 		return {
-			sendProps(props) {
+			onProps(props) {
 				onNextContent(dom('div', null, 'Hello ' + props.name + '!'));
 			}
 		};

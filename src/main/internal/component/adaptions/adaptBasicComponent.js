@@ -15,9 +15,9 @@ export default function adaptBasicComponentDefinition(config, platformAdaption) 
 		name: config.name,
 		properties: config.properties,
 
-		initProcess: onNextView => {
+		initProcess: onRender => {
 			const
-			    result = config.initProcess(onNextView),
+			    result = config.initProcess(onRender),
 			    err = validateInitProcessResult(result, config);
 
 			if (err) {
@@ -25,8 +25,8 @@ export default function adaptBasicComponentDefinition(config, platformAdaption) 
 			}
 
 			return {
-				sendProps(props) {
-					result.sendProps(propsAdjuster(props));
+				onProps(props) {
+					result.onProps(propsAdjuster(props));
 				},
 				methods: result.methods || null
 			};

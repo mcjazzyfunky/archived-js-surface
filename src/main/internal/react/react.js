@@ -54,7 +54,7 @@ export function createCommonMethods(React) {
 			this.__initialized  = false;
 
 			const
-				{ sendProps, methods } = config.initProcess(
+				{ onProps, methods } = config.initProcess(
 					view => {
 						this.__viewToRender = view;
 
@@ -64,7 +64,7 @@ export function createCommonMethods(React) {
 							this.__initialized  = true;
 						}});
 
-			this.__sendProps = sendProps;
+			this.__onProps = onProps;
 
 			if (methods) {
 				Object.assign(this, methods);
@@ -72,15 +72,15 @@ export function createCommonMethods(React) {
 	    }
 
 	    componentWillMount() {
-	    	this.__sendProps(this.props);
+	    	this.__onProps(this.props);
 	    }
 
 	    componentWillUnmount() {
-			this.__sendProps(undefined);
+			this.__onProps(undefined);
 	    }
 
 	    componentWillReceiveProps(nextProps) {
-	    	this.__sendProps(nextProps);
+	    	this.__onProps(nextProps);
 	    }
 
 	    shouldComponentUpdate() {

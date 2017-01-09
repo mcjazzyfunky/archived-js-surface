@@ -14,13 +14,13 @@ export default function defineStandardComponent(config) {
 	const
 	    propsAdjuster = createPropsAdjuster(config),
 
-		initProcess = onNextView => {
+		initProcess = onRender => {
 			let
 				component = null,
 				content = null,
 				done = false;
 
-			const sendProps = origProps => {
+			const onProps = origProps => {
 				if (done) {
 					return;
 				} else if (origProps === undefined) {
@@ -39,7 +39,7 @@ export default function defineStandardComponent(config) {
 
 					component.refresh = function () {
 						content = component.render();
-						onNextView(content);
+						onRender(content);
 					};
 
 					component.onWillMount();
@@ -73,7 +73,7 @@ export default function defineStandardComponent(config) {
 			const methods = {};
 
 			return {
-				sendProps,
+				onProps,
 				methods
 			};
 		},
