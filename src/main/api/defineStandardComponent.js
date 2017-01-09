@@ -36,35 +36,46 @@ export default function defineStandardComponent(config) {
 
 				if (!component) {
 					component = new config.componentClass(props);
+					let initialized = false;
 
-					component.refresh = function () {
+					component.__refresh = function (prevProps, prevState) {
 						content = component.render();
-						onRender(content);
+						const renderingDonePromise = onRender(content);
+
+						if (renderingDonePromise) {
+							renderingDonePromise.then(
+								successful => {
+									if (successful) {
+										if (!initialized) {
+											initialized = true;
+											component.onDidMount();
+										} else {
+											component.onDidUpdate(prevProps, prevState);
+										}
+									}
+								}
+							);
+						}
 					};
 
 					component.onWillMount();
-					component.refresh();
-					callAsync(() => callAsync(() => component.onDidMount()));
+					component.refresh(null, null);
 				} else {
 					component.onWillReceiveProps(props);
 
 					const shouldUpdate = component.shouldUpdate(props, component.state);
 
 					if (shouldUpdate) {
-						const
-							oldProps = component.props,
-							oldState = component.state;
-
-						component.onWillUpdate(props, oldState);
-
-						callAsync(() => component.onDidUpdate(oldProps, oldState));
+						component.onWillUpdate(props, component.state);
 					}
+
+					const prevProps = component.props;
 
 					// Sorry for that :-(
 					component.__props = props;
 
 					if (shouldUpdate) {
-						component.refresh();
+						component.refresh(prevProps, component.state);
 					}
 				}
 			};

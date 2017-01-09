@@ -4,10 +4,9 @@ import adaptFunctionalComponent from
 import adaptBasicComponent from
 	'../component/adaptions/adaptBasicComponent.js';
 
-//import defineMessages from './api/defineMessages.js';
-//import defineStore from './api/defineStore.js';
-//import hyperscript from './api/hyperscript.js';
-//import Injector from './api/Injector.js';
+const fakeState = {};
+
+Object.freeze(fakeState);
 
 export function createCommonMethods(React) {
 	const commonMethods = {
@@ -45,24 +44,37 @@ export function createCommonMethods(React) {
 	};
 
 
-
 	class CustomComponent extends React.Component {
 	    constructor(superArgs, config) {
 	        super(...superArgs);
 
 			this.__viewToRender = null;
-			this.__initialized  = false;
+			this.__resolveRenderingDone = null;
+			this.__shouldUpdate = false;
+			this.state = fakeState;
+
+			let initialized = false;
 
 			const
 				{ onProps, methods } = config.initProcess(
 					view => {
 						this.__viewToRender = view;
 
-						if (this.__initialized) {
-							this.forceUpdate();
+						if (initialized) {
+							this.__shouldUpdate = true;
+							this.setState(fakeState);
 						} else {
-							this.__initialized  = true;
-						}});
+							initialized  = true;
+						}
+
+						return new Promise(resolve => {
+							this.__resolveRenderingDone = () => {
+								this.__resolveRenderingDone = null;
+								resolve(true);
+							};
+						});
+
+					});
 
 			this.__onProps = onProps;
 
@@ -75,6 +87,18 @@ export function createCommonMethods(React) {
 	    	this.__onProps(this.props);
 	    }
 
+	    componentDidMount() {
+	    	if (this.__resolveRenderingDone) {
+				this.__resolveRenderingDone();
+	    	}
+	    }
+
+	    componentDidUpdate() {
+	    	if (this.__resolveRenderingDone) {
+				this.__resolveRenderingDone();
+	    	}
+	    }
+
 	    componentWillUnmount() {
 			this.__onProps(undefined);
 	    }
@@ -84,7 +108,13 @@ export function createCommonMethods(React) {
 	    }
 
 	    shouldComponentUpdate() {
-	    	return false;
+	    	const ret = this.__shouldUpdate;
+
+	    	if (ret) {
+	    		this.__shouldUpdate = false;
+	    	}
+
+	    	return ret;
 	    }
 
 	    render() {

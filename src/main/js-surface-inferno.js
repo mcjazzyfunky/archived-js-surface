@@ -116,20 +116,30 @@ class CustomComponent extends InfernoComponent {
         super(...superArgs);
 
 		this.__viewToRender = null;
-		this.__initialized  = false;
-		this.__shouldUpdate = false;
+		this.__resolveRenderingDone = null;
+		this.__needsUpdate = false;
+
+		let initialized = false;
 
 		const
 			{ onProps, methods } = config.initProcess(
 				view => {
 					this.__viewToRender = view;
 
-					if (this.__initialized) {
-						this.__shouldUpdate = true;
+					if (initialized) {
+						this.__needsUpdate = true;
 						this.setState(null);
 					} else {
-						this.__initialized  = true;
-					}});
+						initialized = true;
+					}
+
+					return new Promise(resolve => {
+						this.__resolveRenderingDone = () => {
+							this.__resolveRenderingDone = null;
+							resolve(true);
+						};
+					});
+				});
 
 		this.__onProps = onProps;
 
@@ -142,6 +152,18 @@ class CustomComponent extends InfernoComponent {
     	this.__onProps(this.props);
     }
 
+    componentDidMount() {
+    	if (this.__resolveRenderingDone) {
+			this.__resolveRenderingDone();
+    	}
+    }
+
+    componentDidUpdate() {
+    	if (this.__resolveRenderingDone) {
+			this.__resolveRenderingDone();
+    	}
+    }
+
     componentWillUnmount() {
 		this.__onProps(undefined);
     }
@@ -151,8 +173,8 @@ class CustomComponent extends InfernoComponent {
     }
 
     shouldComponentUpdate() {
-    	const ret = this.__shouldUpdate;
-    	this.__shouldUpdate = false;
+    	const ret = this.__needsUpdate;
+    	this.__needsUpdate = false;
     	return ret;
     }
 

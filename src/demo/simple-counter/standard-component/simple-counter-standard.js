@@ -20,6 +20,26 @@ class SimpleCounterComponent extends Component {
 		};
 	}
 
+	onWillMount() {
+		console.log('onWillMount');
+		alert('onWillMount');
+	}
+
+	onDidMount() {
+		console.log('onDidMount');
+		alert('onDidMount');
+	}
+
+	onWillUpdate() {
+		console.log('onWillUpdate');
+		alert('onWillUpdate');
+	}
+
+	onDidUpdate() {
+		console.log('onDidUpdate');
+		alert('onDidUpdate');
+	}
+
 	render() {
 		return (
 			dom('div.simple-counter',

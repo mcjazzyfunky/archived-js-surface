@@ -2,7 +2,12 @@ export default class Component {
 	constructor(initialProps) {
 		this.__props = initialProps;
 		this.__state = null;
+		this.__initialized = false;
 		this.__refresh = null;
+
+		setTimeout(() => {
+			this.__initialized = true;
+		}, 0);
 	}
 
 	get props() {
@@ -15,15 +20,13 @@ export default class Component {
 
 	set state(nextState) {
 		const
-		    currState = this.state,
-		    shouldUpdate = this.shouldUpdate(this.props, currState);
+		    currState = this.state;
 
 		this.__state = nextState;
 
-		if (shouldUpdate) {
+		if (this.__initialized && this.shouldUpdate(this.props, currState)) {
 			this.onWillUpdate(this.props, nextState);
 			this.refresh();
-			this.onDidUpdate(this.props, currState);
 		}
 	}
 
@@ -55,7 +58,7 @@ export default class Component {
 
 	refresh() {
 		if (this.__refresh) {
-			this.__refresh();
+			this.__refresh(this.props, this.state);
 		}
 	}
 }
