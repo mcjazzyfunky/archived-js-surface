@@ -1,29 +1,25 @@
 import {
 	createElement,
 	defineAdvancedComponent,
-	defineFunctionalComponent,
 	defineBasicComponent,
-	defineMessages,
+	defineFunctionalComponent,
 	defineStandardComponent,
-	defineStore,
 	hyperscript,
 	isElement,
 	render,
-	Constraints,
-	Injector
-} from './js-surface-inferno.js';
+	Component,
+	Constraints
+} from './js-surface-preact.js';
 
 export {
 	createElement,
 	defineAdvancedComponent,
-	defineFunctionalComponent,
 	defineBasicComponent,
-	defineMessages,
+	defineFunctionalComponent,
 	defineStandardComponent,
-	defineStore,
 	hyperscript,
 	isElement,
 	render,
-	Constraints,
-	Injector
+	Component,
+	Constraints
 };

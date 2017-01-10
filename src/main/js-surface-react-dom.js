@@ -1,22 +1,20 @@
-import Constraints from './api/Constraints.js';
-import Component from './api/Component.js';
-
-import { createCommonMethods } from './internal/react/react.js';
-import React from 'react';
-import ReactDOM from 'react-dom';
-
+import defineDependentFunctions from './internal/react/defineDependentFunctions.js';
 import defineStandardComponent from './api/defineStandardComponent.js';
 import defineAdvancedComponent from './api/defineAdvancedComponent.js';
 import hyperscript from './api/hyperscript.js';
+import Component from './api/Component.js';
+import Constraints from './api/Constraints.js';
+
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 const {
-	createElement,
-	defineFunctionalComponent,
 	defineBasicComponent,
+	defineFunctionalComponent,
 	isElement
-} = createCommonMethods({
+} = defineDependentFunctions({
 	Component: React.Component,
-	createElement: React.createElement,
+	createElement: createElement,
 	createFactory: React.createFactory,
 	isValidElement: React.isValidElement
 });
@@ -27,22 +25,19 @@ export {
 	defineStandardComponent,
 	defineFunctionalComponent,
 	defineBasicComponent,
-
-//	defineMessages,
-//	defineStandardComponent,
-//	defineStore,
 	hyperscript,
 	isElement,
 	render,
 	Component,
 	Constraints,
-//	Injector
 };
+
+const createElement = React.createElement;
 
 function render(content, targetNode) {
     if (!isElement(content)) {
         throw new TypeError(
-            "[mount] First argument 'content' has to be a valid element");
+            "[render] First argument 'content' has to be a valid element");
     }
 
     if (typeof targetNode === 'string') {

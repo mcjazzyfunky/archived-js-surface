@@ -8,7 +8,7 @@ const fakeState = {};
 
 Object.freeze(fakeState);
 
-export function createCommonMethods(
+export default function createDependentFunctions(
 	{ Component
 	, createElement
 	, createFactory

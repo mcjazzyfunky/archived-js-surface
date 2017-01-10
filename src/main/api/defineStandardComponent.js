@@ -1,8 +1,7 @@
 import createPropsAdjuster from '../internal/component/helpers/createPropsAdjuster.js';
-import { defineBasicComponent } from 'js-surface';
 import validateStandardComponentConfig from '../internal/component/validations/validateStandardComponentConfig.js';
-import callAsync from '../internal/util/callAsync.js';
 
+import { defineBasicComponent } from 'js-surface';
 
 export default function defineStandardComponent(config) {
 	const err = validateStandardComponentConfig(config);

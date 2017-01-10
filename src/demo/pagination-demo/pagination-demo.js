@@ -5,7 +5,7 @@ import {
 	render,
 	Component,
 }  from 'js-surface';
-console.log(defineFunctionalComponent, defineStandardComponent)
+
 import { Seq } from 'js-prelude';
 
 import PaginationHelper from './helpers/PaginationHelper.js';
@@ -15,7 +15,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 const
-    number = 100,
+    number = 50,
     pageSize = 25,
     totalItemCount = 1220;
 
@@ -93,7 +93,7 @@ export const Pagination = defineFunctionalComponent({
             classNameInner = 'pagination',
 
             moveToPage = targetPage => {
-                if (props.isSomething('onChange')) {
+                if (props.onChange) {
                     props.onChange({targetPage});
                 }
             },
@@ -180,7 +180,7 @@ const DemoOfPagination = defineStandardComponent({
 			this.state = { pageIndex };
 		}
 
-	    render({ state }) {
+	    render() {
 	        return (
 	            dom('div',
 	                {className: 'container-fluid'},
@@ -189,7 +189,7 @@ const DemoOfPagination = defineStandardComponent({
 	                        {className: 'row'},
 	                        Pagination({
 	                            className: "col-md-3",
-	                            pageIndex: state.pageIndex,
+	                            pageIndex: this.state.pageIndex,
 	                            pageSize: pageSize,
 	                            totalItemCount: totalItemCount,
 	                            onChange: evt => this.moveToPage(evt.targetPage)}))))
@@ -322,7 +322,7 @@ const
     RDemoOfPagination = React.createFactory(RDemoOfPaginationClass);
 
 
-if (1) {
+if (0) {
     render(
         DemoOfPagination(),
         'main-content',

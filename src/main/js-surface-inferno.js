@@ -1,23 +1,18 @@
+import defineStandardComponent from './api/defineStandardComponent.js';
+import defineAdvancedComponent from './api/defineAdvancedComponent.js';
+import hyperscript from './api/hyperscript.js';
+import Component from './api/Component.js';
+import Constraints from './api/Constraints.js';
+
 import adaptFunctionalComponent from
 	'./internal/component/adaptions/adaptFunctionalComponent.js';
 
 import adaptBasicComponent from
 	'./internal/component/adaptions/adaptBasicComponent.js';
 
-import defineStandardComponent from './api/defineStandardComponent.js';
-import defineAdvancedComponent from './api/defineAdvancedComponent.js';
-
-import Component from './api/Component.js';
-import Constraints from './api/Constraints.js';
-
 import { render as renderInferno } from 'inferno';
 import createInfernoElement from 'inferno-create-element';
 import InfernoComponent from 'inferno-component';
-
-//import defineMessages from './api/defineMessages.js';
-//import defineStore from './api/defineStore.js';
-import hyperscript from './api/hyperscript.js';
-import Injector from './api/Injector.js';
 
 export {
 	createElement,
@@ -25,15 +20,11 @@ export {
 	defineStandardComponent,
 	defineFunctionalComponent,
 	defineBasicComponent,
-
-//	defineMessages,
-//	defineStore,
 	hyperscript,
 	isElement,
 	render,
 	Component,
 	Constraints,
-	Injector
 };
 
 function defineFunctionalComponent(config) {
