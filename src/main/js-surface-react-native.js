@@ -25,11 +25,10 @@ export {
 	defineStandardComponent,
 	defineFunctionalComponent,
 	defineBasicComponent,
-	hyperscript,
 	isElement,
 	render,
 	Component,
-	Constraints,
+	Constraints
 };
 
 const createElement = React.createElement;
