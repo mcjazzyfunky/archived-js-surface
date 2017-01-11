@@ -36,7 +36,7 @@
     "inferno-component": "^1.0.0-beta23",
     "inferno-create-element": "^1.0.0-beta23",
     "jquery": "^2.2.4",
-    "js-prelude": "^0.1.33",
+    "js-prelude": "^0.1.34",
     "less": "^2.7.1",
     "preact": "7.1.0",
     "react": "^15.4.1",

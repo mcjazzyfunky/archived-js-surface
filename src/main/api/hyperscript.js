@@ -72,7 +72,7 @@ function hyperscript(tag, ...rest) {
 
                 secondArgHasAttrs =
                 	secondArg === undefined || secondArg === null ||
-                	typeof secondArg === 'object' && !isElement(secondArg),
+                	typeof secondArg === 'object' && !secondArg[Symbol.iterator] && !isElement(secondArg),
 
                 newArgs = [lastTag];
 
@@ -108,7 +108,7 @@ function hyperscript(tag, ...rest) {
                 for (let i = 1; i < arguments.length; ++i) {
                     newArgs.push(arguments[i]);
                 }
-                
+
                 ret = applyCreateElement(...newArgs);
             }
 
@@ -133,11 +133,10 @@ function hyperscript(tag, ...rest) {
     return ret;
 }
 
-
 function applyCreateElement(tag, ...rest) {
    const snd = rest[0];
-   
-   return  snd === undefined || snd === null || typeof snd === 'object' && !isElement(snd)
+console.log(snd)
+   return  snd === undefined || snd === null || typeof snd === 'object' && !snd[Symbol.iterator] && !isElement(snd)
         ? createElement(tag, snd || null, ...rest)
     	: createElement(tag, null, ...rest);
 }

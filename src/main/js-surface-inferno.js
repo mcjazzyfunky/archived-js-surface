@@ -47,6 +47,8 @@ function defineBasicComponent(config) {
 
 		ExtCustomComponent.displayName = adjustedConfig.name;
 
+		enhanceWithComponentMeta(ExtCustomComponent, config);
+
 		return (...args) => {
 			return createElement(ExtCustomComponent, ...args);
 		};
